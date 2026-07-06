@@ -15,29 +15,38 @@ export default function DashboardPage() {
     fetchSummary();
   }, []);
 
-  const fetchSummary = async () => {
-    console.log("🚀 FETCH STARTED");
+ const fetchSummary = async () => {
 
-    try {
-      const res = await getDashboardSummary();
+  console.log("🚀 Fetch Started");
 
-      // 🔥 RAW API RESPONSE
-      console.log("📦 RAW RESPONSE:", res);
+  try {
 
-      // 🔥 TYPE CHECK
-      console.log("🔍 TYPE:", typeof res);
-      console.log("🔑 KEYS:", Object.keys(res || {}));
+    const data =
+      await getDashboardSummary();
 
-      setSummary(res);
 
-      console.log("✅ STATE SET DONE");
-    } catch (err) {
-      console.log("❌ API ERROR:", err);
-    } finally {
-      setLoading(false);
-      console.log("⏳ LOADING FINISHED");
-    }
-  };
+    console.log(
+      "📦 Received Data:",
+      data
+    );
+
+
+    setSummary(data);
+
+
+  } catch (err) {
+
+    console.log(
+      "🔥 Dashboard Error:",
+      err
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
 
   console.log("📊 CURRENT STATE:", summary);
 
