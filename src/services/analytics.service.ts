@@ -2,7 +2,10 @@ import api from "./api";
 
 export const getDashboardSummary =
   async () => {
-    const response = await api.get("/analytics/summary");
+    const response =
+      await api.get(
+        "/analytics/summary",
+      );
 
-    return response.data.data || response.data;
+    return response.data;
   };
