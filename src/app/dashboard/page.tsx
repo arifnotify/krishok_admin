@@ -15,36 +15,27 @@ export default function DashboardPage() {
     fetchSummary();
   }, []);
 
- const fetchSummary = async () => {
-
+const fetchSummary = async () => {
   console.log("🚀 Fetch Started");
 
   try {
+    const data = await getDashboardSummary();
 
-    const data =
-      await getDashboardSummary();
+    console.log("🔥 API DATA:", data);
 
-
-    console.log(
-      "📦 Received Data:",
-      data
-    );
-
+    if (!data) {
+      console.log("❌ API returned empty data");
+      return;
+    }
 
     setSummary(data);
 
+    console.log("✅ setSummary done");
 
-  } catch (err) {
-
-    console.log(
-      "🔥 Dashboard Error:",
-      err
-    );
-
+  } catch (error) {
+    console.log("❌ Dashboard API Error:", error);
   } finally {
-
     setLoading(false);
-
   }
 };
 

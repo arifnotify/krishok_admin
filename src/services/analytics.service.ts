@@ -1,36 +1,23 @@
 import api from "./api";
 
 export const getDashboardSummary = async () => {
-  console.log("🔥 Calling API...");
 
-  try {
-    const response = await api.get(
-      "/analytics/summary"
-    );
+  console.log("🌐 Calling /analytics/summary");
 
-    console.log(
-      "✅ Axios Response:",
-      response
-    );
+  const response = await api.get(
+    "/analytics/summary"
+  );
 
-    console.log(
-      "✅ Response Data:",
-      response.data
-    );
+  console.log(
+    "📡 Axios Response:",
+    response
+  );
 
-    return response.data;
+  console.log(
+    "📦 Response Data:",
+    response.data
+  );
 
-  } catch (error: any) {
 
-    console.log(
-      "❌ API ERROR:",
-      error
-    );
-
-    console.log(
-      "❌ ERROR RESPONSE:",
-      error?.response
-    );
-   throw error;
-  }
+  return response.data;
 };
