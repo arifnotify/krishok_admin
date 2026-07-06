@@ -31,7 +31,6 @@ export const getDashboardSummary = async () => {
       "❌ ERROR RESPONSE:",
       error?.response
     );
-
-    throw error;
+   throw error;
   }
 };
