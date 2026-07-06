@@ -1,64 +1,52 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-import StatsCards from "@/src/components/dashboard/StatsCards";
-
-import { DashboardSummary } from "@/src/types/dashboard";
-
 import { getDashboardSummary } from "@/src/services/analytics.service";
+import StatsCards from "@/src/components/dashboard/StatsCards";
+import { DashboardSummary } from "@/src/types/dashboard";
 
 export default function DashboardPage() {
   const [summary, setSummary] =
-    useState<DashboardSummary | null>(
-      null
-    );
+    useState<DashboardSummary | null>(null);
 
   const [loading, setLoading] =
     useState(true);
 
   useEffect(() => {
-    fetchSummary();
+    fetchData();
   }, []);
 
-  const fetchSummary = async () => {
+  const fetchData = async () => {
     try {
-      const data =
-        await getDashboardSummary();
+      const res = await getDashboardSummary();
 
-      setSummary(data);
-    } catch (error) {
-      console.log(error);
+      console.log("SUMMARY API:", res);
+
+      setSummary(res);
+    } catch (err) {
+      console.log(err);
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return (
-      <div className="text-gray-500">
-        Loading Dashboard...
-      </div>
-    );
+    return <div>Loading Dashboard...</div>;
   }
 
-  if (!summary) return null;
+  if (!summary) {
+    return <div>No Data Found</div>;
+  }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">
-          Dashboard
-        </h1>
 
-        <p className="text-gray-500">
-          Overview of your business
-        </p>
-      </div>
+      <h1 className="text-3xl font-bold">
+        Dashboard
+      </h1>
 
-      <StatsCards
-        summary={summary}
-      />
+      <StatsCards summary={summary} />
+
     </div>
   );
 }
