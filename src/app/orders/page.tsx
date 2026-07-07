@@ -18,9 +18,8 @@ import OrderDetailsPanel from "@/src/components/orders/OrderDetailsPanel";
 import OrderSearch from "@/src/components/orders/OrderSearch";
 import OrderTabs from "@/src/components/orders/OrderTabs";
 
-import StatCard from "@/src/components/dashboard/StatCard";
-
 import { Order, OrderItem, OrderStatus } from "@/src/types/order";
+import StatCard from "@/src/components/dashboard/StatsCards";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
