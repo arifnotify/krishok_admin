@@ -1,149 +1,167 @@
 "use client";
 
 import {
-  LucideIcon,
+  ShoppingCart,
+  Users,
+  Package,
+  DollarSign,
 } from "lucide-react";
 
+import { DashboardSummary } from "@/src/types/dashboard";
 
-interface StatCardProps {
 
-  title: string;
-
-  value: string | number;
-
-  icon?: LucideIcon;
-
-  gradient?: string;
-
-  description?: string;
-
+interface Props {
+  summary: DashboardSummary;
 }
 
 
-export default function StatCard({
+export default function StatsCards({
+  summary,
+}: Props) {
 
-  title,
 
-  value,
+  const cards = [
 
-  icon: Icon,
+    {
+      title: "Total Users",
+      value: summary.totalUsers,
+      icon: Users,
+      gradient:
+        "from-blue-500 to-cyan-500",
+    },
 
-  gradient = "from-blue-500 to-cyan-500",
 
-  description,
+    {
+      title: "Total Products",
+      value: summary.totalProducts,
+      icon: Package,
+      gradient:
+        "from-purple-500 to-pink-500",
+    },
 
-}: StatCardProps) {
+
+    {
+      title: "Total Orders",
+      value: summary.totalOrders,
+      icon: ShoppingCart,
+      gradient:
+        "from-orange-500 to-red-500",
+    },
+
+
+    {
+      title: "Revenue",
+      value: `৳${summary.totalRevenue}`,
+      icon: DollarSign,
+      gradient:
+        "from-green-500 to-emerald-500",
+    },
+
+  ];
+
 
 
   return (
 
     <div
       className="
-      bg-white
-      rounded-2xl
-      border
-      shadow-sm
-      p-5
-      hover:shadow-lg
-      transition-all
-      duration-300
-      hover:-translate-y-1
+      grid
+      grid-cols-1
+      md:grid-cols-2
+      xl:grid-cols-4
+      gap-6
       "
     >
 
+      {
+        cards.map((card)=>{
 
-      <div
-        className="
-        flex
-        items-center
-        justify-between
-        "
-      >
+          const Icon = card.icon;
 
 
-        {/* TEXT */}
-
-        <div>
-
-
-          <p
-            className="
-            text-sm
-            text-gray-500
-            font-medium
-            "
-          >
-            {title}
-          </p>
-
-
-
-          <h2
-            className="
-            text-3xl
-            font-bold
-            text-gray-800
-            mt-2
-            "
-          >
-            {value}
-          </h2>
-
-
-
-          {
-            description && (
-
-              <p
-                className="
-                text-xs
-                text-gray-400
-                mt-2
-                "
-              >
-                {description}
-              </p>
-
-            )
-          }
-
-
-        </div>
-
-
-
-        {/* ICON */}
-
-        {
-          Icon && (
+          return (
 
             <div
-              className={`
-              w-14
-              h-14
+              key={card.title}
+              className="
+              bg-white
+              border
               rounded-2xl
-              bg-gradient-to-r
-              ${gradient}
-              flex
-              items-center
-              justify-center
-              text-white
-              shadow-md
-              `}
+              p-6
+              shadow-sm
+              hover:shadow-lg
+              transition-all
+              duration-300
+              hover:-translate-y-1
+              "
             >
 
-              <Icon
-                size={26}
-              />
+
+              <div
+                className="
+                flex
+                items-center
+                justify-between
+                "
+              >
+
+
+                <div>
+
+                  <p
+                    className="
+                    text-gray-500
+                    text-sm
+                    "
+                  >
+                    {card.title}
+                  </p>
+
+
+                  <h2
+                    className="
+                    text-3xl
+                    font-bold
+                    mt-2
+                    "
+                  >
+                    {card.value}
+                  </h2>
+
+
+                </div>
+
+
+
+                <div
+                  className={`
+                  w-14
+                  h-14
+                  rounded-xl
+                  bg-gradient-to-r
+                  ${card.gradient}
+                  flex
+                  items-center
+                  justify-center
+                  text-white
+                  `}
+                >
+
+                  <Icon size={25}/>
+
+                </div>
+
+
+              </div>
 
 
             </div>
 
-          )
-        }
+          );
 
 
-      </div>
+        })
+      }
 
 
     </div>
