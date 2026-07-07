@@ -1,107 +1,153 @@
 "use client";
 
 import {
-  ShoppingCart,
-  Users,
-  Package,
-  DollarSign,
+  LucideIcon,
 } from "lucide-react";
 
-import { DashboardSummary } from "@/src/types/dashboard";
 
-interface Props {
-  summary: DashboardSummary;
+interface StatCardProps {
+
+  title: string;
+
+  value: string | number;
+
+  icon?: LucideIcon;
+
+  gradient?: string;
+
+  description?: string;
+
 }
 
-export default function StatsCards({
-  summary,
-}: Props) {
-  const cards = [
-    {
-      title: "Total Users",
-      value: summary.totalUsers,
-      icon: Users,
-      gradient:
-        "from-blue-500 to-cyan-500",
-    },
 
-    {
-      title: "Total Products",
-      value:
-        summary.totalProducts,
-      icon: Package,
-      gradient:
-        "from-purple-500 to-pink-500",
-    },
+export default function StatCard({
 
-    {
-      title: "Total Orders",
-      value:
-        summary.totalOrders,
-      icon: ShoppingCart,
-      gradient:
-        "from-orange-500 to-red-500",
-    },
+  title,
 
-    {
-      title: "Revenue",
-      value: `$${summary.totalRevenue}`,
-      icon: DollarSign,
-      gradient:
-        "from-green-500 to-emerald-500",
-    },
-  ];
+  value,
+
+  icon: Icon,
+
+  gradient = "from-blue-500 to-cyan-500",
+
+  description,
+
+}: StatCardProps) {
+
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      {cards.map((card) => {
-        const Icon = card.icon;
 
-        return (
-          <div
-            key={card.title}
+    <div
+      className="
+      bg-white
+      rounded-2xl
+      border
+      shadow-sm
+      p-5
+      hover:shadow-lg
+      transition-all
+      duration-300
+      hover:-translate-y-1
+      "
+    >
+
+
+      <div
+        className="
+        flex
+        items-center
+        justify-between
+        "
+      >
+
+
+        {/* TEXT */}
+
+        <div>
+
+
+          <p
             className="
-            bg-white
-            rounded-2xl
-            p-6
-            shadow-sm
-            border
-            hover:shadow-lg
-            transition-all
-            duration-300
-            hover:-translate-y-1
-          "
+            text-sm
+            text-gray-500
+            font-medium
+            "
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">
-                  {card.title}
-                </p>
+            {title}
+          </p>
 
-                <h2 className="text-3xl font-bold mt-2">
-                  {card.value}
-                </h2>
-              </div>
 
-              <div
-                className={`
-                w-14
-                h-14
-                rounded-xl
-                bg-gradient-to-r
-                ${card.gradient}
-                flex
-                items-center
-                justify-center
-                text-white
-              `}
+
+          <h2
+            className="
+            text-3xl
+            font-bold
+            text-gray-800
+            mt-2
+            "
+          >
+            {value}
+          </h2>
+
+
+
+          {
+            description && (
+
+              <p
+                className="
+                text-xs
+                text-gray-400
+                mt-2
+                "
               >
-                <Icon size={24} />
-              </div>
+                {description}
+              </p>
+
+            )
+          }
+
+
+        </div>
+
+
+
+        {/* ICON */}
+
+        {
+          Icon && (
+
+            <div
+              className={`
+              w-14
+              h-14
+              rounded-2xl
+              bg-gradient-to-r
+              ${gradient}
+              flex
+              items-center
+              justify-center
+              text-white
+              shadow-md
+              `}
+            >
+
+              <Icon
+                size={26}
+              />
+
+
             </div>
-          </div>
-        );
-      })}
+
+          )
+        }
+
+
+      </div>
+
+
     </div>
+
   );
+
 }
