@@ -1,142 +1,132 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
-
-import {deleteProduct,getProducts, } from "@/src/services/product.service";
-import { Product } from "@/src/types/product";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
+import {
+  deleteProduct,
+  getProducts,
+  toggleProductStatus,
+} from "@/src/services/product.service";
+
+import { Product } from "@/src/types/product";
+
 export default function ProductsPage() {
-  const [products, setProducts] =
-    useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [search, setSearch] =
-    useState("");
+  const fetchProducts = async () => {
+    try {
+      const data = await getProducts();
+      setProducts(data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  const fetchProducts =
-    async () => {
-      try {
-        const data =
-          await getProducts();
+  const handleDelete = async (id: string) => {
+    const ok = confirm("Delete this product?");
+    if (!ok) return;
 
-        setProducts(data);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      await deleteProduct(id);
 
-  // DELETE PRODUCT
-  const handleDelete =
-    async (id: string) => {
-      const confirmDelete =
-        confirm(
-          "Delete this product?",
-        );
+      setProducts((prev) =>
+        prev.filter((item) => item._id !== id)
+      );
 
-      if (!confirmDelete) return;
+      alert("Product deleted");
+    } catch (err) {
+      console.log(err);
+      alert("Delete failed");
+    }
+  };
 
-      try {
-        await deleteProduct(id);
 
-        setProducts((prev) =>
-          prev.filter(
-            (product) =>
-              product._id !== id,
-          ),
-        );
+  const handleToggle = async (
+    id: string,
+    status: boolean
+  ) => {
+    try {
+      setProducts((prev) =>
+        prev.map((item) =>
+          item._id === id
+            ? { ...item, isActive: status }
+            : item
+        )
+      );
 
-        alert(
-          "Product deleted",
-        );
-      } catch (err) {
-        console.log(err);
+      await toggleProductStatus(id, status);
 
-        alert(
-          "Delete failed",
-        );
-      }
-    };
+    } catch (err) {
+      console.log(err);
+      fetchProducts();
+      alert("Status update failed");
+    }
+  };
 
-  // SEARCH FILTER
-const filteredProducts =
-  products.filter((product) =>
-    product.title?.en
-      ?.toLowerCase()
-      .includes(
-        search.toLowerCase(),
-      ) ||
-    product.title?.bn
-      ?.toLowerCase()
-      .includes(
-        search.toLowerCase(),
-      ),
+
+  const filteredProducts = products.filter(
+    (product) =>
+      product.title.en
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      product.title.bn
+        .toLowerCase()
+        .includes(search.toLowerCase())
   );
 
-  // LOADING
+
   if (loading) {
     return (
-      <div>
+      <div className="p-6">
         Loading products...
       </div>
     );
   }
 
+
   return (
-    <div>
+    <div className="p-6">
 
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-6">
-
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">
           Products
         </h1>
 
-          <Link
-    href="/dashboard/products/create"
-    className="bg-black text-white px-5 py-3 rounded-xl"
-  >
-    Create Product
-  </Link>
-
+        <Link
+          href="/dashboard/products/create"
+          className="bg-black text-white px-5 py-3 rounded-xl"
+        >
+          Create Product
+        </Link>
       </div>
 
-      {/* SEARCH */}
-      <div className="mb-5">
 
-        <input
-          type="text"
-          placeholder="Search product..."
-          className="w-full p-3 border rounded-xl"
-          onChange={(e) =>
-            setSearch(
-              e.target.value,
-            )
-          }
-        />
+      <input
+        type="text"
+        placeholder="Search product..."
+        className="w-full p-3 border rounded-xl mb-5"
+        value={search}
+        onChange={(e) =>
+          setSearch(e.target.value)
+        }
+      />
 
-      </div>
 
-      {/* TABLE */}
       <div className="bg-white rounded-2xl shadow overflow-hidden">
 
         <table className="w-full">
 
           <thead className="bg-gray-100">
-
             <tr>
-
               <th className="p-4 text-left">
                 Image
               </th>
@@ -158,106 +148,109 @@ const filteredProducts =
               </th>
 
               <th className="p-4 text-left">
-                Actions
+                Status
               </th>
 
+              <th className="p-4 text-left">
+                Action
+              </th>
             </tr>
-
           </thead>
+
 
           <tbody>
 
-            {filteredProducts.map(
-              (product) => (
-                <tr
-                  key={product._id}
-                  className="border-t"
+          {filteredProducts.map((product)=>(
+
+            <tr
+              key={product._id}
+              className="border-t"
+            >
+
+              <td className="p-4">
+                <img
+                  src={product.images?.[0]}
+                  alt={product.title.en}
+                  className="w-[60px] h-[60px] object-cover rounded-lg"
+                />
+              </td>
+
+
+              <td className="p-4">
+                <div className="font-medium">
+                  {product.title.en}
+                </div>
+
+                <div className="text-sm text-gray-500">
+                  {product.title.bn}
+                </div>
+              </td>
+
+
+              <td className="p-4">
+                {product.category?.name}
+              </td>
+
+
+              <td className="p-4">
+                ৳ {product.price}
+              </td>
+
+
+              <td className="p-4">
+                {product.stock}
+              </td>
+
+
+              <td className="p-4">
+
+                <button
+                  onClick={() =>
+                    handleToggle(
+                      product._id,
+                      !product.isActive
+                    )
+                  }
+                  className={`px-4 py-2 rounded-lg text-white ${
+                    product.isActive
+                      ? "bg-green-600"
+                      : "bg-red-600"
+                  }`}
                 >
+                  {product.isActive ? "ON" : "OFF"}
+                </button>
 
-                  {/* IMAGE */}
-                  <td className="p-4">
+              </td>
 
-                    <img
-                      src={
-                        product.images?.[0]
-                      }
-                      alt={product.title?.en}
-                      className="w-[60px] h-[60px] object-cover rounded-lg"
-                    />
 
-                  </td>
+              <td className="p-4">
 
-                  {/* NAME */}
-                  <td className="p-4 font-medium">
+                <div className="flex gap-3">
 
-                    <div>
-                    <div className="font-medium">
-                      {product.title?.en}
-                    </div>
+                  <Link
+                    href={`/dashboard/products/edit/${product._id}`}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  >
+                    Edit
+                  </Link>
 
-                    <div className="text-sm text-gray-500">
-                      {product.title?.bn}
-                    </div>
-                   </div>
 
-                  </td>
-
-                  {/* CATEGORY */}
-                  <td className="p-4">
-
-                    {
-                      product.category?.name
+                  <button
+                    onClick={() =>
+                      handleDelete(product._id)
                     }
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                  >
+                    Delete
+                  </button>
 
-                  </td>
+                </div>
 
-                  {/* PRICE */}
-                  <td className="p-4">
+              </td>
 
-                    $
-                    {product.price}
+            </tr>
 
-                  </td>
-
-                  {/* STOCK */}
-                  <td className="p-4">
-
-                    {product.stock}
-
-                  </td>
-
-                  {/* ACTIONS */}
-                  <td className="p-4">
-
-                    <div className="flex gap-3">
-
-                      <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
-                        <Link
-                             href={`dashboard/products/edit/${product._id}`}
-                              className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                                       >
-                                        Edit
-                        </Link>
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          handleDelete(
-                            product._id,
-                          )
-                        }
-                        className="bg-red-500 text-white px-4 py-2 rounded-lg"
-                      >
-                        Delete
-                      </button>
-
-                    </div>
-
-                  </td>
-
-                </tr>
-              ),
-            )}
+          ))}
 
           </tbody>
 

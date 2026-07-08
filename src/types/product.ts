@@ -34,4 +34,7 @@ export interface Product {
   location: string;
 
   isFlashSale?: boolean;
+
+    // ⭐ ADD THIS
+  isActive:boolean;
 }
