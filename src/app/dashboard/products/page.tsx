@@ -104,7 +104,7 @@ const filteredProducts =
         </h1>
 
           <Link
-    href="/products/create"
+    href="/dashboard/products/create"
     className="bg-black text-white px-5 py-3 rounded-xl"
   >
     Create Product
@@ -233,7 +233,7 @@ const filteredProducts =
 
                       <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
                         <Link
-                             href={`/products/edit/${product._id}`}
+                             href={`dashboard/products/edit/${product._id}`}
                               className="bg-blue-500 text-white px-4 py-2 rounded-lg"
                                        >
                                         Edit
