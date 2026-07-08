@@ -100,7 +100,7 @@ export default function FlashSalePage() {
           </button>
 
           <Link
-            href="/flash-sale/create"
+            href="/dashboard/flash-sale/create"
           >
             <button className="bg-black text-white px-5 py-3 rounded-xl">
               Create Flash Sale
@@ -170,13 +170,13 @@ export default function FlashSalePage() {
                 </div>
 
               </div>
-                 <Link href={`/flash-sale/edit/${sale._id}`}
+                 <Link href={`/dashboard/flash-sale/edit/${sale._id}`}
 >                  <button className="bg-blue-500 text-white px-4 py-2 rounded-lg mr-2">
                      Edit
                    </button>
                    </Link>
 
-                <Link href={`/flash-sale/${sale._id}`}   >
+                <Link href={`/dashboard/flash-sale/${sale._id}`}   >
                    <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
                       Details
                    </button>

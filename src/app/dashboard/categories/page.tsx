@@ -93,14 +93,14 @@ export default function CategoriesPage() {
         <div className="flex gap-3">
 
           <Link
-            href="/categories/main/create"
+            href="/dashboard/categories/main/create"
             className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
           >
             + Main Category
           </Link>
 
           <Link
-            href="/categories/sub/create"
+            href="/dashboard/categories/sub/create"
             className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl"
           >
             + Sub Category
@@ -192,7 +192,7 @@ export default function CategoriesPage() {
                       <div className="flex gap-3">
 
                         <Link
-                          href={`/categories/main/edit/${item._id}`}
+                          href={`/dashboard/categories/main/edit/${item._id}`}
                           className="bg-blue-500 text-white px-4 py-2 rounded-lg"
                         >
                           Edit
@@ -316,7 +316,7 @@ export default function CategoriesPage() {
                       <div className="flex gap-3">
 
                         <Link
-                          href={`/categories/sub/edit/${item._id}`}
+                          href={`/dashboard/categories/sub/edit/${item._id}`}
                           className="bg-blue-500 text-white px-4 py-2 rounded-lg"
                         >
                           Edit
