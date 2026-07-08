@@ -75,7 +75,7 @@ export default function BannersPage() {
         </h1>
 
         <Link
-          href="dashboard/banners/create"
+          href="/dashboard/banners/create"
         >
           <button className="bg-black text-white px-5 py-3 rounded-xl">
             Create Banner
@@ -116,7 +116,7 @@ export default function BannersPage() {
                 <div className="flex gap-3 mt-4">
 
                   <Link
-                    href={`dashboard/banners/edit/${banner._id}`}
+                    href={`/dashboard/banners/edit/${banner._id}`}
                   >
                     <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
                       Edit
