@@ -1,11 +1,5 @@
 "use client";
 
-import {
-  Package,
-  Phone,
-  CalendarDays,
-} from "lucide-react";
-
 import { Order } from "@/src/types/order";
 
 interface Props {
@@ -20,22 +14,22 @@ interface Props {
 const getStatusColor = (status: string) => {
   switch (status) {
     case "Pending":
-      return "bg-orange-100 text-orange-700 border-orange-200";
+      return "bg-orange-100 text-orange-700";
 
     case "Processing":
-      return "bg-blue-100 text-blue-700 border-blue-200";
+      return "bg-blue-100 text-blue-700";
 
     case "OutForDelivery":
-      return "bg-purple-100 text-purple-700 border-purple-200";
+      return "bg-purple-100 text-purple-700";
 
     case "Delivered":
-      return "bg-green-100 text-green-700 border-green-200";
+      return "bg-green-100 text-green-700";
 
     case "Cancelled":
-      return "bg-red-100 text-red-700 border-red-200";
+      return "bg-red-100 text-red-700";
 
     default:
-      return "bg-gray-100 text-gray-700 border-gray-200";
+      return "bg-gray-100 text-gray-700";
   }
 };
 
@@ -46,718 +40,234 @@ export default function OrdersSidebar({
   onSelect,
 }: Props) {
   return (
-    <div
-      className="
-      bg-white
-      rounded-3xl
-      border
-      shadow-sm
-      h-[calc(100vh-180px)]
-      flex
-      flex-col
-      overflow-hidden
-    "
-    >
-      {/* HEADER */}
+    <div className="h-[calc(100vh-220px)] flex flex-col">
 
-      <div className="border-b px-6 py-5 bg-white sticky top-0 z-20">
+      {/* ======================
+          HEADER
+      ====================== */}
 
-        <div className="flex items-center justify-between">
+      <div className="sticky top-0 bg-white z-20 border-b p-5">
 
-          <div>
+        <h2 className="text-2xl font-bold text-slate-900">
+          Orders
+        </h2>
 
-            <h2 className="text-2xl font-bold text-slate-900">
-              Orders
-            </h2>
-
-            <p className="text-sm text-gray-500 mt-1">
-              Manage all customer orders
-            </p>
-
-          </div>
-
-          <div
-            className="
-            w-12
-            h-12
-            rounded-2xl
-            bg-pink-100
-            flex
-            items-center
-            justify-center
-          "
-          >
-            <Package
-              className="text-pink-600"
-              size={22}
-            />
-          </div>
-
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 mt-5">
-
-          <div className="rounded-xl bg-blue-50 p-3 text-center">
-
-            <p className="text-xs text-blue-600">
-              Active
-            </p>
-
-            <h3 className="font-bold text-xl text-blue-700">
-              {activeOrders.length}
-            </h3>
-
-          </div>
-
-          <div className="rounded-xl bg-green-50 p-3 text-center">
-
-            <p className="text-xs text-green-600">
-              Completed
-            </p>
-
-            <h3 className="font-bold text-xl text-green-700">
-              {completedOrders.length}
-            </h3>
-
-          </div>
-
-        </div>
+        <p className="text-sm text-slate-500 mt-1">
+          {activeOrders.length} Active •{" "}
+          {completedOrders.length} Completed
+        </p>
 
       </div>
 
-      {/* ORDER LIST */}
+      {/* ======================
+          SCROLL AREA
+      ====================== */}
 
-      <div className="flex-1 overflow-y-auto p-5 space-y-8">
-              {/* =========================
-          ACTIVE ORDERS
-      ========================= */}
+      <div className="flex-1 overflow-y-auto p-4">
 
-      <div>
+        {/* ACTIVE */}
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-8">
 
-          <h3
-            className="
-            text-sm
-            font-bold
-            uppercase
-            tracking-wider
-            text-blue-600
-            "
-          >
-            Active Orders
-          </h3>
+          <div className="flex items-center justify-between mb-4">
 
+            <h3 className="font-bold text-blue-600 uppercase text-sm tracking-wider">
+              Active Orders
+            </h3>
 
-          <span
-            className="
-            bg-blue-100
-            text-blue-700
-            text-xs
-            font-bold
-            px-3
-            py-1
-            rounded-full
-            "
-          >
-            {activeOrders.length}
-          </span>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+              {activeOrders.length}
+            </span>
 
-        </div>
+          </div>
 
+          <div className="space-y-4">
 
-
-        <div className="space-y-4">
-
-
-          {
-            activeOrders.length === 0 && (
-
-              <div
-                className="
-                border
-                border-dashed
-                rounded-2xl
-                p-6
-                text-center
-                text-gray-400
-                "
-              >
+            {activeOrders.length === 0 && (
+              <div className="border rounded-2xl p-6 text-center text-gray-400">
                 No Active Orders
               </div>
+            )}
 
-            )
-          }
-
-
-
-          {
-            activeOrders.map((order) => (
-
+            {activeOrders.map((order) => (
               <button
                 key={order._id}
-                onClick={() =>
-                  onSelect(order._id)
-                }
+                onClick={() => onSelect(order._id)}
                 className={`
                   w-full
                   text-left
                   rounded-2xl
                   border
-                  p-5
+                  p-4
                   transition-all
-                  duration-300
+                  duration-200
 
                   ${
                     selectedId === order._id
-
-                    ?
-
-                    `
-                    bg-pink-50
-                    border-pink-500
-                    shadow-lg
-                    ring-2
-                    ring-pink-100
-                    `
-
-                    :
-
-                    `
-                    bg-white
-                    border-slate-200
-                    hover:border-pink-300
-                    hover:shadow-md
-                    hover:-translate-y-1
-                    `
+                      ? `
+                        border-pink-500
+                        bg-pink-50
+                        shadow-md
+                      `
+                      : `
+                        border-slate-200
+                        bg-white
+                        hover:border-pink-300
+                        hover:shadow-sm
+                      `
                   }
-
                 `}
               >
-
-
                 {/* TOP */}
 
                 <div className="flex justify-between items-start">
 
-
                   <div>
 
-
-                    <h4
-                      className="
-                      font-bold
-                      text-slate-900
-                      text-lg
-                      "
-                    >
+                    <p className="font-bold text-slate-900">
                       #{order.orderNumber}
-                    </h4>
+                    </p>
 
-
-
-                    <div
-                      className="
-                      flex
-                      items-center
-                      gap-2
-                      text-sm
-                      text-gray-500
-                      mt-2
-                      "
-                    >
-
-                      <Phone size={14}/>
-
-                      <span>
-                        {order.customerPhone}
-                      </span>
-
-                    </div>
-
+                    <p className="text-sm text-slate-500 mt-1">
+                      {order.customerPhone}
+                    </p>
 
                   </div>
-
-
-
 
                   <span
                     className={`
-                    text-xs
-                    font-semibold
-                    px-3
-                    py-1
-                    rounded-full
-                    border
-                    ${getStatusColor(
-                      order.orderStatus
-                    )}
+                      text-xs
+                      px-2
+                      py-1
+                      rounded-full
+                      ${getStatusColor(order.orderStatus)}
                     `}
                   >
-
                     {order.orderStatus}
-
                   </span>
 
-
-
                 </div>
 
+                {/* PRICE */}
 
+                <div className="mt-4 flex justify-between items-center">
 
+                  <span className="text-green-600 font-bold">
+                    ৳{order.totalAmount}
+                  </span>
 
-
-                {/* CUSTOMER */}
-
-                <div
-                  className="
-                  mt-4
-                  text-sm
-                  text-slate-600
-                  "
-                >
-
-                  <p>
-                    {
-                      order.shippingAddress?.fullName
-                      ||
-                      "Customer"
-                    }
-                  </p>
-
+                  <span className="text-xs text-slate-400">
+                    Order
+                  </span>
 
                 </div>
-
-
-
-
-
-                {/* DATE + PRICE */}
-
-                <div
-                  className="
-                  mt-5
-                  flex
-                  justify-between
-                  items-center
-                  "
-                >
-
-
-                  <div
-                    className="
-                    flex
-                    items-center
-                    gap-2
-                    text-xs
-                    text-gray-400
-                    "
-                  >
-
-                    <CalendarDays size={14}/>
-
-                    <span>
-                      {
-                        order.createdAt
-                        ?
-                        new Date(
-                          order.createdAt
-                        ).toLocaleDateString()
-                        :
-                        "Today"
-                      }
-                    </span>
-
-
-                  </div>
-
-
-
-                  <div
-                    className="
-                    text-right
-                    "
-                  >
-
-                    <p
-                      className="
-                      text-xs
-                      text-gray-400
-                      "
-                    >
-                      Total
-                    </p>
-
-
-                    <p
-                      className="
-                      text-green-600
-                      font-bold
-                      text-lg
-                      "
-                    >
-                      ৳{order.totalAmount}
-                    </p>
-
-
-                  </div>
-
-
-
-                </div>
-
 
               </button>
+            ))}
 
-
-            ))
-          }
-
+          </div>
 
         </div>
 
+        {/* COMPLETED */}
 
-      </div>
-            {/* =========================
-          COMPLETED ORDERS
-      ========================= */}
+        <div>
 
-      <div>
+          <div className="flex items-center justify-between mb-4">
 
+            <h3 className="font-bold text-green-600 uppercase text-sm tracking-wider">
+              Completed Orders
+            </h3>
 
-        <div className="flex items-center justify-between mb-4">
+            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+              {completedOrders.length}
+            </span>
 
+          </div>
 
-          <h3
-            className="
-            text-sm
-            font-bold
-            uppercase
-            tracking-wider
-            text-green-600
-            "
-          >
-            Completed Orders
-          </h3>
+          <div className="space-y-4">
 
-
-
-          <span
-            className="
-            bg-green-100
-            text-green-700
-            text-xs
-            font-bold
-            px-3
-            py-1
-            rounded-full
-            "
-          >
-            {completedOrders.length}
-          </span>
-
-
-        </div>
-
-
-
-        <div className="space-y-4">
-
-
-          {
-            completedOrders.length === 0 && (
-
-              <div
-                className="
-                border
-                border-dashed
-                rounded-2xl
-                p-6
-                text-center
-                text-gray-400
-                "
-              >
+            {completedOrders.length === 0 && (
+              <div className="border rounded-2xl p-6 text-center text-gray-400">
                 No Completed Orders
               </div>
+            )}
 
-            )
-          }
-
-
-
-          {
-            completedOrders.map((order) => (
-
-
+            {completedOrders.map((order) => (
               <button
-
                 key={order._id}
-
-                onClick={() =>
-                  onSelect(order._id)
-                }
-
-
+                onClick={() => onSelect(order._id)}
                 className={`
-
                   w-full
-
                   text-left
-
                   rounded-2xl
-
                   border
-
-                  p-5
-
+                  p-4
                   transition-all
-
-                  duration-300
-
 
                   ${
                     selectedId === order._id
-
-                    ?
-
-                    `
-                    bg-green-50
-                    border-green-500
-                    shadow-md
-                    `
-
-                    :
-
-                    `
-                    bg-white
-                    border-slate-200
-                    hover:border-green-300
-                    hover:shadow-sm
-                    `
+                      ? `
+                        border-green-500
+                        bg-green-50
+                      `
+                      : `
+                        border-slate-200
+                        bg-white
+                        hover:border-green-300
+                      `
                   }
-
                 `}
-
               >
-
-
-
-                {/* HEADER */}
-
-
-                <div
-                  className="
-                  flex
-                  justify-between
-                  items-start
-                  "
-                >
-
-
+                <div className="flex justify-between items-start">
 
                   <div>
 
-
-                    <h4
-                      className="
-                      font-bold
-                      text-slate-900
-                      text-lg
-                      "
-                    >
+                    <p className="font-bold text-slate-900">
                       #{order.orderNumber}
-                    </h4>
+                    </p>
 
-
-
-                    <div
-                      className="
-                      flex
-                      items-center
-                      gap-2
-                      text-sm
-                      text-gray-500
-                      mt-2
-                      "
-                    >
-
-                      <Phone size={14}/>
-
-                      <span>
-                        {order.customerPhone}
-                      </span>
-
-                    </div>
-
-
+                    <p className="text-sm text-slate-500 mt-1">
+                      {order.customerPhone}
+                    </p>
 
                   </div>
-
-
-
 
                   <span
                     className={`
-                    text-xs
-                    font-semibold
-                    px-3
-                    py-1
-                    rounded-full
-                    border
-
-                    ${getStatusColor(
-                      order.orderStatus
-                    )}
-
+                      text-xs
+                      px-2
+                      py-1
+                      rounded-full
+                      ${getStatusColor(order.orderStatus)}
                     `}
                   >
-
                     {order.orderStatus}
-
                   </span>
 
-
-
                 </div>
 
+                <div className="mt-4 flex justify-between items-center">
 
+                  <span className="text-green-600 font-bold">
+                    ৳{order.totalAmount}
+                  </span>
 
-
-
-                {/* CUSTOMER */}
-
-
-                <div
-                  className="
-                  mt-4
-                  text-sm
-                  text-gray-600
-                  "
-                >
-
-                  {
-                    order.shippingAddress?.fullName
-                    ||
-                    "Customer"
-                  }
-
+                  <span className="text-xs text-slate-400">
+                    Completed
+                  </span>
 
                 </div>
-
-
-
-
-
-
-                {/* FOOTER */}
-
-
-                <div
-                  className="
-                  mt-5
-                  flex
-                  justify-between
-                  items-center
-                  "
-                >
-
-
-
-                  <div
-                    className="
-                    flex
-                    items-center
-                    gap-2
-                    text-xs
-                    text-gray-400
-                    "
-                  >
-
-                    <CalendarDays size={14}/>
-
-
-                    <span>
-
-                      {
-                        order.createdAt
-                        ?
-
-                        new Date(
-                          order.createdAt
-                        ).toLocaleDateString()
-
-                        :
-
-                        "Completed"
-
-                      }
-
-                    </span>
-
-
-                  </div>
-
-
-
-
-
-                  <div
-                    className="
-                    text-right
-                    "
-                  >
-
-
-                    <p
-                      className="
-                      text-xs
-                      text-gray-400
-                      "
-                    >
-                      Total
-                    </p>
-
-
-
-                    <p
-                      className="
-                      text-green-600
-                      font-bold
-                      text-lg
-                      "
-                    >
-
-                      ৳{order.totalAmount}
-
-                    </p>
-
-
-                  </div>
-
-
-
-                </div>
-
-
 
               </button>
+            ))}
 
-
-            ))
-
-          }
-
+          </div>
 
         </div>
 
-
       </div>
 
-
-
     </div>
-
-  </div>
-
   );
 }
