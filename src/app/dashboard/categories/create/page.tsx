@@ -25,7 +25,7 @@ export default function CreateCategoryPage() {
     alert("Created Successfully");
 
     // IMPORTANT: refresh
-    window.location.href = "/categories";
+    window.location.href = "categories";
   };
 
   return (

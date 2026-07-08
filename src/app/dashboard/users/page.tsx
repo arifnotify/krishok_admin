@@ -119,7 +119,7 @@ export default function UsersPage() {
                   <td className="p-4 flex gap-2">
 
                     <Link
-                      href={`/users/${user._id}`}
+                      href={`/dashboard/users/${user._id}`}
                     >
                       <button className="bg-blue-500 text-white px-3 py-2 rounded-lg">
                         View

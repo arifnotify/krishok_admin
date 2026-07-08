@@ -61,7 +61,7 @@ export default function LocationsPage() {
         </h1>
 
         <Link
-          href="/locations/create"
+          href="/dashboard/locations/create"
           className="bg-black text-white px-4 py-2 rounded"
         >
           Add Location
@@ -135,7 +135,7 @@ export default function LocationsPage() {
                 <td className="p-3 flex gap-2">
 
                   <Link
-                    href={`/locations/edit/${location._id}`}
+                    href={`/dashboard/locations/edit/${location._id}`}
                     className="bg-blue-500 text-white px-3 py-1 rounded"
                   >
                     Edit
