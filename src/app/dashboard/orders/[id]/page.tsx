@@ -162,10 +162,13 @@ export default function OrderDetailsPage() {
     try {
       setSaving(true);
 
-      const payload = items.map((item) => ({
-        product: item.product,
-        quantity: item.quantity,
-      }));
+const payload = items.map(item=>({
+  product:item.product,
+  productName:item.productName || "",
+  productImage:item.productImage || "",
+  price:Number(item.price),
+  quantity:Number(item.quantity),
+}));
 
       await adminEditOrder(order._id, payload);
 
