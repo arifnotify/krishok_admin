@@ -289,16 +289,11 @@ setItems(data);
 };
 
 
-
-
-
 const total=items.reduce(
 (sum,item)=>
 sum+(item.totalPrice||0),
 0
 );
-
-
 
 
 const filtered=products.filter(product=>
@@ -308,8 +303,6 @@ getName(product)
 .includes(search.toLowerCase())
 
 );
-
-
 
 
 
@@ -361,10 +354,6 @@ Add Product
 
 </div>
 
-
-
-
-
 <div className="overflow-x-auto">
 
 
@@ -395,8 +384,6 @@ Qty
 <th>
 Total
 </th>
-
-
 <th>
 Action
 </th>
@@ -404,30 +391,19 @@ Action
 
 </tr>
 
-
 </thead>
-
-
-
 
 <tbody>
 
-
-
 {
 items.map((item,index)=>(
-
-
 
 <tr 
 key={index}
 className="border-t"
 >
 
-
-
 <td className="p-3 flex gap-3 items-center">
-
 
 <img
 
@@ -436,8 +412,6 @@ src={item.productImage}
 className="w-12 h-12 rounded object-cover"
 
 />
-
-
 
 <div>
 
@@ -451,25 +425,15 @@ className="w-12 h-12 rounded object-cover"
 
 </td>
 
-
-
-
 <td className="text-center">
 
 ৳{item.price}
 
 </td>
 
-
-
-
-
 <td>
 
-
 <div className="flex justify-center gap-2">
-
-
 
 <button
 
@@ -485,17 +449,11 @@ className="border p-1 rounded"
 
 </button>
 
-
-
-
 <span>
 
 {item.quantity}
 
 </span>
-
-
-
 
 <button
 
@@ -511,28 +469,16 @@ className="border p-1 rounded"
 
 </button>
 
-
-
-
 </div>
 
 
 </td>
-
-
-
-
-
 
 <td className="text-center font-bold text-green-600">
 
 ৳{item.totalPrice}
 
 </td>
-
-
-
-
 
 <td className="text-center">
 
@@ -551,33 +497,18 @@ className="text-red-500"
 
 </button>
 
-
 </td>
 
-
-
 </tr>
-
 
 ))
 
 }
 
-
-
 </tbody>
 
-
-
 </table>
-
-
 </div>
-
-
-
-
-
 
 <div className="p-4 border-t flex justify-between">
 
@@ -589,24 +520,13 @@ Total Items:
 
 </span>
 
-
-
-
 <b className="text-green-600 text-lg">
 
 ৳{total}
 
 </b>
 
-
-
 </div>
-
-
-
-
-
-
 
 {
 showProducts &&
@@ -617,10 +537,6 @@ showProducts &&
 
 <div className="bg-white w-[500px] max-h-[600px] overflow-y-auto rounded-xl p-5">
 
-
-
-
-
 <div className="flex justify-between mb-4">
 
 
@@ -630,9 +546,6 @@ Select Product
 
 </h3>
 
-
-
-
 <button
 onClick={()=>setShowProducts(false)}
 >
@@ -641,22 +554,11 @@ onClick={()=>setShowProducts(false)}
 
 </button>
 
-
-
 </div>
-
-
-
-
-
-
 
 <div className="flex items-center border rounded-lg px-2 mb-3">
 
-
 <Search size={18}/>
-
-
 
 <input
 
@@ -675,17 +577,8 @@ e=>setSearch(e.target.value)
 
 </div>
 
-
-
-
-
-
-
-
 {
 filtered.map(product=>(
-
-
 <div
 
 key={product._id}
@@ -696,8 +589,6 @@ className="flex gap-3 border rounded-lg p-3 mb-2 cursor-pointer"
 
 
 >
-
-
 <img
 
 src={product.images?.[0]}
@@ -706,61 +597,26 @@ className="w-12 h-12 rounded"
 
 />
 
-
-
-
-
 <div>
-
-
 <p className="font-semibold">
 
 {getName(product)}
 
 </p>
-
-
-
-
 <p>
 
 ৳{getProductPrice(product)}
 
 </p>
-
-
-
 </div>
-
-
-
-
 </div>
-
-
-
 ))
 
 }
 
-
-
-
-
 </div>
-
-
 </div>
-
-
 }
-
-
-
 </div>
-
-
 );
-
-
 }
