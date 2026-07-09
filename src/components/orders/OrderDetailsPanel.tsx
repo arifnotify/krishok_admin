@@ -63,19 +63,10 @@ export default function OrderDetailsPanel({
 <div className="flex justify-end">
 
 <button
- onClick={() => printReceipt(buildInvoice())}
- className="
- bg-blue-600
- text-white
- px-5
- py-2
- rounded-xl
- hover:bg-blue-700
- "
+  onClick={() => printReceipt(buildInvoice())}
+  className="bg-blue-600 text-white px-5 py-2 rounded-xl"
 >
-
-🖨️ Print Receipt
-
+  🖨️ Print Receipt
 </button>
 
 </div>
