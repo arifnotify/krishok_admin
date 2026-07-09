@@ -61,17 +61,25 @@ export default function OrderDetailsPanel({
   };
 
   return (
-    <div className="space-y-6">
+<div className="flex justify-end">
 
-      {/* INVOICE BUTTON */}
-      <div className="flex justify-end">
-        <button
-          onClick={() => generateInvoice(buildInvoice())}
-          className="bg-green-600 text-white px-5 py-2 rounded-xl hover:bg-green-700"
-        >
-          📄 Download Invoice
-        </button>
-      </div>
+<button
+ onClick={() => printReceipt(buildInvoice())}
+ className="
+ bg-blue-600
+ text-white
+ px-5
+ py-2
+ rounded-xl
+ hover:bg-blue-700
+ "
+>
+
+🖨️ Print Receipt
+
+</button>
+
+</div>
 
       {/* =========================
           STEP 7: 3 CARD GRID
