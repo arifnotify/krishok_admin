@@ -5,134 +5,135 @@ import { Plus, Minus, Trash2, Search, X } from "lucide-react";
 import { getProducts } from "@/src/services/product.service";
 
 interface Product {
-  _id: string;
-  title: string | { en: string; bn?: string };
-  price: number;
-  discountPrice?: number;
-  images: string[];
+  _id:string;
+  title:{en:string;bn?:string};
+  price:number;
+  discountPrice?:number;
+  flashDiscountPrice?:number;
+  isFlashSale?:boolean;
+  images:string[];
+  isActive:boolean;
 }
 
 interface Props {
-  items: any[];
-  setItems: (items: any[]) => void;
-  locked: boolean;
+  items:any[];
+  setItems:(items:any[])=>void;
+  locked:boolean;
 }
 
-export default function EditableOrderItems({
-  items,
-  setItems,
-  locked,
-}: Props) {
+export default function EditableOrderItems({items,setItems,locked}:Props){
 
-  const [showProducts,setShowProducts] = useState(false);
-  const [products,setProducts] = useState<Product[]>([]);
-  const [search,setSearch] = useState("");
+const [showProducts,setShowProducts]=useState(false);
+const [products,setProducts]=useState<Product[]>([]);
+const [search,setSearch]=useState("");
 
-  const loadProducts = async()=>{
-    try{
-      const data = await getProducts();
-      setProducts(data.products || data);
-    }catch(err){
-      console.log(err);
-    }
-  };
+const loadProducts=async()=>{
+try{
+const data=await getProducts();
+setProducts(data.products||data);
+}catch(err){
+console.log(err);
+}
+};
 
-  const getName=(p:Product)=>{
-    return typeof p.title==="object" ? p.title.en : p.title;
-  };
+const getName=(p:Product)=>p.title?.en||"";
 
-  const addProduct=(product:Product)=>{
+const getProductPrice=(p:Product)=>{
+if(p.isFlashSale&&p.flashDiscountPrice&&p.flashDiscountPrice>0)
+return p.flashDiscountPrice;
 
-    const price =
-      product.discountPrice && product.discountPrice > 0
-      ? product.discountPrice
-      : product.price;
+if(p.discountPrice&&p.discountPrice>0)
+return p.discountPrice;
 
-    const exist = items.find(
-      i=>i.product===product._id
-    );
+return p.price;
+};
 
-    if(exist){
+const addProduct=(product:Product)=>{
 
-      setItems(
-        items.map(i=>
-          i.product===product._id
-          ? {
-              ...i,
-              quantity:i.quantity+1,
-              totalPrice:i.price*(i.quantity+1)
-            }
-          : i
-        )
-      );
+const price=getProductPrice(product);
 
-    }else{
+const exist=items.find(i=>i.product===product._id);
 
-      setItems([
-        ...items,
-        {
-          product:product._id,
-          productName:getName(product),
-          productImage:product.images?.[0],
-          price,
-          quantity:1,
-          totalPrice:price
-        }
-      ]);
+if(exist){
 
-    }
+setItems(
+items.map(i=>
+i.product===product._id
+?
+{
+...i,
+quantity:i.quantity+1,
+totalPrice:i.price*(i.quantity+1)
+}
+:i
+)
+);
 
-    setShowProducts(false);
-  };
+}else{
 
+setItems([
+...items,
+{
+product:product._id,
+productName:getName(product),
+productImage:product.images?.[0],
+price,
+quantity:1,
+totalPrice:price
+}
+]);
 
-  const updateQty=(index:number,type:"inc"|"dec")=>{
+}
 
-    const updated=[...items];
+setShowProducts(false);
 
-    let qty=updated[index].quantity;
-
-    if(type==="inc") qty++;
-    if(type==="dec" && qty>1) qty--;
-
-    updated[index]={
-      ...updated[index],
-      quantity:qty,
-      totalPrice:updated[index].price*qty
-    };
-
-    setItems(updated);
-  };
+};
 
 
-  const removeItem=(index:number)=>{
-    const updated=[...items];
-    updated.splice(index,1);
-    setItems(updated);
-  };
+const updateQty=(index:number,type:"inc"|"dec")=>{
+
+const data=[...items];
+
+let qty=data[index].quantity;
+
+if(type==="inc")qty++;
+
+if(type==="dec"&&qty>1)qty--;
+
+data[index]={
+...data[index],
+quantity:qty,
+totalPrice:data[index].price*qty
+};
+
+setItems(data);
+
+};
 
 
-  const total=items.reduce(
-    (sum,i)=>sum+(i.totalPrice||0),
-    0
-  );
+const removeItem=(index:number)=>{
+const data=[...items];
+data.splice(index,1);
+setItems(data);
+};
 
 
-  const filtered =
-    products.filter(p=>
-      getName(p)
-      .toLowerCase()
-      .includes(search.toLowerCase())
-    );
+const total=items.reduce((s,i)=>s+(i.totalPrice||0),0);
 
 
-return (
-<div className="bg-white border rounded-2xl shadow-sm overflow-hidden">
+const filtered=products.filter(p=>
+getName(p).toLowerCase().includes(search.toLowerCase())
+);
 
-<div className="p-5 border-b flex justify-between items-center">
-<h2 className="text-xl font-bold">Order Items</h2>
 
-<div className="flex gap-3">
+return(
+<div className="bg-white border rounded-xl shadow">
+
+<div className="p-4 border-b flex justify-between">
+
+<h2 className="font-bold text-lg">
+Order Items
+</h2>
 
 <button
 disabled={locked}
@@ -140,31 +141,24 @@ onClick={()=>{
 setShowProducts(true);
 loadProducts();
 }}
-className="bg-green-600 text-white px-4 py-2 rounded-lg flex gap-2 items-center"
+className="bg-green-600 text-white px-4 py-2 rounded-lg flex gap-2"
 >
-<Plus size={16}/> Add Product
+<Plus size={16}/>
+Add Product
 </button>
 
-{locked &&
-<span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs">
-Locked
-</span>
-}
-
-</div>
 </div>
 
 
-<div className="overflow-x-auto">
 <table className="w-full text-sm">
 
 <thead className="bg-gray-50">
 <tr>
-<th className="p-4 text-left">Item</th>
+<th className="p-3 text-left">Product</th>
 <th>Price</th>
 <th>Qty</th>
 <th>Total</th>
-<th className="p-4">Action</th>
+<th>Action</th>
 </tr>
 </thead>
 
@@ -175,7 +169,7 @@ Locked
 
 <tr key={index} className="border-t">
 
-<td className="p-4 flex gap-3 items-center">
+<td className="p-3 flex gap-3 items-center">
 
 <img
 src={item.productImage}
@@ -185,9 +179,6 @@ className="w-12 h-12 rounded object-cover"
 <div>
 <p className="font-semibold">
 {item.productName}
-</p>
-<p className="text-xs text-gray-500">
-ID: {item.product}
 </p>
 </div>
 
@@ -206,19 +197,17 @@ ID: {item.product}
 <button
 disabled={locked}
 onClick={()=>updateQty(index,"dec")}
-className="border p-1 rounded"
+className="border rounded p-1"
 >
 <Minus size={14}/>
 </button>
 
-<span>
-{item.quantity}
-</span>
+<span>{item.quantity}</span>
 
 <button
 disabled={locked}
 onClick={()=>updateQty(index,"inc")}
-className="border p-1 rounded"
+className="border rounded p-1"
 >
 <Plus size={14}/>
 </button>
@@ -228,7 +217,7 @@ className="border p-1 rounded"
 </td>
 
 
-<td className="text-center text-green-600 font-bold">
+<td className="text-center font-bold text-green-600">
 ৳{item.totalPrice}
 </td>
 
@@ -252,44 +241,49 @@ className="text-red-500"
 </tbody>
 
 </table>
-</div>
 
 
-<div className="p-5 border-t flex justify-between">
-<p>
+<div className="p-4 border-t flex justify-between">
+
+<span>
 Total Items: <b>{items.length}</b>
-</p>
+</span>
 
-<p className="text-green-600 font-bold text-lg">
+<b className="text-green-600">
 ৳{total}
-</p>
+</b>
+
 </div>
 
 
 
-{showProducts &&
+{showProducts&&
 
 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
 <div className="bg-white w-[500px] max-h-[600px] overflow-y-auto rounded-xl p-5">
 
+
 <div className="flex justify-between mb-4">
+
 <h3 className="font-bold">
-Select Product
+Add Product
 </h3>
 
 <button onClick={()=>setShowProducts(false)}>
 <X/>
 </button>
+
 </div>
 
 
-<div className="flex items-center border rounded-lg px-3 mb-3">
+<div className="flex border rounded mb-3 px-2">
+
 <Search size={18}/>
 
 <input
-className="p-2 w-full outline-none"
-placeholder="Search..."
+className="w-full p-2 outline-none"
+placeholder="Search product"
 value={search}
 onChange={e=>setSearch(e.target.value)}
 />
@@ -297,12 +291,13 @@ onChange={e=>setSearch(e.target.value)}
 </div>
 
 
+
 {filtered.map(product=>(
 
 <div
 key={product._id}
 onClick={()=>addProduct(product)}
-className="flex gap-3 items-center p-3 border rounded-lg mb-2 cursor-pointer"
+className="flex gap-3 border rounded p-3 mb-2 cursor-pointer"
 >
 
 <img
@@ -310,16 +305,19 @@ src={product.images?.[0]}
 className="w-12 h-12 rounded"
 />
 
+
 <div>
+
 <p className="font-semibold">
 {getName(product)}
 </p>
 
 <p>
-৳{product.discountPrice || product.price}
+৳{getProductPrice(product)}
 </p>
 
 </div>
+
 
 </div>
 
@@ -334,4 +332,5 @@ className="w-12 h-12 rounded"
 
 </div>
 );
+
 }
