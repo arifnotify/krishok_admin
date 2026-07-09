@@ -7,7 +7,7 @@ import QueryProvider from "../providers/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],  
+  subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
@@ -30,7 +30,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body className="min-h-screen bg-gray-100 antialiased">
+      <body className="min-h-screen bg-gray-100">
         <QueryProvider>
           {children}
           <Toaster position="top-right" />
