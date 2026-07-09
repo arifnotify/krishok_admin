@@ -235,13 +235,16 @@ export default function DashboardPage() {
 
         setSaving(true);
 
-        await adminEditOrder(
-          selectedOrder._id,
-          items.map((item) => ({
-            product: item.product!,
-            quantity: item.quantity,
-          }))
-        );
+await adminEditOrder(
+  selectedOrder._id,
+  items.map((item) => ({
+    product:item.product!,
+    productName:item.productName || "",
+    productImage:item.productImage || "",
+    price:Number(item.price || 0),
+    quantity:Number(item.quantity || 1),
+  }))
+);
 
         await loadSingleOrder(
           selectedOrder._id
