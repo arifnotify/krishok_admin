@@ -6,8 +6,7 @@ import RiderCard from "./RiderCard";
 import OrderSummary from "./OrderSummary";
 import OrderTimeline from "./OrderTimeline";
 import EditableOrderItems from "./EditableOrderItems";
-
-import { generateInvoice } from "@/src/utils/generateInvoice";
+import { printReceipt } from "@/src/utils/printReceipt";
 
 export default function OrderDetailsPanel({
   order,
