@@ -269,9 +269,10 @@ const payload = items.map(item=>({
           />
 
           <EditableOrderItems
-            items={items}
-            setItems={setItems}
-            locked={locked}
+          orderId={order._id}
+          items={items}
+          setItems={setItems}
+          locked={locked}
           />
 
           {!locked && (
