@@ -1,9 +1,9 @@
 export const COMPANY = {
-  name: "Babuni Food",
+  name: "KRISHOK-কৃষক",
 
   slogan: "Fresh Food Delivered Fast",
 
-  address: "Dhaka, Bangladesh",
+  address: "Companigonj, Noakhali",
 
   phone: "+8801700000000",
 
