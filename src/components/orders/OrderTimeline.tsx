@@ -1,75 +1,347 @@
 "use client";
 
 import { Order } from "@/src/types/order";
+import {
+  CheckCircle,
+  Clock,
+  Package,
+  Truck,
+  Home
+} from "lucide-react";
+
 
 interface Props {
   order: Order;
 }
 
-export default function OrderTimeline({ order }: Props) {
-  const steps = [
-    { key: "Pending", label: "Order Placed" },
-    { key: "Processing", label: "Processing" },
-    { key: "OutForDelivery", label: "Out for Delivery" },
-    { key: "Delivered", label: "Delivered" },
-  ];
 
-  const currentIndex = steps.findIndex(
-    (s) => s.key === order.orderStatus
-  );
 
-  return (
-    <div className="bg-white border rounded-2xl p-5 shadow-sm">
+export default function OrderTimeline({
+  order
+}: Props) {
 
-      {/* HEADER */}
-      <div className="mb-5">
-        <h2 className="text-lg font-bold">
-          Order Timeline
-        </h2>
-        <p className="text-sm text-gray-500">
-          Live tracking of order status
-        </p>
-      </div>
 
-      {/* TIMELINE */}
-      <div className="space-y-6 relative">
 
-        {/* vertical line */}
-        <div className="absolute left-2 top-0 bottom-0 w-[2px] bg-gray-200" />
+const steps = [
 
-        {steps.map((step, index) => {
-          const active = index <= currentIndex;
+{
+key:"Pending",
+label:"Order Placed",
+icon:Clock
+},
 
-          return (
-            <div
-              key={step.key}
-              className="flex items-start gap-4 relative"
-            >
-              {/* dot */}
-              <div
-                className={`
-                  w-4 h-4 rounded-full z-10 mt-1
-                  ${active ? "bg-green-500" : "bg-gray-300"}
-                `}
-              />
+{
+key:"Processing",
+label:"Processing",
+icon:Package
+},
 
-              {/* content */}
-              <div>
-                <p className={`font-semibold ${
-                  active ? "text-gray-900" : "text-gray-400"
-                }`}>
-                  {step.label}
-                </p>
 
-                <p className="text-xs text-gray-500">
-                  {active ? "Completed / In progress" : "Waiting"}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+{
+key:"OutForDelivery",
+label:"Out For Delivery",
+icon:Truck
+},
 
-      </div>
-    </div>
-  );
+
+{
+key:"Delivered",
+label:"Delivered",
+icon:Home
+}
+
+];
+
+
+
+
+
+const currentIndex =
+steps.findIndex(
+(step)=>
+step.key===order.orderStatus
+);
+
+
+
+
+
+return (
+
+<div className="
+bg-white
+border
+rounded-xl
+p-5
+h-full
+">
+
+
+{/* HEADER */}
+
+<div className="
+flex
+items-center
+gap-2
+mb-6
+">
+
+
+<CheckCircle
+
+size={20}
+
+className="text-green-600"
+
+/>
+
+
+<div>
+
+
+<h2 className="
+font-bold
+text-gray-800
+">
+
+Order Timeline
+
+</h2>
+
+
+<p className="
+text-xs
+text-gray-500
+">
+
+Order progress tracking
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div className="
+relative
+space-y-6
+">
+
+
+
+{/* LINE */}
+
+<div className="
+absolute
+left-5
+top-3
+bottom-3
+w-[2px]
+bg-gray-200
+"/>
+
+
+
+
+
+
+{
+steps.map((step,index)=>{
+
+
+const active =
+index <= currentIndex;
+
+
+
+const Icon =
+step.icon;
+
+
+
+return(
+
+
+<div
+
+key={step.key}
+
+className="
+relative
+flex
+items-center
+gap-4
+"
+
+
+>
+
+
+{/* ICON */}
+
+<div
+
+className={`
+relative
+z-10
+w-10
+h-10
+rounded-full
+flex
+items-center
+justify-center
+
+${
+active
+
+?
+
+"bg-green-100 text-green-600"
+
+:
+
+"bg-gray-100 text-gray-400"
+
+}
+
+`}
+
+>
+
+<Icon size={18}/>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div>
+
+
+<p
+
+className={`
+font-semibold
+text-sm
+
+${
+active
+?
+"text-gray-800"
+:
+"text-gray-400"
+
+}
+
+`}
+
+>
+
+{step.label}
+
+</p>
+
+
+
+<p className="
+text-xs
+text-gray-500
+mt-1
+">
+
+
+{
+active
+
+?
+
+index===currentIndex
+
+?
+
+"Current status"
+
+:
+
+"Completed"
+
+:
+
+"Waiting"
+
+}
+
+
+</p>
+
+
+</div>
+
+
+
+
+
+{
+index===currentIndex && (
+
+<span className="
+ml-auto
+text-xs
+px-3
+py-1
+rounded-full
+bg-blue-100
+text-blue-600
+font-semibold
+">
+
+
+Current
+
+
+</span>
+
+)
+
+}
+
+
+
+
+
+</div>
+
+
+)
+
+
+})
+
+}
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+)
+
 }
