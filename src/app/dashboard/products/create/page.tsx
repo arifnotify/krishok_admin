@@ -796,17 +796,11 @@ locationList.map(item=>(
 
 
 <option
-
 key={item._id}
-
 value={item._id}
-
+className="text-black bg-white py-2"
 >
-
-
 {item.name}
-
-
 </option>
 
 
