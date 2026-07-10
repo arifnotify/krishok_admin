@@ -1,17 +1,18 @@
 export interface Product {
   _id: string;
 
-    title: {
-      en: string;
-      bn: string;
-    };
+  title: {
+    en: string;
+    bn: string;
+  };
 
-    description: {
-      en: string;
-      bn: string;
-    };
+  description: {
+    en: string;
+    bn: string;
+  };
 
-  youtubeVideoUrl:string;
+  youtubeVideoUrl?: string;
+
   price: number;
 
   discountPrice: number;
@@ -23,18 +24,25 @@ export interface Product {
   images: string[];
 
   category: {
-  _id: string;
-  name: string;
-      };
+    _id: string;
+    name: string;
+  };
 
   unit: string;
 
-  brand: string;
+  brand?: string;
 
-  location: string;
+  locations: {
+    _id: string;
+    division: string;
+    district: string;
+  }[];
 
   isFlashSale?: boolean;
 
-    // ⭐ ADD THIS
-  isActive:boolean;
+  isActive: boolean;
+
+  productType?: string;
+
+  expiryDate?: string;
 }
