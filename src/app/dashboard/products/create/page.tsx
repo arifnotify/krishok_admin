@@ -11,8 +11,6 @@ import {
   getLocations,
 } from "@/src/services/location.service";
 
-import { Category } from "@/src/types/category";
-
 import {
   uploadImages,
 } from "@/src/services/upload.service";
@@ -20,6 +18,8 @@ import {
 import {
   createProduct,
 } from "@/src/services/product.service";
+
+import { Category } from "@/src/types/category";
 
 
 export default function CreateProductPage(){
@@ -46,28 +46,21 @@ const [productType,setProductType]=useState("regular");
 const [expiryDate,setExpiryDate]=useState("");
 
 
-/*
- NEW
- location array
-*/
 const [locations,setLocations]=useState<string[]>([]);
+
+const [locationList,setLocationList]=useState<any[]>([]);
 
 
 const [mainCategory,setMainCategory]=useState("");
 
 const [category,setCategory]=useState("");
 
-
-const [images,setImages]=useState<string[]>([]);
-
-
 const [categories,setCategories]=useState<Category[]>([]);
 
 const [subCategories,setSubCategories]=useState<Category[]>([]);
 
 
-
-const [locationList,setLocationList]=useState<any[]>([]);
+const [images,setImages]=useState<string[]>([]);
 
 
 const [loading,setLoading]=useState(false);
@@ -75,6 +68,11 @@ const [loading,setLoading]=useState(false);
 
 
 useEffect(()=>{
+
+loadData();
+
+},[]);
+
 
 
 const loadData=async()=>{
@@ -85,16 +83,15 @@ try{
 const main =
 await getMainCategories();
 
-
 setCategories(main);
 
 
 
-const loc =
+const locations =
 await getLocations();
 
 
-setLocationList(loc);
+setLocationList(locations);
 
 
 
@@ -104,38 +101,9 @@ console.log(err);
 
 }
 
-
 };
 
 
-loadData();
-
-
-},[]);
-
-
-
-const fetchSubCategories=
-async(parentId:string)=>{
-
-
-try{
-
-const data =
-await getSubCategories(parentId);
-
-
-setSubCategories(data);
-
-
-}catch(err){
-
-console.log(err);
-
-}
-
-
-};
 
 
 
@@ -155,15 +123,20 @@ setCategory("");
 setSubCategories([]);
 
 
-
 if(value){
 
-await fetchSubCategories(value);
+const data =
+await getSubCategories(value);
+
+
+setSubCategories(data);
 
 }
 
 
 };
+
+
 
 
 
@@ -173,17 +146,20 @@ e:React.ChangeEvent<HTMLSelectElement>
 )=>{
 
 
-const values =
+const selected =
 Array.from(
 e.target.selectedOptions,
-(option)=>option.value
+(item)=>item.value
 );
 
 
-setLocations(values);
+setLocations(selected);
 
 
 };
+
+
+
 
 
 
@@ -206,13 +182,13 @@ try{
 setLoading(true);
 
 
-const res =
+const result =
 await uploadImages(files);
 
 
 
 const urls =
-res.map(
+result.map(
 (item:any)=>item.url
 );
 
@@ -226,20 +202,22 @@ setImages(urls);
 
 console.log(err);
 
-alert("Upload Failed");
+alert(
+"Image Upload Failed"
+);
 
 
-}finally{
-
+}
+finally{
 
 setLoading(false);
-
 
 }
 
 
-
 };
+
+
 
 
 
@@ -259,7 +237,6 @@ await createProduct({
 
 title:{
 
-
 en:titleEn,
 
 bn:titleBn,
@@ -269,11 +246,9 @@ bn:titleBn,
 
 description:{
 
-
 en:descriptionEn,
 
 bn:descriptionBn,
-
 
 },
 
@@ -288,9 +263,7 @@ price:Number(price),
 
 
 discountPrice:
-Number(discountPrice)
-||
-undefined,
+Number(discountPrice)||0,
 
 
 
@@ -351,21 +324,17 @@ window.location.href =
 
 }catch(err){
 
-
 console.log(err);
 
-
 alert(
-"Create Failed"
+"Create Product Failed"
 );
 
 
-
-}finally{
-
+}
+finally{
 
 setLoading(false);
-
 
 }
 
@@ -375,18 +344,33 @@ setLoading(false);
 
 
 
-return (
 
-<div className="max-w-[1000px] mx-auto p-6">
+return(
 
-
-<div className="bg-white rounded-3xl shadow p-8">
+<div className="max-w-5xl mx-auto p-6">
 
 
+<div className="bg-white shadow-xl rounded-3xl p-8">
 
-<h1 className="text-3xl font-bold mb-8">
+
+<div className="mb-8">
+
+<h1 className="text-3xl font-bold text-gray-800">
+
 Create Product
+
 </h1>
+
+
+<p className="text-gray-500 mt-2">
+
+Add new product to inventory
+
+</p>
+
+
+</div>
+
 
 
 
@@ -395,16 +379,24 @@ Create Product
 
 
 
+
+
 {/* TITLE */}
 
-<div className="grid grid-cols-2 gap-4">
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+
+<div>
+
+<label className="font-medium">
+English Title
+</label>
 
 
 <input
 
-className="border rounded-2xl px-5 py-3.5"
-
-placeholder="Title English"
+className="w-full mt-2 border rounded-xl px-4 py-3"
 
 value={titleEn}
 
@@ -414,13 +406,21 @@ e=>setTitleEn(e.target.value)
 
 />
 
+</div>
+
+
+
+
+<div>
+
+<label className="font-medium">
+বাংলা নাম
+</label>
 
 
 <input
 
-className="border rounded-2xl px-5 py-3.5"
-
-placeholder="পণ্যের নাম বাংলা"
+className="w-full mt-2 border rounded-xl px-4 py-3"
 
 value={titleBn}
 
@@ -430,8 +430,11 @@ e=>setTitleBn(e.target.value)
 
 />
 
+</div>
+
 
 </div>
+
 
 
 
@@ -440,14 +443,15 @@ e=>setTitleBn(e.target.value)
 {/* DESCRIPTION */}
 
 
-<div className="grid grid-cols-2 gap-4">
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
 
 <textarea
 
-className="border rounded-2xl px-5 py-3 h-32"
+className="border rounded-xl p-4 h-32"
 
-placeholder="Description English"
+placeholder="English Description"
 
 value={descriptionEn}
 
@@ -461,9 +465,9 @@ e=>setDescriptionEn(e.target.value)
 
 <textarea
 
-className="border rounded-2xl px-5 py-3 h-32"
+className="border rounded-xl p-4 h-32"
 
-placeholder="বিবরণ বাংলা"
+placeholder="বাংলা বিবরণ"
 
 value={descriptionBn}
 
@@ -484,7 +488,7 @@ e=>setDescriptionBn(e.target.value)
 {/* CATEGORY */}
 
 
-<div className="grid grid-cols-2 gap-5">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
 
 <select
@@ -493,15 +497,14 @@ value={mainCategory}
 
 onChange={handleMainCategory}
 
-className="border rounded-2xl px-5 py-3.5"
+className="border rounded-xl px-4 py-3 text-black bg-white"
 
 >
 
 
-<option value="">
-Main Category
+<option>
+Select Main Category
 </option>
-
 
 
 {
@@ -509,8 +512,11 @@ categories.map(item=>(
 
 
 <option
+
 key={item._id}
+
 value={item._id}
+
 >
 
 {item.name}
@@ -520,6 +526,7 @@ value={item._id}
 
 ))
 }
+
 
 
 </select>
@@ -536,15 +543,14 @@ onChange={
 e=>setCategory(e.target.value)
 }
 
-className="border rounded-2xl px-5 py-3.5"
+className="border rounded-xl px-4 py-3 text-black bg-white"
 
 >
 
 
-<option value="">
-Sub Category
+<option>
+Select Sub Category
 </option>
-
 
 
 {
@@ -552,8 +558,11 @@ subCategories.map(item=>(
 
 
 <option
+
 key={item._id}
+
 value={item._id}
+
 >
 
 {item.name}
@@ -565,303 +574,179 @@ value={item._id}
 }
 
 
-
 </select>
 
 
 </div>
+{/* LOCATION */}
+<div className="flex gap-6 items-start">
 
-
-
-
-
-{/* YOUTUBE */}
-
-
-<input
-
-className="border rounded-2xl px-5 py-3.5 w-full"
-
-placeholder="Youtube Video URL"
-
-value={youtubeVideoUrl}
-
-onChange={
-e=>setYoutubeVideoUrl(e.target.value)
-}
-
-/>
-
-
-
-
-
-{/* PRICE */}
-
-
-<div className="grid grid-cols-2 gap-5">
-
-
-<input
-
-type="number"
-
-className="border rounded-2xl px-5 py-3.5"
-
-placeholder="Price"
-
-value={price}
-
-onChange={
-e=>setPrice(e.target.value)
-}
-
-/>
-
-
-
-
-<input
-
-type="number"
-
-className="border rounded-2xl px-5 py-3.5"
-
-placeholder="Discount Price"
-
-value={discountPrice}
-
-onChange={
-e=>setDiscountPrice(e.target.value)
-}
-
-/>
-
-
+<div className="w-11 h-11 bg-green-100 rounded-2xl flex items-center justify-center">
+📍
 </div>
 
+<div className="flex-1">
 
+<label className="block text-sm font-medium mb-2">
+Available Locations
+</label>
 
 
-{/* STOCK BRAND */}
+<div className="grid grid-cols-2 gap-3">
 
 
-<div className="grid grid-cols-2 gap-5">
-
-
-<input
-
-type="number"
-
-className="border rounded-2xl px-5 py-3.5"
-
-placeholder="Stock"
-
-value={stock}
-
-onChange={
-e=>setStock(e.target.value)
-}
-
-/>
-
-
-
-
-<input
-
-className="border rounded-2xl px-5 py-3.5"
-
-placeholder="Brand"
-
-value={brand}
-
-onChange={
-e=>setBrand(e.target.value)
-}
-
-/>
-
-
-</div>
-
-
-
-
-{/* UNIT */}
-
-
-<input
-
-className="border rounded-2xl px-5 py-3.5 w-full"
-
-placeholder="Unit"
-
-value={unit}
-
-onChange={
-e=>setUnit(e.target.value)
-}
-
-/>
-
-
-
-
-
-{/* PRODUCT TYPE */}
-
-
-<select
-
-className="border rounded-2xl px-5 py-3.5 w-full"
-
-value={productType}
-
-onChange={
-e=>setProductType(e.target.value)
-}
-
->
-
-
-<option value="regular">
-Regular Product
-</option>
-
-
-<option value="fresh">
-Fresh Product
-</option>
-
-
-</select>
-
-
-
-
-
-{
-productType==="regular" &&
-
-
-<input
-
-type="date"
-
-className="border rounded-2xl px-5 py-3.5 w-full"
-
-value={expiryDate}
-
-onChange={
-e=>setExpiryDate(e.target.value)
-}
-
-/>
-
-
-}
-
-
-
-
-
-
-{/* LOCATION NEW */}
-
-
-
-<select
-
-multiple
-
-value={locations}
-
-onChange={handleLocationChange}
-
-className="border rounded-2xl px-5 py-3.5 w-full h-32"
-
->
-
-
-<option value="">
-Select Location
-</option>
-
-
-
-{
-
-locationList.map(item=>(
-
-
-<option
-
+{locations.map((item)=>(
+<label
 key={item._id}
-
-value={item._id}
-
+className="flex items-center gap-3 border rounded-xl p-3 cursor-pointer hover:bg-gray-50"
 >
 
-
-{item.name}
-
-
-</option>
-
-
-))
-
-
+<input
+type="checkbox"
+checked={
+selectedLocations.includes(item._id)
 }
+onChange={()=>toggleLocation(item._id)}
+className="w-4 h-4"
+/>
+
+
+<span>
+{item.name}
+</span>
+
+
+</label>
+))}
+
+
+</div>
+
+
+<p className="text-xs text-gray-500 mt-2">
+Select where this product will be available
+</p>
+
+
+</div>
+
+</div>
 
 
 
-</select>
+
+{/* IMAGE UPLOAD */}
+
+<div className="flex gap-6 items-start">
 
 
+<div className="w-11 h-11 bg-purple-100 rounded-2xl flex items-center justify-center">
+🖼️
+</div>
 
 
+<div className="flex-1">
 
-{/* IMAGE */}
+
+<label className="block text-sm font-medium mb-3">
+Product Images
+</label>
+
+
+<div className="border-2 border-dashed rounded-3xl p-10 text-center">
+
+
+<p className="text-gray-500 mb-4">
+Upload product images
+</p>
+
+
+<label
+className="
+cursor-pointer
+bg-blue-600
+text-white
+px-6
+py-3
+rounded-xl
+inline-block
+"
+>
+
+Choose Images
 
 
 <input
-
 type="file"
-
 multiple
-
+hidden
 onChange={handleUpload}
-
 />
 
 
+</label>
 
 
 
-<div className="flex gap-4 flex-wrap">
+</div>
+
+
+
+
+<div className="flex flex-wrap gap-4 mt-6">
 
 
 {
+images.map((img,index)=>(
 
-images.map((img,i)=>(
+<div
+key={index}
+className="relative"
+>
 
 
 <img
-
-key={i}
-
 src={img}
-
-className="w-24 h-24 rounded-xl object-cover"
-
+className="
+w-24
+h-24
+rounded-2xl
+object-cover
+border
+"
 />
 
 
+
+<button
+
+onClick={()=>
+setImages(
+images.filter(
+(_,i)=>i!==index
+)
+)
+}
+
+className="
+absolute
+top-1
+right-1
+bg-red-500
+text-white
+w-6
+h-6
+rounded-full
+"
+
+>
+×
+</button>
+
+
+</div>
+
 ))
-
-
 }
 
 
@@ -869,6 +754,40 @@ className="w-24 h-24 rounded-xl object-cover"
 </div>
 
 
+</div>
+
+
+</div>
+
+
+
+
+
+{/* BUTTON */}
+
+
+<div className="
+flex
+justify-end
+gap-4
+mt-12
+">
+
+
+<button
+
+type="button"
+
+className="
+px-8
+py-3
+border
+rounded-2xl
+"
+
+>
+Cancel
+</button>
 
 
 
@@ -878,7 +797,14 @@ onClick={handleCreate}
 
 disabled={loading}
 
-className="bg-blue-600 text-white px-8 py-3 rounded-2xl"
+className="
+px-8
+py-3
+bg-blue-600
+text-white
+rounded-2xl
+disabled:opacity-50
+"
 
 >
 
@@ -895,18 +821,16 @@ loading
 </button>
 
 
+</div>
+
 
 
 </div>
 
-
 </div>
 
-
 </div>
-
 
 );
-
 
 }
