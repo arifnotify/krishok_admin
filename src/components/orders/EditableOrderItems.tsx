@@ -1,63 +1,107 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Minus, Trash2, Search, X } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  Trash2,
+  Search,
+  X
+} from "lucide-react";
+
 import { getProducts } from "@/src/services/product.service";
 
+
 interface Product {
+
   _id:string;
+
   title:{
     en:string;
     bn?:string;
   };
+
   price:number;
+
   discountPrice?:number;
+
   flashSalePrice?:number;
+
   isFlashSale?:boolean;
+
   images:string[];
+
   isActive:boolean;
+
 }
 
+
+
 interface Props{
+
   items:any[];
+
   setItems:(items:any[])=>void;
+
   locked:boolean;
+
 }
+
 
 
 export default function EditableOrderItems({
-  items,
-  setItems,
-  locked
+
+items,
+
+setItems,
+
+locked
+
 }:Props){
 
 
+
 const [showProducts,setShowProducts]=useState(false);
+
 const [products,setProducts]=useState<Product[]>([]);
+
 const [search,setSearch]=useState("");
+
+
 
 
 
 const askPermission=(message:string)=>{
 
-const result=window.confirm(
+
+return window.confirm(
+
 `${message}\n\nAre you sure you want to update this order?`
+
 );
 
-return result;
 
 };
 
 
 
 
+
+
+
 const loadProducts=async()=>{
+
 
 try{
 
-const data=await getProducts();
 
-setProducts(data.products||data);
+const data:any=await getProducts();
+
+
+setProducts(
+data.products || data
+);
+
 
 }catch(err){
 
@@ -65,12 +109,17 @@ console.log(err);
 
 }
 
+
 };
 
 
 
 
+
+
+
 const getName=(product:Product)=>{
+
 
 return product.title?.en || "";
 
@@ -80,13 +129,17 @@ return product.title?.en || "";
 
 
 
+
+
 const getProductPrice=(product:Product)=>{
 
 
 if(
+
 product.isFlashSale &&
-product.flashSalePrice &&
-product.flashSalePrice>0
+
+product.flashSalePrice
+
 ){
 
 return product.flashSalePrice;
@@ -94,14 +147,19 @@ return product.flashSalePrice;
 }
 
 
+
 if(
+
 product.discountPrice &&
+
 product.discountPrice>0
+
 ){
 
 return product.discountPrice;
 
 }
+
 
 
 return product.price;
@@ -113,13 +171,22 @@ return product.price;
 
 
 
+
+
+
+
 const addProduct=(product:Product)=>{
 
 
+
 if(
+
 !askPermission(
-`Add "${getName(product)}" to this order?`
+
+`Add "${getName(product)}" to order?`
+
 )
+
 ){
 
 return;
@@ -128,17 +195,22 @@ return;
 
 
 
+
 const price=getProductPrice(product);
 
 
 
 const exist=items.find(
+
 item=>item.product===product._id
+
 );
 
 
 
+
 if(exist){
+
 
 
 setItems(
@@ -156,7 +228,8 @@ item.product===product._id
 quantity:item.quantity+1,
 
 totalPrice:
-item.price*(item.quantity+1)
+
+(item.quantity+1)*item.price
 
 }
 
@@ -171,6 +244,7 @@ item.price*(item.quantity+1)
 }else{
 
 
+
 setItems([
 
 ...items,
@@ -181,8 +255,7 @@ product:product._id,
 
 productName:getName(product),
 
-productImage:
-product.images?.[0] || "",
+productImage:product.images?.[0] || "",
 
 price,
 
@@ -194,14 +267,17 @@ totalPrice:price
 
 ]);
 
-
 }
 
 
 setShowProducts(false);
 
 
+
 };
+
+
+
 
 
 
@@ -211,9 +287,13 @@ const updateQty=(index:number,type:"inc"|"dec")=>{
 
 
 if(
+
 !askPermission(
-"Change product quantity?"
+
+"Change quantity?"
+
 )
+
 ){
 
 return;
@@ -222,8 +302,8 @@ return;
 
 
 
-
 const data=[...items];
+
 
 
 let qty=data[index].quantity;
@@ -249,12 +329,17 @@ qty--;
 
 data[index]={
 
+
 ...data[index],
+
 
 quantity:qty,
 
+
 totalPrice:
+
 data[index].price*qty
+
 
 };
 
@@ -263,14 +348,27 @@ data[index].price*qty
 setItems(data);
 
 
+
 };
+
+
+
+
+
+
+
+
 const removeItem=(index:number)=>{
 
 
 if(
+
 !askPermission(
-`Remove "${items[index].productName}" from this order?`
+
+`Remove ${items[index].productName}?`
+
 )
+
 ){
 
 return;
@@ -281,7 +379,9 @@ return;
 
 const data=[...items];
 
+
 data.splice(index,1);
+
 
 setItems(data);
 
@@ -289,35 +389,63 @@ setItems(data);
 };
 
 
-const total=items.reduce(
+
+
+
+
+
+
+const total=
+
+items.reduce(
+
 (sum,item)=>
+
 sum+(item.totalPrice||0),
+
 0
+
 );
 
 
-const filtered=products.filter(product=>
+
+
+
+
+const filtered=
+
+products.filter(product=>
 
 getName(product)
+
 .toLowerCase()
-.includes(search.toLowerCase())
+
+.includes(
+
+search.toLowerCase()
+
+)
 
 );
 
 
 
-return(
+return (
 
-<div className="bg-white border rounded-xl shadow-sm">
-
-
-
-<div className="p-4 border-b flex justify-between items-center">
+<div className="bg-white border rounded-xl overflow-hidden">
 
 
-<h2 className="font-bold text-lg">
-Order Items
+{/* HEADER */}
+
+<div className="p-5 border-b flex justify-between items-center">
+
+
+<h2 className="text-lg font-semibold">
+
+Order Details
+
 </h2>
+
 
 
 
@@ -327,10 +455,15 @@ disabled={locked}
 
 onClick={()=>{
 
+
 if(
+
 askPermission(
-"Add new product to order?"
+
+"Add new product?"
+
 )
+
 ){
 
 setShowProducts(true);
@@ -341,18 +474,45 @@ loadProducts();
 
 }}
 
-className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+className="
+
+border
+
+px-4
+
+py-2
+
+rounded-lg
+
+text-sm
+
+flex
+
+items-center
+
+gap-2
+
+hover:bg-gray-50
+
+"
 
 >
 
 <Plus size={16}/>
 
-Add Product
+Add Item
 
 </button>
 
 
+
 </div>
+
+
+
+
+
+{/* TABLE */}
 
 <div className="overflow-x-auto">
 
@@ -363,61 +523,130 @@ Add Product
 <thead className="bg-gray-50">
 
 
-<tr>
+<tr className="border-b">
 
 
-<th className="p-3 text-left">
+<th className="p-4 text-left">
+
 Product
+
 </th>
 
 
-<th>
-Price
-</th>
 
+<th className="p-4 text-center">
 
-<th>
 Qty
+
 </th>
 
 
-<th>
+
+<th className="p-4 text-right">
+
+Price
+
+</th>
+
+
+
+<th className="p-4 text-right">
+
 Total
+
 </th>
-<th>
+
+
+
+<th className="p-4">
+
 Action
+
 </th>
+
 
 
 </tr>
 
+
 </thead>
 
+
+
 <tbody>
+  <tbody>
+
 
 {
 items.map((item,index)=>(
 
-<tr 
+
+<tr
+
 key={index}
-className="border-t"
+
+className="
+border-b
+hover:bg-gray-50
+"
+
+
 >
 
-<td className="p-3 flex gap-3 items-center">
+
+{/* PRODUCT */}
+
+<td className="p-4">
+
+
+<div className="flex items-center gap-4">
+
 
 <img
 
-src={item.productImage}
+src={
+item.productImage ||
+"/placeholder.png"
+}
 
-className="w-12 h-12 rounded object-cover"
+className="
+w-16
+h-16
+rounded-lg
+object-cover
+border
+"
 
 />
 
+
+
 <div>
 
-<p className="font-semibold">
+
+<p className="font-semibold text-gray-800">
+
 {item.productName}
+
 </p>
+
+
+
+{
+item.barcode &&
+
+<p className="text-xs text-gray-500">
+
+Barcode: {item.barcode}
+
+</p>
+
+}
+
+
+
+</div>
+
 
 
 </div>
@@ -425,15 +654,22 @@ className="w-12 h-12 rounded object-cover"
 
 </td>
 
-<td className="text-center">
 
-৳{item.price}
 
-</td>
 
-<td>
 
-<div className="flex justify-center gap-2">
+{/* QTY */}
+
+<td className="p-4">
+
+
+<div className="
+flex
+justify-center
+items-center
+gap-3
+">
+
 
 <button
 
@@ -441,7 +677,12 @@ disabled={locked}
 
 onClick={()=>updateQty(index,"dec")}
 
-className="border p-1 rounded"
+className="
+border
+rounded
+p-1
+hover:bg-gray-100
+"
 
 >
 
@@ -449,11 +690,22 @@ className="border p-1 rounded"
 
 </button>
 
-<span>
+
+
+
+<span className="
+font-semibold
+min-w-[25px]
+text-center
+">
 
 {item.quantity}
 
 </span>
+
+
+
+
 
 <button
 
@@ -461,7 +713,12 @@ disabled={locked}
 
 onClick={()=>updateQty(index,"inc")}
 
-className="border p-1 rounded"
+className="
+border
+rounded
+p-1
+hover:bg-gray-100
+"
 
 >
 
@@ -469,18 +726,63 @@ className="border p-1 rounded"
 
 </button>
 
+
+
 </div>
 
 
 </td>
 
-<td className="text-center font-bold text-green-600">
 
-৳{item.totalPrice}
+
+
+
+
+{/* PRICE */}
+
+<td className="
+p-4
+text-right
+">
+
+
+QAR {Number(item.price).toFixed(2)}
+
 
 </td>
 
-<td className="text-center">
+
+
+
+
+
+
+{/* TOTAL */}
+
+<td className="
+p-4
+text-right
+font-semibold
+">
+
+
+QAR {Number(item.totalPrice).toFixed(2)}
+
+
+</td>
+
+
+
+
+
+
+
+{/* ACTION */}
+
+<td className="
+p-4
+text-center
+">
 
 
 <button
@@ -489,82 +791,188 @@ disabled={locked}
 
 onClick={()=>removeItem(index)}
 
-className="text-red-500"
+className="
+text-red-500
+hover:text-red-700
+"
+
 
 >
 
 <Trash2 size={18}/>
 
+
 </button>
+
 
 </td>
 
+
+
 </tr>
+
+
 
 ))
 
+
 }
+
+
 
 </tbody>
 
+
 </table>
+
+
 </div>
 
-<div className="p-4 border-t flex justify-between">
 
 
-<span>
+
+
+{/* FOOTER TOTAL */}
+
+<div className="
+border-t
+p-5
+flex
+justify-between
+items-center
+">
+
+
+<div className="text-sm text-gray-600">
+
 
 Total Items:
-<b>{items.length}</b>
 
-</span>
+<b className="ml-2">
 
-<b className="text-green-600 text-lg">
-
-৳{total}
+{items.length}
 
 </b>
 
+
 </div>
 
+
+
+
+
+<div className="
+text-xl
+font-bold
+">
+
+
+QAR {total.toFixed(2)}
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* PRODUCT SELECT MODAL */}
+
+
 {
-showProducts &&
+showProducts && (
 
 
-<div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+<div className="
+fixed
+inset-0
+bg-black/40
+flex
+items-center
+justify-center
+z-50
+">
 
 
-<div className="bg-white w-[500px] max-h-[600px] overflow-y-auto rounded-xl p-5">
 
-<div className="flex justify-between mb-4">
+<div className="
+bg-white
+w-[520px]
+max-h-[650px]
+rounded-xl
+p-5
+overflow-y-auto
+">
 
 
-<h3 className="font-bold">
+
+
+
+<div className="
+flex
+justify-between
+items-center
+mb-5
+">
+
+
+<h3 className="font-bold text-lg">
 
 Select Product
 
 </h3>
 
+
+
 <button
+
 onClick={()=>setShowProducts(false)}
+
 >
 
 <X/>
 
 </button>
 
+
+
 </div>
 
-<div className="flex items-center border rounded-lg px-2 mb-3">
+
+
+
+
+
+
+<div className="
+border
+rounded-lg
+flex
+items-center
+px-3
+mb-4
+">
+
 
 <Search size={18}/>
 
+
 <input
 
-className="w-full p-2 outline-none"
+className="
+w-full
+p-2
+outline-none
+"
 
-placeholder="Search product"
+placeholder="Search product..."
 
 value={search}
 
@@ -572,51 +980,127 @@ onChange={
 e=>setSearch(e.target.value)
 }
 
+
 />
 
 
 </div>
 
+
+
+
+
+
+
+
 {
+
 filtered.map(product=>(
+
+
+
 <div
 
 key={product._id}
 
 onClick={()=>addProduct(product)}
 
-className="flex gap-3 border rounded-lg p-3 mb-2 cursor-pointer"
+className="
+flex
+items-center
+gap-4
+border
+rounded-lg
+p-3
+mb-3
+cursor-pointer
+hover:bg-gray-50
+"
 
 
 >
+
+
+
 <img
 
-src={product.images?.[0]}
+src={
+product.images?.[0] ||
+"/placeholder.png"
+}
 
-className="w-12 h-12 rounded"
+className="
+w-14
+h-14
+rounded-lg
+object-cover
+border
+"
 
 />
 
+
+
+
+
 <div>
-<p className="font-semibold">
+
+
+<p className="
+font-semibold
+">
 
 {getName(product)}
 
 </p>
-<p>
 
-৳{getProductPrice(product)}
+
+
+
+<p className="text-sm text-gray-600">
+
+QAR {getProductPrice(product).toFixed(2)}
 
 </p>
+
+
+
 </div>
+
+
+
+
 </div>
+
+
+
 ))
 
+
 }
 
+
+
+
+
+
+
 </div>
+
+
+
 </div>
+
+
+)
+
+
 }
+
+
+
 </div>
+
 );
+
 }
