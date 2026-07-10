@@ -3,23 +3,25 @@
 import { useEffect, useState } from "react";
 
 import {
-  getMainCategories,
-  getSubCategories,
+getMainCategories,
+getSubCategories,
 } from "@/src/services/category.service";
 
 import {
-  getLocations,
+getLocations,
 } from "@/src/services/location.service";
 
-import { Category } from "@/src/types/category";
-
 import {
-  uploadImages,
+uploadImages,
 } from "@/src/services/upload.service";
 
 import {
-  createProduct,
+createProduct,
 } from "@/src/services/product.service";
+
+import { Category } from "@/src/types/category";
+
+import { Location } from "@/src/types/location";
 
 
 export default function CreateProductPage(){
@@ -32,6 +34,7 @@ const [descriptionBn,setDescriptionBn]=useState("");
 
 const [youtubeVideoUrl,setYoutubeVideoUrl]=useState("");
 
+
 const [price,setPrice]=useState("");
 const [discountPrice,setDiscountPrice]=useState("");
 
@@ -41,15 +44,16 @@ const [brand,setBrand]=useState("");
 
 const [unit,setUnit]=useState("pcs");
 
-const [productType,setProductType]=useState("regular");
+
+const [productType,setProductType]=useState(
+"regular"
+);
+
 
 const [expiryDate,setExpiryDate]=useState("");
 
 
-/*
- NEW
- location array
-*/
+
 const [locations,setLocations]=useState<string[]>([]);
 
 
@@ -58,7 +62,9 @@ const [mainCategory,setMainCategory]=useState("");
 const [category,setCategory]=useState("");
 
 
+
 const [images,setImages]=useState<string[]>([]);
+
 
 
 const [categories,setCategories]=useState<Category[]>([]);
@@ -67,7 +73,8 @@ const [subCategories,setSubCategories]=useState<Category[]>([]);
 
 
 
-const [locationList,setLocationList]=useState<any[]>([]);
+const [locationList,setLocationList]=useState<Location[]>([]);
+
 
 
 const [loading,setLoading]=useState(false);
@@ -76,25 +83,30 @@ const [loading,setLoading]=useState(false);
 
 useEffect(()=>{
 
-
 const loadData=async()=>{
 
 try{
 
 
-const main =
+const categoryData =
 await getMainCategories();
 
 
-setCategories(main);
+setCategories(categoryData);
 
 
 
-const loc =
+const locationsData =
 await getLocations();
 
 
-setLocationList(loc);
+setLocationList(
+Array.isArray(locationsData)
+?
+locationsData
+:
+locationsData.data || []
+);
 
 
 
@@ -103,7 +115,6 @@ setLocationList(loc);
 console.log(err);
 
 }
-
 
 };
 
@@ -115,15 +126,14 @@ loadData();
 
 
 
+
 const fetchSubCategories=
 async(parentId:string)=>{
 
-
 try{
 
-const data =
+const data=
 await getSubCategories(parentId);
-
 
 setSubCategories(data);
 
@@ -136,6 +146,8 @@ console.log(err);
 
 
 };
+
+
 
 
 
@@ -155,7 +167,6 @@ setCategory("");
 setSubCategories([]);
 
 
-
 if(value){
 
 await fetchSubCategories(value);
@@ -167,23 +178,29 @@ await fetchSubCategories(value);
 
 
 
+
+
 const handleLocationChange=
 (
 e:React.ChangeEvent<HTMLSelectElement>
 )=>{
 
 
-const values =
+const values=
 Array.from(
 e.target.selectedOptions,
 (option)=>option.value
 );
 
 
+
 setLocations(values);
 
 
 };
+
+
+
 
 
 
@@ -206,19 +223,24 @@ try{
 setLoading(true);
 
 
-const res =
+const res=
 await uploadImages(files);
 
 
 
-const urls =
+const urls=
 res.map(
 (item:any)=>item.url
 );
 
 
 
-setImages(urls);
+setImages(
+prev=>[
+...prev,
+...urls
+]
+);
 
 
 
@@ -226,20 +248,37 @@ setImages(urls);
 
 console.log(err);
 
-alert("Upload Failed");
+alert(
+"Upload Failed"
+);
 
 
-}finally{
-
+}
+finally{
 
 setLoading(false);
-
 
 }
 
 
+};
+
+
+
+
+
+
+const removeImage=(img:string)=>{
+
+setImages(
+images.filter(
+(item)=>item!==img
+)
+);
 
 };
+
+
 
 
 
@@ -259,7 +298,6 @@ await createProduct({
 
 title:{
 
-
 en:titleEn,
 
 bn:titleBn,
@@ -269,14 +307,11 @@ bn:titleBn,
 
 description:{
 
-
 en:descriptionEn,
 
 bn:descriptionBn,
 
-
 },
-
 
 
 youtubeVideoUrl,
@@ -284,7 +319,6 @@ youtubeVideoUrl,
 
 
 price:Number(price),
-
 
 
 discountPrice:
@@ -299,7 +333,6 @@ stock:Number(stock),
 
 
 brand,
-
 
 
 unit,
@@ -320,7 +353,6 @@ undefined,
 
 
 category,
-
 
 
 locations,
@@ -344,7 +376,7 @@ alert(
 
 
 
-window.location.href =
+window.location.href=
 "/dashboard/products";
 
 
@@ -360,12 +392,10 @@ alert(
 );
 
 
-
-}finally{
-
+}
+finally{
 
 setLoading(false);
-
 
 }
 
@@ -379,55 +409,62 @@ return (
 
 <div className="max-w-[1000px] mx-auto p-6">
 
-
 <div className="bg-white rounded-3xl shadow p-8">
 
 
+<div className="flex items-center gap-4 mb-10">
 
-<h1 className="text-3xl font-bold mb-8">
+<div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
+📦
+</div>
+
+
+<div>
+
+<h1 className="text-3xl font-bold">
 Create Product
 </h1>
 
 
+<p className="text-gray-500">
+Add new product to inventory
+</p>
 
 
-<div className="space-y-6">
+</div>
+
+
+</div>
 
 
 
-{/* TITLE */}
+<div className="space-y-7">
+
+
 
 <div className="grid grid-cols-2 gap-4">
 
 
 <input
-
-className="border rounded-2xl px-5 py-3.5"
-
-placeholder="Title English"
-
+type="text"
+placeholder="Product Title English"
 value={titleEn}
-
 onChange={
 e=>setTitleEn(e.target.value)
 }
-
+className="border rounded-2xl px-5 py-3.5"
 />
 
 
 
 <input
-
-className="border rounded-2xl px-5 py-3.5"
-
+type="text"
 placeholder="পণ্যের নাম বাংলা"
-
 value={titleBn}
-
 onChange={
 e=>setTitleBn(e.target.value)
 }
-
+className="border rounded-2xl px-5 py-3.5"
 />
 
 
@@ -435,17 +472,10 @@ e=>setTitleBn(e.target.value)
 
 
 
-
-
-{/* DESCRIPTION */}
-
-
 <div className="grid grid-cols-2 gap-4">
 
 
 <textarea
-
-className="border rounded-2xl px-5 py-3 h-32"
 
 placeholder="Description English"
 
@@ -455,13 +485,12 @@ onChange={
 e=>setDescriptionEn(e.target.value)
 }
 
+className="border rounded-2xl px-5 py-3 h-32"
 />
 
 
 
 <textarea
-
-className="border rounded-2xl px-5 py-3 h-32"
 
 placeholder="বিবরণ বাংলা"
 
@@ -471,43 +500,36 @@ onChange={
 e=>setDescriptionBn(e.target.value)
 }
 
+className="border rounded-2xl px-5 py-3 h-32"
 />
 
 
 </div>
-
-
-
-
-
-
 {/* CATEGORY */}
 
+<div className="grid grid-cols-2 gap-6">
 
-<div className="grid grid-cols-2 gap-5">
+<div>
+
+<label className="block text-sm font-medium mb-2">
+Main Category
+</label>
 
 
 <select
-
 value={mainCategory}
-
 onChange={handleMainCategory}
-
-className="border rounded-2xl px-5 py-3.5"
-
+className="w-full border rounded-2xl px-5 py-3.5"
 >
 
 
 <option value="">
-Main Category
+Select Category
 </option>
 
 
-
 {
-categories.map(item=>(
-
-
+categories.map((item)=>(
 <option
 key={item._id}
 value={item._id}
@@ -516,16 +538,22 @@ value={item._id}
 {item.name}
 
 </option>
-
-
 ))
 }
 
 
 </select>
 
+</div>
 
 
+
+
+<div>
+
+<label className="block text-sm font-medium mb-2">
+Sub Category
+</label>
 
 
 <select
@@ -536,21 +564,19 @@ onChange={
 e=>setCategory(e.target.value)
 }
 
-className="border rounded-2xl px-5 py-3.5"
+className="w-full border rounded-2xl px-5 py-3.5"
 
 >
 
 
 <option value="">
-Sub Category
+Select SubCategory
 </option>
 
 
 
 {
-subCategories.map(item=>(
-
-
+subCategories.map((item)=>(
 <option
 key={item._id}
 value={item._id}
@@ -559,11 +585,8 @@ value={item._id}
 {item.name}
 
 </option>
-
-
 ))
 }
-
 
 
 </select>
@@ -572,17 +595,26 @@ value={item._id}
 </div>
 
 
+</div>
 
 
 
-{/* YOUTUBE */}
+
+
+{/* Youtube */}
+
+<div>
+
+<label className="block text-sm font-medium mb-2">
+Youtube Video URL
+</label>
 
 
 <input
 
-className="border rounded-2xl px-5 py-3.5 w-full"
+type="text"
 
-placeholder="Youtube Video URL"
+placeholder="https://youtube.com/..."
 
 value={youtubeVideoUrl}
 
@@ -590,7 +622,12 @@ onChange={
 e=>setYoutubeVideoUrl(e.target.value)
 }
 
+className="w-full border rounded-2xl px-5 py-3.5"
+
 />
+
+
+</div>
 
 
 
@@ -599,14 +636,12 @@ e=>setYoutubeVideoUrl(e.target.value)
 {/* PRICE */}
 
 
-<div className="grid grid-cols-2 gap-5">
+<div className="grid grid-cols-2 gap-6">
 
 
 <input
 
 type="number"
-
-className="border rounded-2xl px-5 py-3.5"
 
 placeholder="Price"
 
@@ -616,6 +651,8 @@ onChange={
 e=>setPrice(e.target.value)
 }
 
+className="border rounded-2xl px-5 py-3.5"
+
 />
 
 
@@ -624,8 +661,6 @@ e=>setPrice(e.target.value)
 <input
 
 type="number"
-
-className="border rounded-2xl px-5 py-3.5"
 
 placeholder="Discount Price"
 
@@ -635,6 +670,8 @@ onChange={
 e=>setDiscountPrice(e.target.value)
 }
 
+className="border rounded-2xl px-5 py-3.5"
+
 />
 
 
@@ -643,17 +680,16 @@ e=>setDiscountPrice(e.target.value)
 
 
 
+
 {/* STOCK BRAND */}
 
 
-<div className="grid grid-cols-2 gap-5">
+<div className="grid grid-cols-2 gap-6">
 
 
 <input
 
 type="number"
-
-className="border rounded-2xl px-5 py-3.5"
 
 placeholder="Stock"
 
@@ -663,14 +699,15 @@ onChange={
 e=>setStock(e.target.value)
 }
 
-/>
+className="border rounded-2xl px-5 py-3.5"
 
+/>
 
 
 
 <input
 
-className="border rounded-2xl px-5 py-3.5"
+type="text"
 
 placeholder="Brand"
 
@@ -680,10 +717,13 @@ onChange={
 e=>setBrand(e.target.value)
 }
 
+className="border rounded-2xl px-5 py-3.5"
+
 />
 
 
 </div>
+
 
 
 
@@ -693,15 +733,17 @@ e=>setBrand(e.target.value)
 
 <input
 
-className="border rounded-2xl px-5 py-3.5 w-full"
+type="text"
 
-placeholder="Unit"
+placeholder="kg / gm / pcs / liter"
 
 value={unit}
 
 onChange={
 e=>setUnit(e.target.value)
 }
+
+className="w-full border rounded-2xl px-5 py-3.5"
 
 />
 
@@ -714,13 +756,13 @@ e=>setUnit(e.target.value)
 
 <select
 
-className="border rounded-2xl px-5 py-3.5 w-full"
-
 value={productType}
 
 onChange={
 e=>setProductType(e.target.value)
 }
+
+className="w-full border rounded-2xl px-5 py-3.5"
 
 >
 
@@ -741,15 +783,15 @@ Fresh Product
 
 
 
+{/* EXPIRY */}
+
+
 {
 productType==="regular" &&
-
 
 <input
 
 type="date"
-
-className="border rounded-2xl px-5 py-3.5 w-full"
 
 value={expiryDate}
 
@@ -757,8 +799,9 @@ onChange={
 e=>setExpiryDate(e.target.value)
 }
 
-/>
+className="w-full border rounded-2xl px-5 py-3.5"
 
+/>
 
 }
 
@@ -767,7 +810,17 @@ e=>setExpiryDate(e.target.value)
 
 
 
-{/* LOCATION NEW */}
+{/* LOCATION */}
+
+
+<div>
+
+
+<label className="block text-sm font-medium mb-2">
+
+Location
+
+</label>
 
 
 
@@ -779,7 +832,19 @@ value={locations}
 
 onChange={handleLocationChange}
 
-className="w-full h-40 border border-gray-300 rounded-2xl px-5 py-3.5 bg-white text-black text-base font-medium outline-none focus:border-blue-500"
+className="
+w-full
+h-44
+border
+rounded-2xl
+px-5
+py-3
+bg-white
+text-black
+font-medium
+outline-none
+focus:border-blue-500
+"
 
 >
 
@@ -791,22 +856,21 @@ Select Location
 
 
 {
-
-locationList.map(item=>(
-
-
+locationList.map((item)=>(
 <option
+
 key={item._id}
+
 value={item._id}
-className="text-black bg-white py-2"
+
+className="text-black bg-white"
+
 >
-{item.name}
+
+{item.division} - {item.district}
+
 </option>
-
-
 ))
-
-
 }
 
 
@@ -815,9 +879,29 @@ className="text-black bg-white py-2"
 
 
 
+<p className="text-xs text-gray-500 mt-2">
+Multiple location select করতে Ctrl চাপুন
+</p>
 
 
-{/* IMAGE */}
+</div>
+
+
+
+
+
+
+
+{/* IMAGE UPLOAD */}
+
+
+<div>
+
+
+<label className="block text-sm font-medium mb-3">
+Upload Images
+</label>
+
 
 
 <input
@@ -833,34 +917,106 @@ onChange={handleUpload}
 
 
 
-
-<div className="flex gap-4 flex-wrap">
+<div className="flex gap-4 flex-wrap mt-5">
 
 
 {
 
-images.map((img,i)=>(
+images.map((img,index)=>(
+
+
+<div
+key={index}
+className="relative"
+>
 
 
 <img
 
-key={i}
-
 src={img}
 
-className="w-24 h-24 rounded-xl object-cover"
+className="
+w-24
+h-24
+object-cover
+rounded-2xl
+border
+"
 
 />
 
 
-))
 
+<button
 
+type="button"
+
+onClick={
+()=>removeImage(img)
 }
+
+className="
+absolute
+top-1
+right-1
+bg-red-500
+text-white
+rounded-full
+w-6
+h-6
+"
+
+>
+
+×
+
+</button>
 
 
 
 </div>
+
+
+))
+
+}
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+{/* BUTTON */}
+
+
+
+<div className="flex justify-end gap-4 mt-10">
+
+
+<button
+
+type="button"
+
+className="
+px-8
+py-3
+border
+rounded-2xl
+"
+
+>
+
+Cancel
+
+</button>
 
 
 
@@ -872,7 +1028,13 @@ onClick={handleCreate}
 
 disabled={loading}
 
-className="bg-blue-600 text-white px-8 py-3 rounded-2xl"
+className="
+px-8
+py-3
+bg-blue-600
+text-white
+rounded-2xl
+"
 
 >
 
@@ -890,15 +1052,17 @@ loading
 
 
 
-
 </div>
 
 
+
+
+
 </div>
 
-
 </div>
 
+</div>
 
 );
 
