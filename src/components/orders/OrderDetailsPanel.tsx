@@ -1,132 +1,302 @@
 "use client";
 
-import CustomerInfoCard from "./CustomerInfoCard";
-import StatusCard from "./StatusCard";
-import RiderCard from "./RiderCard";
-import OrderSummary from "./OrderSummary";
-import OrderTimeline from "./OrderTimeline";
-import EditableOrderItems from "./EditableOrderItems";
 import { printReceipt } from "@/src/utils/printReceipt";
 
 export default function OrderDetailsPanel({
   order,
-  riders,
-  selectedRider,
-  setSelectedRider,
-  assignRider,
-  updateStatus,
   items,
-  setItems,
-  saveItems,
-  saving,
 }: any) {
   if (!order) {
     return (
-      <div className="bg-white border rounded-2xl p-10">
+      <div className="bg-white border rounded-xl p-10 text-center">
         Select Order
       </div>
     );
   }
 
-  const locked =
-    order.orderStatus === "Delivered" ||
-    order.orderStatus === "Cancelled";
+  const subtotal =
+    items?.reduce(
+      (sum: number, item: any) =>
+        sum + (item.totalPrice || item.price * item.quantity || 0),
+      0
+    ) || 0;
 
-  const buildInvoice = () => {
-    const subtotal =
-      items?.reduce(
-        (sum: number, i: any) => sum + (i.totalPrice || 0),
-        0
-      ) || 0;
+  const total =
+    subtotal -
+    (order.discount || 0) +
+    (order.deliveryCharge || 0);
 
-    return {
-      invoiceNumber: order.orderNumber,
-      orderNumber: order.orderNumber,
-      invoiceDate: new Date().toISOString(),
-      customer: {
-        name: order.shippingAddress?.fullName || "Customer",
-        phone: order.customerPhone,
-        address: `${order.shippingAddress?.areaOrVillage || ""} ${order.shippingAddress?.landmark || ""}`,
-      },
-      items,
-      subtotal,
-      deliveryCharge: order.deliveryCharge || 0,
-      discount: order.discount || 0,
-      total: subtotal,
-      paymentMethod: order.paymentMethod,
-      paymentStatus: order.isPaid,
-      orderStatus: order.orderStatus,
-    };
-  };
+  const buildInvoice = () => ({
+    invoiceNumber: order.orderNumber,
+    orderNumber: order.orderNumber,
+    invoiceDate: new Date().toISOString(),
+
+    customer: {
+      name: order.shippingAddress?.fullName || "Customer",
+      phone: order.customerPhone,
+      address: `${order.shippingAddress?.areaOrVillage || ""} ${
+        order.shippingAddress?.landmark || ""
+      }`,
+    },
+
+    items,
+
+    subtotal,
+    deliveryCharge: order.deliveryCharge || 0,
+    discount: order.discount || 0,
+    total,
+
+    paymentMethod: order.paymentMethod,
+    paymentStatus: order.isPaid,
+    orderStatus: order.orderStatus,
+  });
 
   return (
-  <div className="space-y-6">
+    <div className="bg-white border rounded-xl overflow-hidden">
 
-    {/* RECEIPT BUTTON */}
-    <div className="flex justify-end">
-      <button
-        onClick={() => printReceipt(buildInvoice())}
-        className="
-          bg-blue-600
-          text-white
-          px-5
-          py-2
-          rounded-xl
-          hover:bg-blue-700
-        "
-      >
-        🖨️ Print Receipt
-      </button>
-    </div>
+      {/* HEADER */}
+      <div className="border-b p-5">
+        <h2 className="text-xl font-bold">
+          Order #{order.orderNumber}
+        </h2>
 
-      {/* =========================
-          STEP 7: 3 CARD GRID
-      ========================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <p className="text-sm text-gray-500 mt-1">
+          {items?.length || 0} Item(s) • Delivery Order
+        </p>
+      </div>
 
-        {/* CARD 1 */}
-        <CustomerInfoCard order={order} />
+      {/* CUSTOMER + DELIVERY */}
+      <div className="grid md:grid-cols-2 gap-8 p-5 border-b">
 
-        {/* CARD 2 */}
-        <StatusCard order={order} onChange={updateStatus} />
+        <div>
+          <h3 className="font-semibold mb-4">
+            Customer Details
+          </h3>
 
-        {/* CARD 3 */}
-        <RiderCard
-          riders={riders}
-          selectedRider={selectedRider}
-          setSelectedRider={setSelectedRider}
-          assign={assignRider}
-          locked={locked}
-        />
+          <div className="space-y-2 text-sm">
+
+            <p>
+              <span className="font-medium">
+                Name:
+              </span>{" "}
+              {order.shippingAddress?.fullName}
+            </p>
+
+            <p>
+              <span className="font-medium">
+                Phone:
+              </span>{" "}
+              {order.customerPhone}
+            </p>
+
+            <p>
+              <span className="font-medium">
+                Address:
+              </span>{" "}
+              {order.shippingAddress?.areaOrVillage}
+            </p>
+
+          </div>
+        </div>
+
+        <div>
+          <h3 className="font-semibold mb-4">
+            Delivery Details
+          </h3>
+
+          <div className="space-y-2 text-sm">
+
+            <p>
+              <span className="font-medium">
+                Rider:
+              </span>{" "}
+              {order.assignedRider?.name || "Not Assigned"}
+            </p>
+
+            <p>
+              <span className="font-medium">
+                Phone:
+              </span>{" "}
+              {order.assignedRider?.phone || "-"}
+            </p>
+
+            <p>
+              <span className="font-medium">
+                Status:
+              </span>{" "}
+              <span className="font-semibold">
+                {order.orderStatus}
+              </span>
+            </p>
+
+          </div>
+        </div>
 
       </div>
 
-      {/* =========================
-          ITEMS SECTION
-      ========================= */}
-      <EditableOrderItems
-        items={items}
-        setItems={setItems}
-        locked={locked}
-      />
+      {/* ORDER DETAILS HEADER */}
+      <div className="flex items-center justify-between border-b p-5">
 
-      {/* SAVE BUTTON */}
-      {!locked && (
+        <h3 className="font-semibold text-lg">
+          Order Details
+        </h3>
+
         <button
-          onClick={saveItems}
-          disabled={saving}
-          className="bg-blue-600 text-white px-6 py-3 rounded-xl"
+          onClick={() => printReceipt(buildInvoice())}
+          className="
+            border
+            px-4
+            py-2
+            rounded-lg
+            text-sm
+            hover:bg-gray-50
+          "
         >
-          {saving ? "Saving..." : "Save Changes"}
+          🖨 Print Receipt
         </button>
-      )}
 
-      {/* BOTTOM GRID (SUMMARY + TIMELINE) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      </div>
 
-        <OrderSummary order={{ ...order, items }} />
+      {/* PRODUCTS */}
+      <div className="overflow-x-auto">
 
-        <OrderTimeline order={order} />
+        <table className="w-full">
+
+          <thead>
+
+            <tr className="border-b bg-gray-50">
+
+              <th className="text-left p-4">
+                Product
+              </th>
+
+              <th className="text-center p-4">
+                Qty
+              </th>
+
+              <th className="text-right p-4">
+                Price
+              </th>
+
+              <th className="text-right p-4">
+                Total
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {items?.map((item: any, index: number) => (
+              <tr
+                key={item._id || index}
+                className="border-b"
+              >
+                <td className="p-4">
+
+                  <div className="flex items-center gap-3">
+
+                    <img
+                      src={
+                        item.image ||
+                        item.product?.images?.[0] ||
+                        "/placeholder.png"
+                      }
+                      alt=""
+                      className="
+                        w-14
+                        h-14
+                        rounded
+                        object-cover
+                        border
+                      "
+                    />
+
+                    <div>
+
+                      <p className="font-medium">
+                        {item.title ||
+                          item.product?.title?.en ||
+                          item.product?.title}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <td className="text-center p-4">
+                  {item.quantity}
+                </td>
+
+                <td className="text-right p-4">
+                  Taka {item.price}
+                </td>
+
+                <td className="text-right p-4 font-medium">
+                  Taka {item.totalPrice}
+                </td>
+
+              </tr>
+            ))}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {/* PAYMENT DETAILS */}
+      <div className="border-t p-5">
+
+        <h3 className="font-semibold text-lg mb-4">
+          Payment Details
+        </h3>
+
+        <div className="max-w-sm ml-auto space-y-2">
+
+          <div className="flex justify-between">
+            <span>Items</span>
+            <span>{items?.length}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span>Payment Method</span>
+            <span>{order.paymentMethod}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <span>Taka {subtotal}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span>Discount</span>
+            <span>
+              -Taka {order.discount || 0}
+            </span>
+          </div>
+
+          <div className="flex justify-between">
+            <span>Delivery Fee</span>
+            <span>
+              Taka {order.deliveryCharge || 0}
+            </span>
+          </div>
+
+          <div className="border-t pt-3 flex justify-between font-bold text-lg">
+
+            <span>Total</span>
+
+            <span>
+              Taka {total}
+            </span>
+
+          </div>
+
+        </div>
 
       </div>
 
