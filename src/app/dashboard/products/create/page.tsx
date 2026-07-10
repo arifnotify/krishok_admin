@@ -180,17 +180,28 @@ await fetchSubCategories(value);
 
 
 
-const handleLocationChange=
-(
-e:React.ChangeEvent<HTMLSelectElement>
-)=>{
+const handleLocationChange = (
+  id:string
+) => {
 
+if(locations.includes(id)){
 
-const values=
-Array.from(
-e.target.selectedOptions,
-(option)=>option.value
+setLocations(
+locations.filter(
+(item)=>item!==id
+)
 );
+
+}else{
+
+setLocations([
+...locations,
+id
+]);
+
+}
+
+};
 
 
 
@@ -810,78 +821,82 @@ className="w-full border rounded-2xl px-5 py-3.5"
 
 
 
-{/* LOCATION */}
+{/* LOCATIONS */}
+
+<div>
+
+<label className="block text-sm font-medium mb-3">
+Available Locations
+</label>
+
+
+<div className="grid grid-cols-3 gap-3">
+
+
+{
+locationList.map((location)=>(
+
+<label
+key={location._id}
+className="
+flex
+items-center
+gap-3
+border
+rounded-xl
+p-3
+cursor-pointer
+hover:bg-gray-50
+"
+>
+
+
+<input
+
+type="checkbox"
+
+checked={
+locations.includes(
+location._id
+)
+}
+
+onChange={()=> 
+handleLocationChange(
+location._id
+)
+}
+
+/>
 
 
 <div>
 
+<p className="font-medium">
 
-<label className="block text-sm font-medium mb-2">
+{location.district}
 
-Location
+</p>
+
+
+<p className="text-xs text-gray-500">
+
+{location.division}
+
+</p>
+
+
+</div>
+
 
 </label>
 
 
-
-<select
-
-multiple
-
-value={locations}
-
-onChange={handleLocationChange}
-
-className="
-w-full
-h-44
-border
-rounded-2xl
-px-5
-py-3
-bg-white
-text-black
-font-medium
-outline-none
-focus:border-blue-500
-"
-
->
-
-
-<option value="">
-Select Location
-</option>
-
-
-
-{
-locationList.map((item)=>(
-<option
-
-key={item._id}
-
-value={item._id}
-
-className="text-black bg-white"
-
->
-
-{item.division} - {item.district}
-
-</option>
 ))
 }
 
 
-
-</select>
-
-
-
-<p className="text-xs text-gray-500 mt-2">
-Multiple location select করতে Ctrl চাপুন
-</p>
+</div>
 
 
 </div>
