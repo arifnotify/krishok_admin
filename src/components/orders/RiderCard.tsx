@@ -1,92 +1,251 @@
 "use client";
 
-import { Truck, UserCheck } from "lucide-react";
 
-interface Props {
-  riders: any[];
-  selectedRider: string;
-  setSelectedRider: (value: string) => void;
-  assign: () => void;
-  locked: boolean;
+import {
+Truck,
+UserCheck
+} from "lucide-react";
+
+
+
+interface Props{
+
+riders:any[];
+
+selectedRider:string;
+
+setSelectedRider:(value:string)=>void;
+
+assign:()=>void;
+
+locked:boolean;
+
 }
 
+
+
+
+
 export default function RiderCard({
-  riders,
-  selectedRider,
-  setSelectedRider,
-  assign,
-  locked,
-}: Props) {
-  return (
-    <div
-      className={`
-        bg-white border rounded-2xl p-5 shadow-sm
-        ${locked ? "opacity-70" : ""}
-      `}
-    >
-      {/* HEADER */}
-      <div className="flex items-center gap-2 mb-4">
-        <Truck className="w-5 h-5 text-blue-600" />
-        <h2 className="text-lg font-bold">Assign Rider</h2>
 
-        {locked && (
-          <span className="ml-auto text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">
-            Locked
-          </span>
-        )}
-      </div>
+riders,
 
-      {/* SELECT RIDER */}
-      <div className="space-y-2">
-        <label className="text-sm text-gray-600">
-          Select Delivery Rider
-        </label>
+selectedRider,
 
-        <select
-          disabled={locked}
-          value={selectedRider}
-          onChange={(e) => setSelectedRider(e.target.value)}
-          className="
-            w-full border rounded-xl px-4 py-3
-            focus:outline-none focus:ring-2 focus:ring-blue-500
-            disabled:bg-gray-100 disabled:cursor-not-allowed
-          "
-        >
-          <option value="">Choose rider</option>
+setSelectedRider,
 
-          {riders.map((rider: any) => (
-            <option key={rider._id} value={rider._id}>
-              {rider.name}
-            </option>
-          ))}
-        </select>
-      </div>
+assign,
 
-      {/* BUTTON */}
-      <button
-        onClick={assign}
-        disabled={locked || !selectedRider}
-        className={`
-          w-full mt-4 flex items-center justify-center gap-2
-          py-3 rounded-xl font-semibold text-white transition
+locked
 
-          ${
-            locked || !selectedRider
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90"
-          }
-        `}
-      >
-        <UserCheck className="w-4 h-4" />
-        Assign Rider
-      </button>
+}:Props){
 
-      {/* INFO BOX */}
-      <div className="mt-4 text-xs text-gray-500">
-        {locked
-          ? "This order is locked (Delivered/Cancelled)."
-          : "You can assign a rider before delivery starts."}
-      </div>
-    </div>
-  );
+
+
+return(
+
+<div className={`
+bg-white
+border
+rounded-xl
+p-5
+h-full
+${locked?"opacity-60":""}
+`}>
+
+
+
+<div className="
+flex
+items-center
+gap-2
+mb-5
+">
+
+
+<Truck
+size={20}
+className="text-blue-600"
+/>
+
+
+<h2 className="
+font-bold
+text-gray-800
+">
+
+Delivery Rider
+
+</h2>
+
+
+</div>
+
+
+
+
+
+<label className="
+text-sm
+text-gray-600
+">
+
+Select Rider
+
+</label>
+
+
+
+
+<select
+
+
+disabled={locked}
+
+
+value={selectedRider}
+
+
+onChange={(e)=>
+setSelectedRider(e.target.value)
+}
+
+
+className="
+w-full
+mt-2
+border
+rounded-lg
+px-3
+py-3
+outline-none
+disabled:bg-gray-100
+"
+
+
+>
+
+
+<option value="">
+Choose Rider
+</option>
+
+
+
+{
+riders.map((rider:any)=>(
+
+<option
+
+key={rider._id}
+
+value={rider._id}
+
+>
+
+{rider.name}
+
+</option>
+
+))
+
+}
+
+
+
+</select>
+
+
+
+
+
+
+
+<button
+
+
+onClick={assign}
+
+
+disabled={
+locked ||
+!selectedRider
+}
+
+
+className={`
+mt-5
+w-full
+py-3
+rounded-lg
+font-semibold
+flex
+items-center
+justify-center
+gap-2
+text-white
+
+${
+locked || !selectedRider
+
+?
+
+"bg-gray-300"
+
+:
+
+"bg-blue-600 hover:bg-blue-700"
+
+}
+
+`}
+
+
+>
+
+
+<UserCheck size={17}/>
+
+Assign Rider
+
+
+</button>
+
+
+
+
+
+
+
+<p className="
+text-xs
+text-gray-500
+mt-4
+">
+
+{
+locked
+
+?
+
+"Order completed. Rider cannot be changed."
+
+:
+
+"Assign rider before delivery."
+
+}
+
+
+</p>
+
+
+
+
+
+</div>
+
+
+)
+
 }
