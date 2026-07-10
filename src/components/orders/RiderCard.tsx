@@ -30,9 +30,7 @@ export default function RiderCard({
     const riderName = rider?.name || "Unknown Rider";
 
     const confirmed = window.confirm(
-      `Assign Rider Confirmation
-
-Selected Rider: ${riderName}
+      `Selected Rider: ${riderName}
 
 Are you sure you want to assign this rider to the order?`
     );
@@ -53,6 +51,7 @@ Are you sure you want to assign this rider to the order?`
         ${locked ? "opacity-60" : ""}
       `}
     >
+      {/* Header */}
       <div
         className="
           flex
@@ -76,6 +75,7 @@ Are you sure you want to assign this rider to the order?`
         </h2>
       </div>
 
+      {/* Select Rider */}
       <label
         className="
           text-sm
@@ -116,31 +116,7 @@ Are you sure you want to assign this rider to the order?`
         ))}
       </select>
 
-      {selectedRider && (
-        <div
-          className="
-            mt-3
-            p-3
-            rounded-lg
-            bg-blue-50
-            border
-            border-blue-100
-          "
-        >
-          <p className="text-xs text-gray-500 mb-1">
-            Selected Rider
-          </p>
-
-          <p className="font-semibold text-blue-700">
-            {
-              riders.find(
-                (r: any) => r._id === selectedRider
-              )?.name
-            }
-          </p>
-        </div>
-      )}
-
+      {/* Assign Button */}
       <button
         onClick={handleAssign}
         disabled={
@@ -158,7 +134,7 @@ Are you sure you want to assign this rider to the order?`
           justify-center
           gap-2
           text-white
-          transition
+          transition-colors
 
           ${
             locked || !selectedRider
@@ -171,6 +147,7 @@ Are you sure you want to assign this rider to the order?`
         Assign Rider
       </button>
 
+      {/* Info */}
       <p
         className="
           text-xs
