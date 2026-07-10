@@ -205,13 +205,6 @@ id
 
 
 
-setLocations(values);
-
-
-};
-
-
-
 
 
 
@@ -900,7 +893,6 @@ location._id
 
 
 </div>
-
 
 
 
