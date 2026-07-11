@@ -2,366 +2,754 @@ import { InvoiceData } from "@/src/types/invoice";
 import { COMPANY } from "../components/company";
 import { formatCurrency } from "./currency";
 
+
 export const printReceipt = (
   invoice: InvoiceData
 ) => {
 
-  const printWindow = window.open(
-    "",
-    "_blank",
-    "width=420,height=900"
-  );
 
-  if (!printWindow) {
-    alert("Popup blocked. Please allow popup.");
-    return;
-  }
+const printWindow = window.open(
+  "",
+  "_blank",
+  "width=400,height=800"
+);
 
-  const totalItems = invoice.items.reduce(
-    (sum: number, item: any) =>
-      sum + Number(item.quantity || 0),
-    0
-  );
 
-  const subtotal =
-    Number(invoice.subtotal || 0);
 
-  const deliveryCharge =
-    Number(invoice.deliveryCharge || 0);
+if(!printWindow){
 
-  const discount =
-    Number(invoice.discount || 0);
+alert("Popup blocked");
 
-  const grandTotal =
-    subtotal +
-    deliveryCharge -
-    discount;
+return;
 
-  const itemsHtml = invoice.items
-    .map(
-      (item: any) => `
-      <div class="item">
+}
 
-        <div class="item-row">
 
-          <div class="item-name">
-            ${item.quantity} × ${item.productName}
-          </div>
 
-          <div class="item-price">
-            ${formatCurrency(item.totalPrice)}
-          </div>
+// ===============================
+// TOTAL CALCULATION
+// ===============================
 
-        </div>
 
-      </div>
-    `
-    )
-    .join("");
+const subtotal =
+Number(invoice.subtotal || 0);
 
-  printWindow.document.write(`
+
+const deliveryCharge =
+Number(invoice.deliveryCharge || 0);
+
+
+const discount =
+Number(invoice.discount || 0);
+
+
+const grandTotal =
+subtotal +
+deliveryCharge -
+discount;
+
+
+
+const totalItems =
+invoice.items.reduce(
+(sum,item)=>
+sum + item.quantity,
+0
+);
+
+
+
+
+// ===============================
+// ITEMS
+// ===============================
+
+
+const itemsHTML = invoice.items
+.map(
+(item:any)=>
+`
+
+<div class="item">
+
+
+<div class="item-row">
+
+
+<div class="product">
+
+
+<div class="en">
+
+${item.quantity} × ${item.productName}
+
+</div>
+
+
+
+${
+item.productNameBn
+?
+`
+<div class="bn">
+
+${item.productNameBn}
+
+</div>
+`
+:
+""
+}
+
+
+</div>
+
+
+
+<div class="price">
+
+${formatCurrency(item.totalPrice)}
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+`
+)
+.join("");
+
+
+
+
+
+
+printWindow.document.write(`
+
+
 <!DOCTYPE html>
+
 <html>
 
 <head>
 
-<meta charset="UTF-8" />
 
-<title>Receipt</title>
+<title>
+Receipt
+</title>
+
+
 
 <style>
 
+
 *{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+
+box-sizing:border-box;
+
 }
+
+
 
 body{
-  width:80mm;
-  margin:auto;
-  padding:10px;
-  font-family:Arial, Helvetica, sans-serif;
-  color:#000;
-  background:#fff;
+
+width:80mm;
+
+margin:auto;
+
+padding:10px;
+
+font-family:
+
+Arial,
+
+"Noto Sans Bengali",
+
+sans-serif;
+
+color:#000;
+
 }
 
-.receipt{
-  width:100%;
-}
+
 
 .center{
-  text-align:center;
+
+text-align:center;
+
 }
+
+
 
 .company{
-  font-size:26px;
-  font-weight:800;
-  margin-bottom:5px;
+
+font-size:24px;
+
+font-weight:800;
+
 }
 
-.subtitle{
-  font-size:14px;
+
+
+.small{
+
+font-size:12px;
+
 }
 
-.date{
-  margin-top:8px;
-  font-size:12px;
-}
+
 
 .line{
-  border-top:1px dashed #999;
-  margin:12px 0;
+
+border-top:1px dashed #000;
+
+margin:12px 0;
+
 }
 
-.order-label{
-  font-size:14px;
+
+
+.order-title{
+
+font-size:14px;
+
 }
+
+
 
 .order-number{
-  font-size:42px;
-  font-weight:800;
-  margin-top:8px;
-  letter-spacing:2px;
+
+font-size:42px;
+
+font-weight:900;
+
+letter-spacing:2px;
+
+margin-top:8px;
+
 }
+
+
 
 .customer{
-  font-size:14px;
-  line-height:1.7;
+
+font-size:13px;
+
+line-height:1.6;
+
 }
 
-.customer strong{
-  display:inline-block;
-  width:70px;
-}
+
 
 .item{
-  margin-bottom:10px;
+
+margin-bottom:10px;
+
 }
+
+
 
 .item-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
+
+display:flex;
+
+justify-content:space-between;
+
+gap:10px;
+
 }
 
-.item-name{
-  flex:1;
-  font-size:14px;
-  font-weight:600;
+
+
+.product{
+
+width:70%;
+
 }
 
-.item-price{
-  font-size:14px;
-  font-weight:700;
-  white-space:nowrap;
+
+
+.en{
+
+font-size:14px;
+
+font-weight:700;
+
 }
+
+
+
+.bn{
+
+font-size:13px;
+
+margin-top:3px;
+
+color:#444;
+
+}
+
+
+
+.price{
+
+font-size:14px;
+
+font-weight:700;
+
+white-space:nowrap;
+
+}
+
+
 
 .summary{
-  margin-top:5px;
+
+font-size:15px;
+
 }
 
-.summary-row{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:8px;
-  font-size:15px;
+
+
+.row{
+
+display:flex;
+
+justify-content:space-between;
+
+margin-bottom:8px;
+
 }
 
-.total-row{
-  display:flex;
-  justify-content:space-between;
-  margin-top:12px;
-  padding-top:10px;
-  border-top:1px dashed #999;
-  font-size:22px;
-  font-weight:800;
+
+
+.total{
+
+display:flex;
+
+justify-content:space-between;
+
+font-size:22px;
+
+font-weight:900;
+
+border-top:1px dashed #000;
+
+padding-top:10px;
+
+margin-top:10px;
+
 }
+
+
 
 .payment{
-  margin-top:15px;
-  text-align:center;
+
+text-align:center;
+
+margin-top:15px;
+
 }
+
+
 
 .payment-method{
-  font-size:18px;
-  font-weight:700;
-  margin-top:5px;
+
+font-size:20px;
+
+font-weight:bold;
+
 }
+
+
+
+.thanks{
+
+text-align:center;
+
+margin-top:20px;
+
+font-size:25px;
+
+font-weight:800;
+
+}
+
+
 
 .footer{
-  margin-top:20px;
-  text-align:center;
+
+text-align:center;
+
+font-size:12px;
+
+margin-top:10px;
+
+line-height:1.5;
+
 }
 
-.footer h3{
-  font-size:24px;
-  margin-bottom:8px;
-}
 
-.footer p{
-  font-size:12px;
-  line-height:1.5;
-}
 
 @media print{
 
-  body{
-    width:80mm;
-  }
+
+body{
+
+width:80mm;
 
 }
 
+
+
+}
+
+
+
 </style>
+
 
 </head>
 
+
+
 <body>
 
-<div class="receipt">
 
-  <div class="center">
 
-    <div class="company">
-      ${COMPANY.name}
-    </div>
+<div class="center">
 
-    <div class="subtitle">
-      Delivery Receipt
-    </div>
 
-    <div class="date">
-      ${new Date().toLocaleString()}
-    </div>
+<div class="company">
 
-  </div>
-
-  <div class="line"></div>
-
-  <div class="center">
-
-    <div class="order-label">
-      Order Number
-    </div>
-
-    <div class="order-number">
-      ${invoice.orderNumber}
-    </div>
-
-  </div>
-
-  <div class="line"></div>
-
-  <div class="customer">
-
-    <div>
-      <strong>Name:</strong>
-      ${invoice.customer.name}
-    </div>
-
-    <div>
-      <strong>Phone:</strong>
-      ${invoice.customer.phone}
-    </div>
-
-    <div>
-      <strong>Address:</strong>
-      ${invoice.customer.address}
-    </div>
-
-  </div>
-
-  <div class="line"></div>
-
-  ${itemsHtml}
-
-  <div class="line"></div>
-
-  <div class="summary">
-
-    <div class="summary-row">
-      <span>Items</span>
-      <span>${totalItems}</span>
-    </div>
-
-    <div class="summary-row">
-      <span>Subtotal</span>
-      <span>${formatCurrency(subtotal)}</span>
-    </div>
-
-    <div class="summary-row">
-      <span>Delivery Fee</span>
-      <span>${formatCurrency(deliveryCharge)}</span>
-    </div>
-
-    ${
-      discount > 0
-        ? `
-        <div class="summary-row">
-          <span>Discount</span>
-          <span>-${formatCurrency(discount)}</span>
-        </div>
-      `
-        : ""
-    }
-
-    <div class="total-row">
-      <span>Total</span>
-      <span>${formatCurrency(grandTotal)}</span>
-    </div>
-
-  </div>
-
-  <div class="line"></div>
-
-  <div class="payment">
-
-    <div>
-      Payment Method
-    </div>
-
-    <div class="payment-method">
-      ${invoice.paymentMethod}
-    </div>
-
-  </div>
-
-  <div class="footer">
-
-    <h3>
-      Thank You!
-    </h3>
-
-    <p>
-      ${COMPANY.address}
-    </p>
-
-    <p>
-      ${COMPANY.phone}
-    </p>
-
-  </div>
+${COMPANY.name}
 
 </div>
 
+
+
+<div class="small">
+
+Delivery Receipt
+
+</div>
+
+
+
+<div class="small">
+
+${new Date().toLocaleString()}
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="line"></div>
+
+
+
+
+<div class="center">
+
+
+<div class="order-title">
+
+ORDER NUMBER
+
+</div>
+
+
+<div class="order-number">
+
+${invoice.orderNumber}
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="line"></div>
+
+
+
+
+
+<div class="customer">
+
+
+<b>
+Customer:
+</b>
+
+${invoice.customer.name}
+
+
+<br/>
+
+
+<b>
+Phone:
+</b>
+
+${invoice.customer.phone}
+
+
+<br/>
+
+
+<b>
+Address:
+</b>
+
+${invoice.customer.address}
+
+
+</div>
+
+
+
+
+
+<div class="line"></div>
+
+
+
+
+
+${itemsHTML}
+
+
+
+
+
+
+<div class="line"></div>
+
+
+
+
+
+<div class="summary">
+
+
+<div class="row">
+
+<span>
+Items
+</span>
+
+
+<span>
+${totalItems}
+</span>
+
+</div>
+
+
+
+
+<div class="row">
+
+<span>
+Subtotal
+</span>
+
+
+<span>
+
+${formatCurrency(subtotal)}
+
+</span>
+
+</div>
+
+
+
+
+
+<div class="row">
+
+<span>
+Delivery Fee
+</span>
+
+
+<span>
+
+${formatCurrency(deliveryCharge)}
+
+</span>
+
+
+</div>
+
+
+
+
+
+${
+discount > 0
+?
+`
+
+<div class="row">
+
+<span>
+Discount
+</span>
+
+
+<span>
+
+- ${formatCurrency(discount)}
+
+</span>
+
+
+</div>
+
+`
+:
+""
+}
+
+
+
+
+
+
+<div class="total">
+
+
+<span>
+
+TOTAL
+
+</span>
+
+
+<span>
+
+${formatCurrency(grandTotal)}
+
+</span>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+
+
+<div class="line"></div>
+
+
+
+
+<div class="payment">
+
+
+<div>
+
+Payment Method
+
+</div>
+
+
+<div class="payment-method">
+
+${invoice.paymentMethod}
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+<div class="thanks">
+
+Thank You ❤️
+
+</div>
+
+
+
+
+
+<div class="footer">
+
+
+${COMPANY.address}
+
+
+<br/>
+
+
+${COMPANY.phone}
+
+
+</div>
+
+
+
+
+
+
 <script>
 
-window.onload = () => {
 
-  setTimeout(() => {
+window.onload=function(){
 
-    window.print();
 
-  }, 300);
+setTimeout(()=>{
 
-};
+
+window.print();
+
+
+},300);
+
+
+}
+
+
 
 </script>
 
+
+
 </body>
+
 </html>
+
+
 `);
 
-  printWindow.document.close();
+
+
+printWindow.document.close();
+
+
 };
