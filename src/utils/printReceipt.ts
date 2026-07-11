@@ -2,7 +2,10 @@ import { InvoiceData } from "@/src/types/invoice";
 import { COMPANY } from "../components/company";
 import { formatCurrency } from "./currency";
 
-export const printReceipt = (invoice: InvoiceData) => {
+export const printReceipt = (
+  invoice: InvoiceData
+) => {
+
   const printWindow = window.open(
     "",
     "_blank",
@@ -15,16 +18,31 @@ export const printReceipt = (invoice: InvoiceData) => {
   }
 
   const totalItems = invoice.items.reduce(
-    (sum, item) => sum + item.quantity,
+    (sum: number, item: any) =>
+      sum + Number(item.quantity || 0),
     0
   );
 
+  const subtotal =
+    Number(invoice.subtotal || 0);
+
+  const deliveryCharge =
+    Number(invoice.deliveryCharge || 0);
+
+  const discount =
+    Number(invoice.discount || 0);
+
+  const grandTotal =
+    subtotal +
+    deliveryCharge -
+    discount;
+
   const itemsHtml = invoice.items
     .map(
-      (item) => `
+      (item: any) => `
       <div class="item">
 
-        <div class="item-header">
+        <div class="item-row">
 
           <div class="item-name">
             ${item.quantity} × ${item.productName}
@@ -44,9 +62,10 @@ export const printReceipt = (invoice: InvoiceData) => {
   printWindow.document.write(`
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<meta charset="utf-8"/>
+<meta charset="UTF-8" />
 
 <title>Receipt</title>
 
@@ -59,10 +78,10 @@ export const printReceipt = (invoice: InvoiceData) => {
 }
 
 body{
-  font-family: Arial, Helvetica, sans-serif;
   width:80mm;
-  margin:0 auto;
+  margin:auto;
   padding:10px;
+  font-family:Arial, Helvetica, sans-serif;
   color:#000;
   background:#fff;
 }
@@ -75,70 +94,52 @@ body{
   text-align:center;
 }
 
-.logo{
-  font-size:32px;
+.company{
+  font-size:26px;
   font-weight:800;
-  letter-spacing:1px;
-  margin-bottom:6px;
+  margin-bottom:5px;
 }
 
-.company-name{
-  font-size:15px;
-  font-weight:600;
-}
-
-.delivery-text{
-  margin-top:4px;
-  font-size:15px;
+.subtitle{
+  font-size:14px;
 }
 
 .date{
-  margin-top:10px;
-  font-size:13px;
+  margin-top:8px;
+  font-size:12px;
 }
 
-.separator{
+.line{
   border-top:1px dashed #999;
-  margin:14px 0;
+  margin:12px 0;
 }
 
-.order-title{
-  font-size:18px;
-  font-weight:600;
+.order-label{
+  font-size:14px;
 }
 
 .order-number{
-  font-size:50px;
+  font-size:42px;
   font-weight:800;
-  letter-spacing:3px;
-  margin-top:10px;
-  line-height:1;
+  margin-top:8px;
+  letter-spacing:2px;
 }
 
 .customer{
-  font-size:15px;
-  line-height:1.8;
+  font-size:14px;
+  line-height:1.7;
 }
 
-.customer-row{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.customer-label{
-  font-weight:700;
-}
-
-.items{
-  margin-top:5px;
+.customer strong{
+  display:inline-block;
+  width:70px;
 }
 
 .item{
-  margin-bottom:12px;
+  margin-bottom:10px;
 }
 
-.item-header{
+.item-row{
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
@@ -147,81 +148,65 @@ body{
 
 .item-name{
   flex:1;
-  font-size:15px;
+  font-size:14px;
   font-weight:600;
-  line-height:1.3;
 }
 
 .item-price{
-  font-size:15px;
+  font-size:14px;
   font-weight:700;
   white-space:nowrap;
 }
 
 .summary{
-  margin-top:10px;
+  margin-top:5px;
 }
 
 .summary-row{
   display:flex;
   justify-content:space-between;
-  margin-bottom:10px;
-  font-size:17px;
+  margin-bottom:8px;
+  font-size:15px;
 }
 
-.total{
+.total-row{
   display:flex;
   justify-content:space-between;
   margin-top:12px;
-  font-size:24px;
+  padding-top:10px;
+  border-top:1px dashed #999;
+  font-size:22px;
   font-weight:800;
 }
 
 .payment{
+  margin-top:15px;
   text-align:center;
-  margin-top:18px;
-}
-
-.payment-label{
-  font-size:14px;
 }
 
 .payment-method{
-  font-size:24px;
+  font-size:18px;
   font-weight:700;
-  margin-top:8px;
-}
-
-.thank-you{
-  text-align:center;
-  margin-top:20px;
-}
-
-.thank-you-text{
-  font-size:30px;
-  font-weight:800;
+  margin-top:5px;
 }
 
 .footer{
+  margin-top:20px;
   text-align:center;
-  margin-top:12px;
-  font-size:13px;
 }
 
-.address{
-  margin-top:8px;
+.footer h3{
+  font-size:24px;
+  margin-bottom:8px;
+}
+
+.footer p{
   font-size:12px;
   line-height:1.5;
 }
 
-.phone{
-  margin-top:5px;
-  font-size:12px;
-}
-
 @media print{
 
-  html,
   body{
     width:80mm;
   }
@@ -238,12 +223,12 @@ body{
 
   <div class="center">
 
-    <div class="logo">
+    <div class="company">
       ${COMPANY.name}
     </div>
 
-    <div class="company-name">
-      Delivery Order
+    <div class="subtitle">
+      Delivery Receipt
     </div>
 
     <div class="date">
@@ -252,11 +237,11 @@ body{
 
   </div>
 
-  <div class="separator"></div>
+  <div class="line"></div>
 
   <div class="center">
 
-    <div class="order-title">
+    <div class="order-label">
       Order Number
     </div>
 
@@ -266,73 +251,73 @@ body{
 
   </div>
 
-  <div class="separator"></div>
+  <div class="line"></div>
 
   <div class="customer">
 
-    <div class="customer-row">
-      <span class="customer-label">Customer:</span>
-      <span>${invoice.customer.name}</span>
+    <div>
+      <strong>Name:</strong>
+      ${invoice.customer.name}
     </div>
 
-    <div class="customer-row">
-      <span class="customer-label">Phone:</span>
-      <span>${invoice.customer.phone}</span>
+    <div>
+      <strong>Phone:</strong>
+      ${invoice.customer.phone}
     </div>
 
-    <div style="margin-top:8px;">
-      <span class="customer-label">Address:</span>
-      <br/>
+    <div>
+      <strong>Address:</strong>
       ${invoice.customer.address}
     </div>
 
   </div>
 
-  <div class="separator"></div>
+  <div class="line"></div>
 
-  <div class="items">
+  ${itemsHtml}
 
-    ${itemsHtml}
-
-  </div>
-
-  <div class="separator"></div>
+  <div class="line"></div>
 
   <div class="summary">
 
     <div class="summary-row">
+      <span>Items</span>
+      <span>${totalItems}</span>
+    </div>
+
+    <div class="summary-row">
       <span>Subtotal</span>
-      <span>${formatCurrency(invoice.subtotal)}</span>
+      <span>${formatCurrency(subtotal)}</span>
     </div>
 
     <div class="summary-row">
       <span>Delivery Fee</span>
-      <span>${formatCurrency(invoice.deliveryCharge)}</span>
+      <span>${formatCurrency(deliveryCharge)}</span>
     </div>
 
     ${
-      invoice.discount > 0
+      discount > 0
         ? `
         <div class="summary-row">
           <span>Discount</span>
-          <span>-${formatCurrency(invoice.discount)}</span>
+          <span>-${formatCurrency(discount)}</span>
         </div>
       `
         : ""
     }
 
-    <div class="total">
-      <span>Total (${totalItems})</span>
-      <span>${formatCurrency(invoice.total)}</span>
+    <div class="total-row">
+      <span>Total</span>
+      <span>${formatCurrency(grandTotal)}</span>
     </div>
 
   </div>
 
-  <div class="separator"></div>
+  <div class="line"></div>
 
   <div class="payment">
 
-    <div class="payment-label">
+    <div>
       Payment Method
     </div>
 
@@ -342,23 +327,19 @@ body{
 
   </div>
 
-  <div class="thank-you">
-
-    <div class="thank-you-text">
-      Thank You!
-    </div>
-
-  </div>
-
   <div class="footer">
 
-    <div class="address">
-      ${COMPANY.address}
-    </div>
+    <h3>
+      Thank You!
+    </h3>
 
-    <div class="phone">
+    <p>
+      ${COMPANY.address}
+    </p>
+
+    <p>
       ${COMPANY.phone}
-    </div>
+    </p>
 
   </div>
 
