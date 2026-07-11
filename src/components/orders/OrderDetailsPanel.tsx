@@ -59,76 +59,60 @@ order.orderStatus==="Cancelled";
 
 
 
-const buildInvoice=()=>{
+const buildInvoice = () => {
 
+  const subtotal =
+    items?.reduce(
+      (sum:number,item:any)=>
+      sum + (item.totalPrice || 0),
+      0
+    ) || 0;
 
-const subtotal =
-items?.reduce(
-(sum:number,item:any)=>
-sum+(item.totalPrice||0),
-0
-)||0;
+  const deliveryCharge =
+    Number(order.deliveryCharge || 0);
 
+  const discount =
+    Number(order.discount || 0);
 
+  const total =
+    subtotal +
+    deliveryCharge -
+    discount;
 
-return{
+  return {
 
-invoiceNumber:order.orderNumber,
+    invoiceNumber: order.orderNumber,
+    orderNumber: order.orderNumber,
+    invoiceDate: new Date().toISOString(),
 
-orderNumber:order.orderNumber,
+    customer: {
+      name:
+        order.shippingAddress?.fullName ||
+        "Customer",
 
-invoiceDate:new Date().toISOString(),
+      phone: order.customerPhone,
 
+      address:
+        `${order.shippingAddress?.areaOrVillage || ""}
+         ${order.shippingAddress?.landmark || ""}`,
+    },
 
-customer:{
+    items,
 
-name:
-order.shippingAddress?.fullName || "Customer",
+    subtotal,
 
-phone:
-order.customerPhone,
+    deliveryCharge,
 
+    discount,
 
-address:
-`${order.shippingAddress?.areaOrVillage || ""} 
-${order.shippingAddress?.landmark || ""}`
+    total, // ✅ FIXED
 
-},
+    paymentMethod: order.paymentMethod,
 
+    paymentStatus: order.isPaid,
 
-items,
-
-
-subtotal,
-
-
-deliveryCharge:
-order.deliveryCharge || 0,
-
-
-discount:
-order.discount || 0,
-
-
-total:subtotal,
-
-
-paymentMethod:
-order.paymentMethod,
-
-
-paymentStatus:
-order.isPaid,
-
-
-orderStatus:
-order.orderStatus,
-
-
-}
-
-
-
+    orderStatus: order.orderStatus,
+  };
 };
 
 
