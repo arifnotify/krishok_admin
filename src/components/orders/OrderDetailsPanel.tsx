@@ -59,60 +59,115 @@ order.orderStatus==="Cancelled";
 
 
 
-const buildInvoice = () => {
+const buildInvoice=()=>{
 
-  const subtotal =
-    items?.reduce(
-      (sum:number,item:any)=>
-      sum + (item.totalPrice || 0),
-      0
-    ) || 0;
 
-  const deliveryCharge =
-    Number(order.deliveryCharge || 0);
+const subtotal =
+items?.reduce(
+(sum:number,item:any)=>
+sum+(item.totalPrice||0),
+0
+)||0;
 
-  const discount =
-    Number(order.discount || 0);
 
-  const total =
-    subtotal +
-    deliveryCharge -
-    discount;
 
-  return {
+return{
 
-    invoiceNumber: order.orderNumber,
-    orderNumber: order.orderNumber,
-    invoiceDate: new Date().toISOString(),
 
-    customer: {
-      name:
-        order.shippingAddress?.fullName ||
-        "Customer",
+invoiceNumber:
+order.orderNumber,
 
-      phone: order.customerPhone,
 
-      address:
-        `${order.shippingAddress?.areaOrVillage || ""}
-         ${order.shippingAddress?.landmark || ""}`,
-    },
+orderNumber:
+order.orderNumber,
 
-    items,
 
-    subtotal,
+invoiceDate:
+new Date().toISOString(),
 
-    deliveryCharge,
 
-    discount,
 
-    total, // ✅ FIXED
+customer:{
 
-    paymentMethod: order.paymentMethod,
 
-    paymentStatus: order.isPaid,
+name:
+order.shippingAddress?.fullName ||
+"Customer",
 
-    orderStatus: order.orderStatus,
-  };
+
+phone:
+order.customerPhone,
+
+
+address:
+`${order.shippingAddress?.areaOrVillage || ""}
+${order.shippingAddress?.landmark || ""}`
+
+},
+
+
+
+items: items.map((item:any)=>({
+
+productName:
+item.product?.title?.en ||
+item.title?.en ||
+item.productName ||
+"",
+
+
+productNameBn:
+item.product?.title?.bn ||
+item.title?.bn ||
+"",
+
+
+quantity:item.quantity,
+
+
+price:item.price,
+
+
+totalPrice:item.totalPrice,
+
+})),
+
+
+
+subtotal,
+
+
+deliveryCharge:
+order.deliveryCharge || 0,
+
+
+discount:
+order.discount || 0,
+
+
+
+total:
+subtotal +
+(order.deliveryCharge || 0) -
+(order.discount || 0),
+
+
+
+paymentMethod:
+order.paymentMethod,
+
+
+paymentStatus:
+order.isPaid,
+
+
+orderStatus:
+order.orderStatus,
+
+
+}
+
+
 };
 
 
