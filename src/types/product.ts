@@ -17,7 +17,7 @@ export interface Product {
 
   discountPrice: number;
 
-  flashDiscountPrice?: number;
+  flashSalePrice?: number;
 
   stock: number;
 
