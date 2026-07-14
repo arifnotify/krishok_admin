@@ -172,9 +172,40 @@ export default function ProductsPage() {
               </td>
 
 
-              <td className="p-4">
-                ৳ {product.price}
-              </td>
+             ```tsx
+<td className="p-4">
+  {product.isFlashSale &&
+  product.flashSalePrice &&
+  product.flashSalePrice > 0 ? (
+    <div className="flex flex-col">
+      <span className="font-bold text-red-600">
+        ৳ {product.flashSalePrice}
+      </span>
+
+      <span className="text-sm text-gray-400 line-through">
+        ৳ {product.price}
+      </span>
+    </div>
+  ) : product.discountPrice &&
+    product.discountPrice > 0 &&
+    product.discountPrice < product.price ? (
+    <div className="flex flex-col">
+      <span className="font-bold text-green-600">
+        ৳ {product.discountPrice}
+      </span>
+
+      <span className="text-sm text-gray-400 line-through">
+        ৳ {product.price}
+      </span>
+    </div>
+  ) : (
+    <span className="font-bold">
+      ৳ {product.price}
+    </span>
+  )}
+</td>
+```
+
 
 
               <td className="p-4">
