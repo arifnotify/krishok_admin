@@ -170,9 +170,6 @@ export default function ProductsPage() {
               <td className="p-4">
                 {product.category?.name}
               </td>
-
-
-             ```tsx
 <td className="p-4">
   {product.isFlashSale &&
   product.flashSalePrice &&
@@ -204,7 +201,6 @@ export default function ProductsPage() {
     </span>
   )}
 </td>
-```
 
 
 
