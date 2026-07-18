@@ -80,7 +80,7 @@ export default function EditBannerPage() {
 
       alert("Banner Updated Successfully");
 
-      router.push("/banners");
+      router.push("/dashboard/banners");
     } catch (err: any) {
       console.log(err?.response?.data || err);
       alert("Update Failed");
