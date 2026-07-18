@@ -64,7 +64,7 @@ export default function CreateBannerPage() {
 
       alert("Banner Created Successfully");
 
-      router.push("/banners");
+      router.push("dashboard/banners");
     } catch (err: any) {
       console.log("ERROR:", err?.response?.data || err);
       alert(
