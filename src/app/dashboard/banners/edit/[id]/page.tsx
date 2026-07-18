@@ -22,7 +22,7 @@ export default function EditBannerPage() {
   // FETCH SINGLE BANNER
   const fetchBanner = async () => {
     try {
-      const res = await api.get(`/dashboard/banners/${id}`);
+      const res = await api.get(`/banners/${id}`);
 
       console.log("BANNER DATA:", res.data);
 
@@ -80,7 +80,7 @@ export default function EditBannerPage() {
 
       alert("Banner Updated Successfully");
 
-      router.push("/dashboard/banners");
+      router.push("/banners");
     } catch (err: any) {
       console.log(err?.response?.data || err);
       alert("Update Failed");
