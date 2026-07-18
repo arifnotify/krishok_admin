@@ -86,7 +86,7 @@ export default function EditMainCategoryPage() {
 
       alert("Category Updated Successfully");
 
-      window.location.href = "/categories";
+      window.location.href = "/dashboard/categories";
     } catch (error) {
       console.log(error);
       alert("Update Failed");
