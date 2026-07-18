@@ -22,7 +22,7 @@ export default function EditBannerPage() {
   // FETCH SINGLE BANNER
   const fetchBanner = async () => {
     try {
-      const res = await api.get(`/banners/${id}`);
+      const res = await api.get(`/dashboard/banners/${id}`);
 
       console.log("BANNER DATA:", res.data);
 
