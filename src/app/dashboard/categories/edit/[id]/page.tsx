@@ -24,7 +24,7 @@ export default function EditCategoryPage() {
   const load = async () => {
     const [cats, res] = await Promise.all([
       getCategories(),
-      api.get(`/categories/${id}`),
+      api.get(`/dashboard/categories/${id}`),
     ]);
 
     setCategories(cats);
@@ -47,7 +47,7 @@ export default function EditCategoryPage() {
 
     alert("Updated");
 
-    window.location.href = "/categories";
+    window.location.href = "/dashboard/categories";
   };
 
   return (
