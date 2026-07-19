@@ -19,18 +19,21 @@ export default function CategoriesPage() {
   const loadCategories = async () => {
     try {
       const data = await getCategories();
-      // যদি সার্ভার থেকে অর্ডার করা ডেটা না আসে, তবে আমরা order ফিল্ড অনুযায়ী সর্ট করে নেব
+      // order ফিল্ড অনুযায়ী ক্যাটাগরিগুলো সর্ট (Sort) করা হচ্ছে
       const sortedData = data.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
       setCategories(sortedData);
     } catch (error) {
       console.error(error);
     } finally {
-      styleLoading(false);
+      setLoading(false); // এখানে ত্রুটিটি সংশোধন করা হয়েছে
     }
   };
 
   const handleDelete = async (id: string) => {
-    const confirmDelete = confirm("Are you sure you want to delete this category?");
+    const confirmDelete = confirm(
+      "Are you sure you want to delete this category?"
+    );
+
     if (!confirmDelete) return;
 
     try {
@@ -43,30 +46,26 @@ export default function CategoriesPage() {
     }
   };
 
-  // উপরে বা নিচে নেওয়ার ফাংশন
+  // উপরে বা নিচে নেওয়ার ফাংশন (Reorder Function)
   const handleMove = async (index: number, direction: "up" | "down", type: "main" | "sub") => {
-    // বর্তমান টাইপ অনুযায়ী ক্যাটাগরি ফিল্টার করা তালিকা
     const currentList = type === "main" ? mainCategories : subCategories;
     
-    if (direction === "up" && index === 0) return; // একদম উপরে থাকলে আর উপরে যাবে না
-    if (direction === "down" && index === currentList.length - 1) return; // একদম নিচে থাকলে আর নিচে যাবে nন
+    if (direction === "up" && index === 0) return; 
+    if (direction === "down" && index === currentList.length - 1) return; 
 
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     
-    // অ্যারে-তে পজিশন অদলবদল করা (Swap)
+    // অ্যারে-তে পজিশন অদলবদল (Swap) করা
     const updatedList = [...currentList];
     const temp = updatedList[index];
     updatedList[index] = updatedList[targetIndex];
     updatedList[targetIndex] = temp;
 
-    // এখানে আপনার সার্ভারে নতুন অর্ডারটি সেভ করার জন্য API কল করতে হবে।
-    // উদাহরণস্বরূপ: 
-    // await updateCategoryOrder({ id1: updatedList[index]._id, order1: index, id2: updatedList[targetIndex]._id, order2: targetIndex });
-    
-    // সাময়িকভাবে UI আপডেট করার জন্য:
+    // অন্যান্য ক্যাটাগরিগুলোর সাথে যুক্ত করা
     const remainingList = type === "main" ? subCategories : mainCategories;
     setCategories([...updatedList, ...remainingList]);
     
+    // নোট: ইউজার অ্যাপে পার্মানেন্টলি দেখানোর জন্য এই পজিশনটি ব্যাকএন্ড API-তে সেভ করতে হবে।
     alert("Order updated locally! Make sure to save this order in your backend API.");
   };
 
@@ -84,11 +83,19 @@ export default function CategoriesPage() {
           <h1 className="text-3xl font-bold">Categories</h1>
           <p className="text-gray-500 mt-1">Manage Main & Sub Categories</p>
         </div>
+
         <div className="flex gap-3">
-          <Link href="/dashboard/categories/main/create" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl">
+          <Link
+            href="/dashboard/categories/main/create"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
+          >
             + Main Category
           </Link>
-          <Link href="/dashboard/categories/sub/create" className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl">
+
+          <Link
+            href="/dashboard/categories/sub/create"
+            className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl"
+          >
             + Sub Category
           </Link>
         </div>
@@ -108,9 +115,13 @@ export default function CategoriesPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={4} className="py-10 text-center">Loading...</td></tr>
+              <tr>
+                <td colSpan={4} className="py-10 text-center">Loading...</td>
+              </tr>
             ) : mainCategories.length === 0 ? (
-              <tr><td colSpan={4} className="py-10 text-center">No Main Categories Found</td></tr>
+              <tr>
+                <td colSpan={4} className="py-10 text-center">No Main Categories Found</td>
+              </tr>
             ) : (
               mainCategories.map((item, index) => (
                 <tr key={item._id} className="border-b">
@@ -135,16 +146,32 @@ export default function CategoriesPage() {
                   </td>
                   <td className="py-4">
                     {item.image ? (
-                      <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover border" />
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-14 h-14 rounded-lg object-cover border"
+                      />
                     ) : (
-                      <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center">N/A</div>
+                      <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center">
+                        N/A
+                      </div>
                     )}
                   </td>
                   <td className="py-4 font-medium">{item.name}</td>
                   <td className="py-4">
                     <div className="flex gap-3">
-                      <Link href={`/dashboard/categories/main/edit/${item._id}`} className="bg-blue-500 text-white px-4 py-2 rounded-lg">Edit</Link>
-                      <button onClick={() => handleDelete(item._id)} className="bg-red-500 text-white px-4 py-2 rounded-lg">Delete</button>
+                      <Link
+                        href={`/dashboard/categories/main/edit/${item._id}`}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -169,9 +196,13 @@ export default function CategoriesPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="py-10 text-center">Loading...</td></tr>
+              <tr>
+                <td colSpan={5} className="py-10 text-center">Loading...</td>
+              </tr>
             ) : subCategories.length === 0 ? (
-              <tr><td colSpan={5} className="py-10 text-center">No Sub Categories Found</td></tr>
+              <tr>
+                <td colSpan={5} className="py-10 text-center">No Sub Categories Found</td>
+              </tr>
             ) : (
               subCategories.map((item, index) => (
                 <tr key={item._id} className="border-b">
@@ -196,17 +227,35 @@ export default function CategoriesPage() {
                   </td>
                   <td className="py-4">
                     {item.image ? (
-                      <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover border" />
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-14 h-14 rounded-lg object-cover border"
+                      />
                     ) : (
-                      <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center">N/A</div>
+                      <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center">
+                        N/A
+                      </div>
                     )}
                   </td>
                   <td className="py-4 font-medium">{item.name}</td>
-                  <td className="py-4">{item.parentCategory?.name || "-"}</td>
+                  <td className="py-4">
+                    {item.parentCategory?.name || "-"}
+                  </td>
                   <td className="py-4">
                     <div className="flex gap-3">
-                      <Link href={`/dashboard/categories/sub/edit/${item._id}`} className="bg-blue-500 text-white px-4 py-2 rounded-lg">Edit</Link>
-                      <button onClick={() => handleDelete(item._id)} className="bg-red-500 text-white px-4 py-2 rounded-lg">Delete</button>
+                      <Link
+                        href={`/dashboard/categories/sub/edit/${item._id}`}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
