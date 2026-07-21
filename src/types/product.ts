@@ -45,4 +45,8 @@ export interface Product {
   productType?: string;
 
   expiryDate?: string;
+
+  isFeatured?: boolean;
+
+  homePriority?: number;
 }
