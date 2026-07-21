@@ -50,6 +50,12 @@ const [unit,setUnit]=useState("pcs");
 
 const [productType,setProductType]=
 useState("regular");
+  
+const [isFeatured,setIsFeatured] =
+useState(false);
+
+const [homePriority,setHomePriority] =
+useState("0");
 
 const [expiryDate,setExpiryDate]=
 useState("");
@@ -159,6 +165,16 @@ product.unit || "pcs"
 
 setProductType(
 product.productType || "regular"
+);
+
+setIsFeatured(
+product.isFeatured || false
+);
+
+setHomePriority(
+String(
+product.homePriority || 0
+)
 );
 
 setImages(
@@ -370,6 +386,11 @@ en:descriptionEn,
 bn:descriptionBn,
 
 },
+
+isFeatured,
+
+homePriority:
+Number(homePriority),
 
 youtubeVideoUrl,
 
@@ -728,6 +749,51 @@ className="w-full border rounded-2xl px-5 py-3.5"
 
 )
 }
+
+<div className="grid grid-cols-2 gap-6">
+
+<label
+className="
+flex
+items-center
+gap-3
+"
+>
+
+<input
+type="checkbox"
+checked={isFeatured}
+onChange={(e)=>
+setIsFeatured(
+e.target.checked
+)
+}
+/>
+
+<span>
+Featured Product
+</span>
+
+</label>
+
+<input
+type="number"
+placeholder="Home Priority"
+value={homePriority}
+onChange={(e)=>
+setHomePriority(
+e.target.value
+)
+}
+className="
+border
+rounded-2xl
+px-5
+py-3.5
+"
+/>
+
+</div>
 {/* LOCATIONS */}
 
 <div>
