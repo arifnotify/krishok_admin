@@ -42,7 +42,7 @@ export default function CustomerInfoCard({ order }: Props) {
         <div>
           <p className="text-gray-500 text-xs mb-1">Name</p>
           <p className="font-semibold text-gray-800">
-            {address?.fullName || order?.customerName || "N/A"}
+            {address?.fullName || "N/A"}
           </p>
         </div>
 
