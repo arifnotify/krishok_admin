@@ -1,6 +1,6 @@
 "use client";
 
-import { Order, OrderStatus } from "@/src/types/order";
+import { Order } from "@/src/types/order";
 
 interface Props {
   activeOrders: Order[];
@@ -9,15 +9,17 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-// 🔴 UPPERCASE ENUM COLOR MATCHING
+// 🔴 CASE INSENSITIVE COLOR MATCHING
 const getStatusColor = (status: string) => {
-  switch (status) {
+  const s = status?.toUpperCase();
+  switch (s) {
     case "PENDING":
       return "bg-orange-100 text-orange-700";
 
     case "PROCESSING":
       return "bg-blue-100 text-blue-700";
 
+    case "OUTFORDELIVERY":
     case "OUT_FOR_DELIVERY":
       return "bg-purple-100 text-purple-700";
 
@@ -32,13 +34,15 @@ const getStatusColor = (status: string) => {
   }
 };
 
-// 🔴 UI LABEL FORMATTER (FIXED TYPE ERROR)
-const formatStatusLabel = (status: OrderStatus | string) => {
-  switch (status) {
+// 🔴 CASE INSENSITIVE UI LABEL FORMATTER
+const formatStatusLabel = (status: string) => {
+  const s = status?.toUpperCase();
+  switch (s) {
     case "PENDING":
       return "Pending";
     case "PROCESSING":
       return "Processing";
+    case "OUTFORDELIVERY":
     case "OUT_FOR_DELIVERY":
       return "Out For Delivery";
     case "DELIVERED":
@@ -106,7 +110,7 @@ export default function OrdersSidebar({
                     #{order.orderNumber}
                   </p>
                   <p className="text-sm text-slate-500 mt-1">
-                    {order.customerPhone}
+                    {order.customerPhone || "N/A"}
                   </p>
                 </div>
 
@@ -148,44 +152,46 @@ export default function OrdersSidebar({
             </div>
           )}
 
-          {completedOrders.map((order) => (
-            <button
-              key={order._id}
-              onClick={() => onSelect(order._id)}
-              className={`w-full text-left rounded-xl border p-3 bg-white transition ${
-                selectedId === order._id
-                  ? "border-green-500 bg-green-50 shadow-sm"
-                  : "border-slate-200 hover:border-green-300"
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-sm text-slate-900">
-                      #{order.orderNumber}
+          {completedOrders.map((order) => {
+            const isCancelled = order.orderStatus?.toUpperCase() === "CANCELLED";
+            return (
+              <button
+                key={order._id}
+                onClick={() => onSelect(order._id)}
+                className={`w-full text-left rounded-xl border p-3 bg-white transition ${
+                  selectedId === order._id
+                    ? "border-green-500 bg-green-50 shadow-sm"
+                    : "border-slate-200 hover:border-green-300"
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-sm text-slate-900">
+                        #{order.orderNumber}
+                      </p>
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                          isCancelled
+                            ? "bg-red-100 text-red-600"
+                            : "bg-green-100 text-green-600"
+                        }`}
+                      >
+                        {formatStatusLabel(order.orderStatus)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {order.customerPhone || "N/A"}
                     </p>
-                    {/* CANCELLED or DELIVERED Badge */}
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                        order.orderStatus === "CANCELLED"
-                          ? "bg-red-100 text-red-600"
-                          : "bg-green-100 text-green-600"
-                      }`}
-                    >
-                      {formatStatusLabel(order.orderStatus)}
-                    </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {order.customerPhone}
-                  </p>
-                </div>
 
-                <span className="text-sm font-bold text-green-600">
-                  ৳{formatPrice(order.finalAmount ?? order.totalAmount)}
-                </span>
-              </div>
-            </button>
-          ))}
+                  <span className="text-sm font-bold text-green-600">
+                    ৳{formatPrice(order.finalAmount ?? order.totalAmount)}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
