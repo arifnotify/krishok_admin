@@ -36,7 +36,7 @@ export default function OrderDetailsPanel({
 
   // 🔴 BUILD INVOICE WITH ORIGINAL AND ACCURATE CALCULATIONS
   const buildInvoice = (): InvoiceData => {
-    // ১. আইটেমের সাবটোটাল হিসাব (বর্তমান ইউনিট প্রাইজ × কোয়ান্টিটি)
+    // ১. আইটেমের সাবটোটাল হিসাব (বর্তমান ইউনিট প্রাইজ × কোয়ান্টিটি)
     const subtotal =
       items?.reduce((sum: number, item: any) => {
         const unitPrice = Number(item.price || 0);
@@ -46,7 +46,7 @@ export default function OrderDetailsPanel({
 
     const deliveryCharge = Number(order.deliveryCharge || 0);
 
-    // ২. অরিজিনাল ডিসকাউন্ট/রিওয়ার্ড পয়েন্ট ছাড় হিসাব
+    // ২. অরিজিনাল ডিসকাウント/রিওয়ার্ড পয়েন্ট ছাড় হিসাব
     const discount = Number(
       order.rewardUsed ?? order.discountAmount ?? order.discount ?? 0
     );
@@ -69,19 +69,26 @@ export default function OrderDetailsPanel({
       items: (items || []).map((item: any) => {
         const unitPrice = Number(item.price || 0);
         const qty = Number(item.quantity || 1);
+
+        const enName =
+          typeof item.productName === "object"
+            ? item.productName?.en
+            : item.product?.title?.en || item.title?.en || item.productName || "Product";
+
+        const bnName =
+          typeof item.productName === "object"
+            ? item.productName?.bn
+            : item.product?.title?.bn || item.title?.bn || "";
+
+        const unit = item.unit || item.product?.unit || "pcs";
+
         return {
-          productName:
-            item.product?.title?.en ||
-            item.title?.en ||
-            item.productName ||
-            "Product",
-          productNameBn:
-            item.product?.title?.bn ||
-            item.title?.bn ||
-            "",
+          productName: enName,
+          productNameBn: bnName,
+          unit: unit,
           quantity: qty,
-          price: unitPrice, // অরিজিনাল ইউনিট দাম
-          totalPrice: unitPrice * qty, // রিয়েল-টাইম অরিজিনাল মোট দাম
+          price: unitPrice,
+          totalPrice: unitPrice * qty,
         };
       }),
 
