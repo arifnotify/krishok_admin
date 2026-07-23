@@ -40,6 +40,11 @@ export const printReceipt = (invoice: InvoiceData) => {
                 ? `<div class="bn">${item.productNameBn}</div>`
                 : ""
             }
+            ${
+              item.unit
+                ? `<div class="unit">Unit: ${item.unit}</div>`
+                : ""
+            }
           </div>
           <div class="price">
             ${formatCurrency(item.totalPrice || item.price * item.quantity)}
@@ -90,7 +95,8 @@ export const printReceipt = (invoice: InvoiceData) => {
     .item-row { display: flex; justify-content: space-between; gap: 8px; }
     .product { width: 70%; }
     .en { font-size: 13px; font-weight: 700; word-break: break-word; }
-    .bn { font-size: 12px; margin-top: 2px; color: #444; }
+    .bn { font-size: 12px; margin-top: 1px; color: #333; }
+    .unit { font-size: 10px; margin-top: 1px; color: #555; }
     .price { font-size: 13px; font-weight: 700; white-space: nowrap; text-align: right; }
 
     .summary { font-size: 14px; }
