@@ -69,7 +69,7 @@ export default function OrdersPage() {
       }
     } catch (err) {
       console.error("Failed to load orders data:", err);
-    } fonting: {
+    } finally {
       setLoading(false);
     }
   };
@@ -147,7 +147,7 @@ export default function OrdersPage() {
   };
 
   // ==========================================
-  // SEARCH & FILTER LOGIC
+  // SEARCH & FILTER LOGIC (CASE INSENSITIVE)
   // ==========================================
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
@@ -156,9 +156,11 @@ export default function OrdersPage() {
         order.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
         order.customerPhone?.includes(search);
 
-      // 2. Tab Matching
+      // 2. Tab Matching (Case Insensitive)
       const matchesStatus =
-        status === "All" ? true : order.orderStatus === status;
+        status === "All"
+          ? true
+          : order.orderStatus?.toUpperCase() === status.toUpperCase();
 
       return matchesSearch && matchesStatus;
     });
@@ -166,41 +168,45 @@ export default function OrdersPage() {
 
   // Active Orders (Pending, Processing, Out For Delivery)
   const activeOrders = useMemo(() => {
-    return filteredOrders.filter(
-      (order) =>
-        order.orderStatus !== "DELIVERED" &&
-        order.orderStatus !== "CANCELLED"
-    );
+    return filteredOrders.filter((order) => {
+      const st = order.orderStatus?.toUpperCase();
+      return st !== "DELIVERED" && st !== "CANCELLED";
+    });
   }, [filteredOrders]);
 
   // Completed Orders (Delivered, Cancelled)
   const completedOrders = useMemo(() => {
-    return filteredOrders.filter(
-      (order) =>
-        order.orderStatus === "DELIVERED" ||
-        order.orderStatus === "CANCELLED"
-    );
+    return filteredOrders.filter((order) => {
+      const st = order.orderStatus?.toUpperCase();
+      return st === "DELIVERED" || st === "CANCELLED";
+    });
   }, [filteredOrders]);
 
   // ==========================================
-  // STATS COUNTS
+  // STATS COUNTS (CASE INSENSITIVE)
   // ==========================================
   const pendingCount = useMemo(
-    () => orders.filter((order) => order.orderStatus === "PENDING").length,
+    () =>
+      orders.filter(
+        (order) => order.orderStatus?.toUpperCase() === "PENDING"
+      ).length,
     [orders]
   );
 
   const deliveredCount = useMemo(
-    () => orders.filter((order) => order.orderStatus === "DELIVERED").length,
+    () =>
+      orders.filter(
+        (order) => order.orderStatus?.toUpperCase() === "DELIVERED"
+      ).length,
     [orders]
   );
 
   const totalRevenue = useMemo(
     () =>
       orders
-        .filter((order) => order.orderStatus === "DELIVERED")
+        .filter((order) => order.orderStatus?.toUpperCase() === "DELIVERED")
         .reduce(
-          (sum, order) => sum + (order.finalAmount ?? order.totalAmount ?? 0),
+          (sum, order) => sum + Number(order.finalAmount ?? order.totalAmount ?? 0),
           0
         ),
     [orders]
@@ -235,7 +241,7 @@ export default function OrdersPage() {
         <OrderStatCard
           title="Delivered Orders"
           value={deliveredCount}
-          icon={CheckCircle}
+          icon={deliveredCount}
           gradient="from-green-500 to-emerald-500"
         />
 
