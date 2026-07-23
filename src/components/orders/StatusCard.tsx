@@ -9,36 +9,31 @@ interface Props {
 }
 
 export default function StatusCard({ order, onChange }: Props) {
-  // 🔴 CASE-INSENSITIVE LOCK CHECK (Delivered or Cancelled)
   const currentStatusUpper = order?.orderStatus?.toUpperCase() || "";
+  
+  // 🔴 LOCK CHECK FOR DELIVERED OR CANCELLED
   const isLocked =
     currentStatusUpper === "DELIVERED" || currentStatusUpper === "CANCELLED";
 
-  // 🔴 STATUS STYLES (CASE-INSENSITIVE)
+  // STATUS STYLING
   const statusStyle = (status: string) => {
     switch (status?.toUpperCase()) {
       case "PENDING":
         return "bg-yellow-100 text-yellow-700 border-yellow-200";
-
       case "PROCESSING":
         return "bg-blue-100 text-blue-700 border-blue-200";
-
       case "OUT_FOR_DELIVERY":
       case "OUTFORDELIVERY":
         return "bg-purple-100 text-purple-700 border-purple-200";
-
       case "DELIVERED":
         return "bg-green-100 text-green-700 border-green-200";
-
       case "CANCELLED":
         return "bg-red-100 text-red-700 border-red-200";
-
       default:
         return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
 
-  // 🔴 DISPLAY TEXT FORMATTER
   const formatStatusText = (status: string) => {
     switch (status?.toUpperCase()) {
       case "PENDING":
@@ -57,9 +52,7 @@ export default function StatusCard({ order, onChange }: Props) {
     }
   };
 
-  const handleStatusChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (isLocked) return;
 
     const newStatus = e.target.value;
@@ -93,7 +86,7 @@ export default function StatusCard({ order, onChange }: Props) {
           )}
         </div>
 
-        {/* CURRENT STATUS BADGE */}
+        {/* CURRENT STATUS */}
         <div className="mb-5">
           <p className="text-xs text-gray-500 mb-2">Current Status</p>
           <span
@@ -115,10 +108,10 @@ export default function StatusCard({ order, onChange }: Props) {
             disabled={isLocked}
             value={currentStatusUpper}
             onChange={handleStatusChange}
-            className={`w-full border rounded-lg px-3 py-3 outline-none text-sm transition-all ${
+            className={`w-full border rounded-lg px-3 py-3 outline-none text-sm font-medium transition-all ${
               isLocked
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
-                : "bg-white text-gray-800 border-gray-300 hover:border-blue-400 focus:border-blue-500"
+                ? "bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200"
+                : "bg-white text-gray-800 border-gray-300 hover:border-blue-400 focus:border-blue-500 cursor-pointer"
             }`}
           >
             <option value="PENDING">Pending</option>
@@ -130,13 +123,13 @@ export default function StatusCard({ order, onChange }: Props) {
         </div>
       </div>
 
-      {/* LOCKED WARNING BANNER */}
+      {/* LOCKED WARNING */}
       {isLocked && (
         <div className="mt-5 bg-red-50 border border-red-200 rounded-lg p-3.5 flex items-start gap-2.5">
           <Lock size={16} className="text-red-500 mt-0.5 shrink-0" />
           <div>
             <p className="text-xs font-bold text-red-700">Order Locked</p>
-            <p className="text-[11px] text-red-600 mt-0.5">
+            <p className="text-[11px] text-red-600 mt-0.5 leading-snug">
               This order has been {formatStatusText(order.orderStatus).toLowerCase()} and cannot be modified further.
             </p>
           </div>
