@@ -132,6 +132,7 @@ export default function OrdersPage() {
         items.map((item) => ({
           product: item.product!,
           productName: item.productName || "",
+          unit: item.unit || "pcs",
           productImage: item.productImage || "",
           price: Number(item.price || 0),
           quantity: Number(item.quantity || 1),
