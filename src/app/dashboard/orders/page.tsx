@@ -43,11 +43,9 @@ export default function OrdersPage() {
   const [selectedRider, setSelectedRider] = useState("");
 
   const [search, setSearch] = useState("");
-
   const [status, setStatus] = useState<OrderStatus | "All">("All");
 
   const [loading, setLoading] = useState(true);
-
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -58,8 +56,10 @@ export default function OrdersPage() {
     try {
       setLoading(true);
 
-      const ordersData = await getOrders();
-      const ridersData = await getRiders();
+      const [ordersData, ridersData] = await Promise.all([
+        getOrders(),
+        getRiders(),
+      ]);
 
       setOrders(ordersData || []);
       setRiders(ridersData || []);
@@ -68,8 +68,8 @@ export default function OrdersPage() {
         await loadSingleOrder(ordersData[0]._id);
       }
     } catch (err) {
-      console.log(err);
-    } finally {
+      console.error("Failed to load orders data:", err);
+    } fonting: {
       setLoading(false);
     }
   };
@@ -77,11 +77,10 @@ export default function OrdersPage() {
   const loadSingleOrder = async (id: string) => {
     try {
       const data = await getOrder(id);
-
       setSelectedOrder(data);
-      setItems(data.items || []);
+      setItems(data?.items || []);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to load order details:", err);
     }
   };
 
@@ -107,7 +106,7 @@ export default function OrdersPage() {
         )
       );
     } catch (err) {
-      console.log(err);
+      console.error("Failed to update status:", err);
     }
   };
 
@@ -116,10 +115,9 @@ export default function OrdersPage() {
 
     try {
       await assignRider(selectedOrder._id, selectedRider);
-
-      loadSingleOrder(selectedOrder._id);
+      await loadSingleOrder(selectedOrder._id);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to assign rider:", err);
     }
   };
 
@@ -135,69 +133,90 @@ export default function OrdersPage() {
           product: item.product!,
           productName: item.productName || "",
           productImage: item.productImage || "",
-          price: Number(item.price),
-          quantity: Number(item.quantity),
+          price: Number(item.price || 0),
+          quantity: Number(item.quantity || 1),
         }))
       );
 
-      loadSingleOrder(selectedOrder._id);
+      await loadSingleOrder(selectedOrder._id);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to save items:", err);
     } finally {
       setSaving(false);
     }
   };
 
-  const searchedOrders = useMemo(() => {
-    return orders.filter(
+  // ==========================================
+  // SEARCH & FILTER LOGIC
+  // ==========================================
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      // 1. Search Matching
+      const matchesSearch =
+        order.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
+        order.customerPhone?.includes(search);
+
+      // 2. Tab Matching
+      const matchesStatus =
+        status === "All" ? true : order.orderStatus === status;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [orders, search, status]);
+
+  // Active Orders (Pending, Processing, Out For Delivery)
+  const activeOrders = useMemo(() => {
+    return filteredOrders.filter(
       (order) =>
-        order.orderNumber
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        order.customerPhone.includes(search)
+        order.orderStatus !== "DELIVERED" &&
+        order.orderStatus !== "CANCELLED"
     );
-  }, [orders, search]);
+  }, [filteredOrders]);
 
-  const filteredOrders = searchedOrders.filter((order) =>
-    status === "All" ? true : order.orderStatus === status
+  // Completed Orders (Delivered, Cancelled)
+  const completedOrders = useMemo(() => {
+    return filteredOrders.filter(
+      (order) =>
+        order.orderStatus === "DELIVERED" ||
+        order.orderStatus === "CANCELLED"
+    );
+  }, [filteredOrders]);
+
+  // ==========================================
+  // STATS COUNTS
+  // ==========================================
+  const pendingCount = useMemo(
+    () => orders.filter((order) => order.orderStatus === "PENDING").length,
+    [orders]
   );
 
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
-  const activeOrders = filteredOrders.filter(
-    (order) =>
-      order.orderStatus !== "DELIVERED" &&
-      order.orderStatus !== "CANCELLED"
+  const deliveredCount = useMemo(
+    () => orders.filter((order) => order.orderStatus === "DELIVERED").length,
+    [orders]
   );
 
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
-  const completedOrders = filteredOrders.filter(
-    (order) =>
-      order.orderStatus === "DELIVERED" ||
-      order.orderStatus === "CANCELLED"
+  const totalRevenue = useMemo(
+    () =>
+      orders
+        .filter((order) => order.orderStatus === "DELIVERED")
+        .reduce(
+          (sum, order) => sum + (order.finalAmount ?? order.totalAmount ?? 0),
+          0
+        ),
+    [orders]
   );
-
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
-  const pendingCount = orders.filter(
-    (order) => order.orderStatus === "PENDING"
-  ).length;
-
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
-  const deliveredCount = orders.filter(
-    (order) => order.orderStatus === "DELIVERED"
-  ).length;
-
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
-  const totalRevenue = orders
-    .filter((order) => order.orderStatus === "DELIVERED")
-    .reduce((sum, order) => sum + (order.finalAmount ?? order.totalAmount ?? 0), 0);
 
   if (loading) {
-    return <div className="p-10">Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center text-gray-500 font-medium">
+        Loading Orders...
+      </div>
+    );
   }
 
   return (
     <div className="p-5 bg-gray-50 min-h-screen">
-      {/* STATS */}
+      {/* STATS CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
         <OrderStatCard
           title="Total Orders"
@@ -228,8 +247,8 @@ export default function OrdersPage() {
         />
       </div>
 
-      {/* SEARCH */}
-      <div className="bg-white border rounded-2xl p-5 mb-5">
+      {/* SEARCH AND TABS */}
+      <div className="bg-white border rounded-2xl p-5 mb-5 shadow-sm">
         <OrderSearch value={search} onChange={setSearch} />
 
         <div className="mt-4">
@@ -237,7 +256,7 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* MAIN */}
+      {/* MAIN CONTENT AREA */}
       <div className="grid lg:grid-cols-12 gap-5">
         {/* SIDEBAR */}
         <div className="lg:col-span-4">
@@ -249,7 +268,7 @@ export default function OrdersPage() {
           />
         </div>
 
-        {/* DETAILS */}
+        {/* DETAILS PANEL */}
         <div className="lg:col-span-8">
           <OrderDetailsPanel
             order={selectedOrder}
