@@ -1,6 +1,6 @@
 "use client";
 
-import { Order } from "@/src/types/order";
+import { Order, OrderStatus } from "@/src/types/order";
 
 interface Props {
   activeOrders: Order[];
@@ -32,8 +32,8 @@ const getStatusColor = (status: string) => {
   }
 };
 
-// 🔴 UI LABEL FORMATTER
-const formatStatusLabel = (status: status_type | string) => {
+// 🔴 UI LABEL FORMATTER (FIXED TYPE ERROR)
+const formatStatusLabel = (status: OrderStatus | string) => {
   switch (status) {
     case "PENDING":
       return "Pending";
@@ -53,7 +53,6 @@ const formatStatusLabel = (status: status_type | string) => {
 // 🔴 2 DECIMAL PLACES PRICE FORMATTER
 const formatPrice = (amount: number | string | undefined) => {
   const num = Number(amount || 0);
-  // দশমিকের পর থাকলে ২ ঘর দেখাবে, না থাকলে পূর্ণসংখ্যা দেখাবে
   return Number.isInteger(num) ? num : num.toFixed(2);
 };
 
@@ -165,7 +164,7 @@ export default function OrdersSidebar({
                     <p className="font-semibold text-sm text-slate-900">
                       #{order.orderNumber}
                     </p>
-                    {/* ক্যানসেলড নাকি ডেলিভারড ব্যাজ */}
+                    {/* CANCELLED or DELIVERED Badge */}
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                         order.orderStatus === "CANCELLED"
