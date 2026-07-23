@@ -86,17 +86,18 @@ export const getTracking = async (orderId: string) => {
 };
 
 // =========================
-// 🔥 ADMIN EDIT ORDER (NEW)
+// 🔥 ADMIN EDIT ORDER (UPDATED)
 // =========================
 export const adminEditOrder = async (
   orderId: string,
-items:{
- product:string;
- productName:string;
- productImage:string;
- price:number;
- quantity:number;
-}[]
+  items: {
+    product: string;
+    productName: string | { en: string; bn?: string };
+    unit?: string;
+    productImage: string;
+    price: number;
+    quantity: number;
+  }[]
 ) => {
   const res = await api.patch(
     `/orders/${orderId}`,
