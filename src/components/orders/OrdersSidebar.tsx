@@ -9,7 +9,7 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-// 🔴 FIXED: UPPERCASE ENUM VALUES
+// 🔴 UPPERCASE ENUM COLOR MATCHING
 const getStatusColor = (status: string) => {
   switch (status) {
     case "PENDING":
@@ -33,7 +33,7 @@ const getStatusColor = (status: string) => {
 };
 
 // 🔴 UI LABEL FORMATTER
-const formatStatusLabel = (status: string) => {
+const formatStatusLabel = (status: status_type | string) => {
   switch (status) {
     case "PENDING":
       return "Pending";
@@ -48,6 +48,13 @@ const formatStatusLabel = (status: string) => {
     default:
       return status;
   }
+};
+
+// 🔴 2 DECIMAL PLACES PRICE FORMATTER
+const formatPrice = (amount: number | string | undefined) => {
+  const num = Number(amount || 0);
+  // দশমিকের পর থাকলে ২ ঘর দেখাবে, না থাকলে পূর্ণসংখ্যা দেখাবে
+  return Number.isInteger(num) ? num : num.toFixed(2);
 };
 
 export default function OrdersSidebar({
@@ -67,7 +74,7 @@ export default function OrdersSidebar({
       </div>
 
       {/* ================= ACTIVE ORDERS ================= */}
-      <div className="flex-[7] overflow-y-auto p-4 border-b">
+      <div className="flex-[6] overflow-y-auto p-4 border-b">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-blue-600 uppercase text-sm tracking-wider">
             Active Orders
@@ -115,7 +122,7 @@ export default function OrdersSidebar({
 
               <div className="mt-5 flex justify-between items-center">
                 <span className="text-green-600 font-bold text-lg">
-                  ৳{order.finalAmount ?? order.totalAmount}
+                  ৳{formatPrice(order.finalAmount ?? order.totalAmount)}
                 </span>
                 <span className="text-xs text-slate-400">Active</span>
               </div>
@@ -124,11 +131,11 @@ export default function OrdersSidebar({
         </div>
       </div>
 
-      {/* ================= COMPLETED ORDERS ================= */}
-      <div className="flex-[3] overflow-y-auto p-4 bg-slate-50">
+      {/* ================= COMPLETED & CANCELLED ORDERS ================= */}
+      <div className="flex-[4] overflow-y-auto p-4 bg-slate-50">
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-green-600 uppercase text-sm tracking-wider">
-            Completed
+            Completed / History
           </h3>
           <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
             {completedOrders.length}
@@ -148,22 +155,34 @@ export default function OrdersSidebar({
               onClick={() => onSelect(order._id)}
               className={`w-full text-left rounded-xl border p-3 bg-white transition ${
                 selectedId === order._id
-                  ? "border-green-500 bg-green-50"
+                  ? "border-green-500 bg-green-50 shadow-sm"
                   : "border-slate-200 hover:border-green-300"
               }`}
             >
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-semibold text-sm text-slate-900">
-                    #{order.orderNumber}
-                  </p>
-                  <p className="text-xs text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-sm text-slate-900">
+                      #{order.orderNumber}
+                    </p>
+                    {/* ক্যানসেলড নাকি ডেলিভারড ব্যাজ */}
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                        order.orderStatus === "CANCELLED"
+                          ? "bg-red-100 text-red-600"
+                          : "bg-green-100 text-green-600"
+                      }`}
+                    >
+                      {formatStatusLabel(order.orderStatus)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
                     {order.customerPhone}
                   </p>
                 </div>
 
                 <span className="text-sm font-bold text-green-600">
-                  ৳{order.finalAmount ?? order.totalAmount}
+                  ৳{formatPrice(order.finalAmount ?? order.totalAmount)}
                 </span>
               </div>
             </button>
