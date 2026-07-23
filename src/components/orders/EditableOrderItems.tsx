@@ -83,6 +83,7 @@ export default function EditableOrderItems({
     }
 
     const price = getProductPrice(product);
+    const productUnit = product.unit || "pcs"; // 👈 সঠিক ইউনিট সংগ্রহ করা হলো
 
     const exist = items.find((item) => item.product === product._id);
 
@@ -107,7 +108,7 @@ export default function EditableOrderItems({
             en: product.title?.en || "",
             bn: product.title?.bn || "",
           },
-          unit: product.unit || "pcs",
+          unit: productUnit, // 👈 এখানে প্রোডাক্টের নিজস্ব ইউনিট সেট করা হলো
           productImage: product.images?.[0] || "",
           price,
           quantity: 1,
