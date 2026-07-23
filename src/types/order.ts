@@ -1,12 +1,12 @@
 export type OrderStatus =
-  | "PENDING"
-  | "PROCESSING"
-  | "OUT_FOR_DELIVERY"
-  | "DELIVERED"
-  | "CANCELLED";
+  | "Pending"
+  | "Processing"
+  | "OutForDelivery"
+  | "Delivered"
+  | "Cancelled";
 
 // =========================
-// ADDRESS TYPE
+// ADDRESS TYPE (NEW IMPORTANT)
 // =========================
 export interface Address {
   _id?: string;
@@ -33,28 +33,20 @@ export interface OrderItem {
 }
 
 // =========================
-// ORDER TYPE (FULLY ACCURATE WITH NESTJS)
+// ORDER TYPE (FIXED)
 // =========================
 export interface Order {
   _id: string;
   orderNumber: string;
-  user: string;
   customerPhone: string;
 
+  // 🔥 FIXED (was string, now object)
   shippingAddress: Address;
 
   items: OrderItem[];
 
-  // 💰 Price Calculation Fields (NestJS Schema এর সাথে শতভাগ মিল রাখা হয়েছে)
-  subTotal: number;          // পণ্যের মোট দাম (price * quantity)
-  deliveryCharge: number;     // ডেলিভারি চার্জ
-  rewardUsed?: number;        // ব্যবহৃত রিওয়ার্ড পয়েন্ট
-  discountAmount?: number;    // ডিসকাউন্ট বা রিওয়ার্ড অ্যামাউন্ট
-  totalAmount: number;       // (subTotal + deliveryCharge)
-  finalAmount: number;       // আসল ক্যাশ পেমেন্ট বা পরিশোধযোগ্য টাকা (totalAmount - rewardUsed)
-
+  totalAmount: number;
   paymentMethod: string;
-  payment?: any;
   orderStatus: OrderStatus;
   isPaid: boolean;
 
