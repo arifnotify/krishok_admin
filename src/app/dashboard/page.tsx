@@ -45,13 +45,13 @@ export default function DashboardPage() {
   const [status, setStatus] = useState<OrderStatus | "All">("All");
 
   // =========================
-  // LOADING
+  // LOADING STATES
   // =========================
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // =========================
-  // LOAD DATA
+  // LOAD INITIAL DATA
   // =========================
   useEffect(() => {
     loadData();
@@ -170,14 +170,16 @@ export default function DashboardPage() {
   // =========================
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      // 1. Search Query Match
+      // 1. Search Query Matching
       const matchesSearch =
         order.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
         order.customerPhone?.includes(search);
 
-      // 2. Tab Status Match
+      // 2. Tab Status Matching (Case Insensitive)
       const matchesStatus =
-        status === "All" ? true : order.orderStatus === status;
+        status === "All"
+          ? true
+          : order.orderStatus?.toUpperCase() === status.toUpperCase();
 
       return matchesSearch && matchesStatus;
     });
@@ -187,26 +189,24 @@ export default function DashboardPage() {
   // ACTIVE ORDERS (Not Delivered & Not Cancelled)
   // =========================
   const activeOrders = useMemo(() => {
-    return filteredOrders.filter(
-      (order) =>
-        order.orderStatus !== "DELIVERED" &&
-        order.orderStatus !== "CANCELLED"
-    );
+    return filteredOrders.filter((order) => {
+      const st = order.orderStatus?.toUpperCase();
+      return st !== "DELIVERED" && st !== "CANCELLED";
+    });
   }, [filteredOrders]);
 
   // =========================
   // COMPLETED ORDERS (Delivered or Cancelled)
   // =========================
   const completedOrders = useMemo(() => {
-    return filteredOrders.filter(
-      (order) =>
-        order.orderStatus === "DELIVERED" ||
-        order.orderStatus === "CANCELLED"
-    );
+    return filteredOrders.filter((order) => {
+      const st = order.orderStatus?.toUpperCase();
+      return st === "DELIVERED" || st === "CANCELLED";
+    });
   }, [filteredOrders]);
 
   // =========================
-  // LOADING UI
+  // LOADING STATE UI
   // =========================
   if (loading || !summary) {
     return (
