@@ -12,25 +12,27 @@ export default function StatusCard({
   order,
   onChange,
 }: Props) {
+  // 🔴 FIXED: UPPERCASE ENUM VALUES
   const locked =
-    order.orderStatus === "Delivered" ||
-    order.orderStatus === "Cancelled";
+    order.orderStatus === "DELIVERED" ||
+    order.orderStatus === "CANCELLED";
 
+  // 🔴 FIXED: UPPERCASE SWITCH CASES
   const statusStyle = (status: string) => {
     switch (status) {
-      case "Pending":
+      case "PENDING":
         return "bg-yellow-100 text-yellow-700";
 
-      case "Processing":
+      case "PROCESSING":
         return "bg-blue-100 text-blue-700";
 
-      case "OutForDelivery":
+      case "OUT_FOR_DELIVERY":
         return "bg-purple-100 text-purple-700";
 
-      case "Delivered":
+      case "DELIVERED":
         return "bg-green-100 text-green-700";
 
-      case "Cancelled":
+      case "CANCELLED":
         return "bg-red-100 text-red-700";
 
       default:
@@ -59,20 +61,20 @@ export default function StatusCard({
   return (
     <div
       className="
-      bg-white
-      border
-      rounded-xl
-      p-5
-      h-full
-    "
+        bg-white
+        border
+        rounded-xl
+        p-5
+        h-full
+      "
     >
       <div
         className="
-        flex
-        items-center
-        gap-2
-        mb-5
-      "
+          flex
+          items-center
+          gap-2
+          mb-5
+        "
       >
         <CheckCircle
           size={20}
@@ -81,9 +83,9 @@ export default function StatusCard({
 
         <h2
           className="
-          font-bold
-          text-gray-800
-        "
+            font-bold
+            text-gray-800
+          "
         >
           Order Status
         </h2>
@@ -91,15 +93,15 @@ export default function StatusCard({
 
       <div
         className="
-        mb-5
-      "
+          mb-5
+        "
       >
         <p
           className="
-          text-xs
-          text-gray-500
-          mb-2
-        "
+            text-xs
+            text-gray-500
+            mb-2
+          "
         >
           Current Status
         </p>
@@ -120,14 +122,15 @@ export default function StatusCard({
 
       <label
         className="
-        text-sm
-        font-medium
-        text-gray-600
-      "
+          text-sm
+          font-medium
+          text-gray-600
+        "
       >
         Update Status
       </label>
 
+      {/* 🔴 FIXED: OPTION VALUES IN UPPERCASE */}
       <select
         disabled={locked}
         value={order.orderStatus}
@@ -143,23 +146,23 @@ export default function StatusCard({
           disabled:bg-gray-100
         "
       >
-        <option value="Pending">
+        <option value="PENDING">
           Pending
         </option>
 
-        <option value="Processing">
+        <option value="PROCESSING">
           Processing
         </option>
 
-        <option value="OutForDelivery">
+        <option value="OUT_FOR_DELIVERY">
           Out For Delivery
         </option>
 
-        <option value="Delivered">
+        <option value="DELIVERED">
           Delivered
         </option>
 
-        <option value="Cancelled">
+        <option value="CANCELLED">
           Cancelled
         </option>
       </select>
@@ -167,20 +170,20 @@ export default function StatusCard({
       {locked && (
         <div
           className="
-          mt-4
-          bg-red-50
-          border
-          border-red-200
-          rounded-lg
-          p-3
-        "
+            mt-4
+            bg-red-50
+            border
+            border-red-200
+            rounded-lg
+            p-3
+          "
         >
           <p
             className="
-            text-xs
-            text-red-600
-            font-semibold
-          "
+              text-xs
+              text-red-600
+              font-semibold
+            "
           >
             🔒 Order Locked
           </p>
