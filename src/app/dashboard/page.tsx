@@ -149,7 +149,8 @@ export default function DashboardPage() {
     }
 
   };
-    // =========================
+
+  // =========================
   // UPDATE ORDER STATUS
   // =========================
 
@@ -235,16 +236,16 @@ export default function DashboardPage() {
 
         setSaving(true);
 
-await adminEditOrder(
-  selectedOrder._id,
-  items.map((item) => ({
-    product:item.product!,
-    productName:item.productName || "",
-    productImage:item.productImage || "",
-    price:Number(item.price || 0),
-    quantity:Number(item.quantity || 1),
-  }))
-);
+        await adminEditOrder(
+          selectedOrder._id,
+          items.map((item) => ({
+            product: item.product!,
+            productName: item.productName || "",
+            productImage: item.productImage || "",
+            price: Number(item.price || 0),
+            quantity: Number(item.quantity || 1),
+          }))
+        );
 
         await loadSingleOrder(
           selectedOrder._id
@@ -296,29 +297,29 @@ await adminEditOrder(
     );
 
   // =========================
-  // ACTIVE ORDER
+  // ACTIVE ORDER (FIXED ENUM CASE)
   // =========================
 
   const activeOrders =
     filteredOrders.filter(
       (order) =>
         order.orderStatus !==
-          "Delivered" &&
+          "DELIVERED" &&
         order.orderStatus !==
-          "Cancelled"
+          "CANCELLED"
     );
 
   // =========================
-  // COMPLETED ORDER
+  // COMPLETED ORDER (FIXED ENUM CASE)
   // =========================
 
   const completedOrders =
     filteredOrders.filter(
       (order) =>
         order.orderStatus ===
-          "Delivered" ||
+          "DELIVERED" ||
         order.orderStatus ===
-          "Cancelled"
+          "CANCELLED"
     );
 
   // =========================
@@ -334,48 +335,29 @@ await adminEditOrder(
     );
 
   }
-    return (
+
+  return (
 
     <div className="p-5 bg-gray-50 min-h-screen">
 
-
-      {/* =========================
-          HEADER
-      ========================= */}
-
+      {/* HEADER */}
       <div className="mb-6">
-
         <h1 className="text-3xl font-bold">
           Dashboard
         </h1>
-
         <p className="text-gray-500">
           Overview of your business
         </p>
-
       </div>
 
-
-
-      {/* =========================
-          STATS
-      ========================= */}
-
+      {/* STATS */}
       <div className="mb-6">
-
         <StatsCards
           summary={summary}
         />
-
       </div>
 
-
-
-
-      {/* =========================
-          SEARCH + TABS
-      ========================= */}
-
+      {/* SEARCH + TABS */}
       <div className="
         bg-white
         border
@@ -383,166 +365,87 @@ await adminEditOrder(
         p-5
         mb-6
       ">
-
-
         <OrderSearch
-
           value={search}
-
           onChange={setSearch}
-
         />
 
-
         <div className="mt-4">
-
           <OrderTabs
-
             active={status}
-
             onChange={setStatus}
-
           />
-
         </div>
-
-
       </div>
 
-
-
-
-
-      {/* =========================
-          ORDER MANAGEMENT
-      ========================= */}
-
-
+      {/* ORDER MANAGEMENT */}
       <div className="
         grid
         lg:grid-cols-12
         gap-5
       ">
 
-
-
-        {/* =====================
-            LEFT ORDER LIST
-        ====================== */}
-
-
+        {/* LEFT ORDER LIST */}
         <div className="
           lg:col-span-4
         ">
-
-
           <OrdersSidebar
-
             activeOrders={
               activeOrders
             }
-
-
             completedOrders={
               completedOrders
             }
-
-
             selectedId={
               selectedOrder?._id
             }
-
-
             onSelect={
               loadSingleOrder
             }
-
           />
-
-
         </div>
 
-
-
-
-
-        {/* =====================
-            RIGHT DETAILS
-        ====================== */}
-
-
-
+        {/* RIGHT DETAILS */}
         <div className="
           lg:col-span-8
         ">
-
-
           <OrderDetailsPanel
-
-
             order={
               selectedOrder
             }
-
-
             items={
               items
             }
-
-
             setItems={
               setItems
             }
-
-
             riders={
               riders
             }
-
-
             selectedRider={
               selectedRider
             }
-
-
             setSelectedRider={
               setSelectedRider
             }
-
-
             updateStatus={
               handleStatusChange
             }
-
-
             assignRider={
               handleAssignRider
             }
-
-
             saveItems={
               handleSaveItems
             }
-
-
             saving={
               saving
             }
-
-
           />
-
-
         </div>
 
-
-
       </div>
-
 
     </div>
 
   );
-
-
 }
