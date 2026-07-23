@@ -20,12 +20,20 @@ export default function PrintableInvoice({ order }: Props) {
 
       <hr className="my-4" />
 
-      {order.items.map((item, i) => (
-        <div key={i} className="flex justify-between py-1">
-          <span>{item.productName}</span>
-          <span>{item.quantity} x {item.price}</span>
-        </div>
-      ))}
+      {order.items.map((item, i) => {
+        // productName অবজেক্ট হলে .en প্রপার্টি নিবে, নতুবা সরাসরি স্ট্রিং দেখাবে
+        const productNameText =
+          typeof item.productName === "object" && item.productName !== null
+            ? item.productName.en
+            : item.productName;
+
+        return (
+          <div key={i} className="flex justify-between py-1">
+            <span>{productNameText}</span>
+            <span>{item.quantity} x {item.price}</span>
+          </div>
+        );
+      })}
 
       <hr className="my-4" />
 
