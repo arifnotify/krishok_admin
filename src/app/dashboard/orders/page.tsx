@@ -241,7 +241,7 @@ export default function OrdersPage() {
         <OrderStatCard
           title="Delivered Orders"
           value={deliveredCount}
-          icon={deliveredCount}
+          icon={CheckCircle}
           gradient="from-green-500 to-emerald-500"
         />
 
