@@ -131,7 +131,11 @@ export default function OrdersPage() {
         selectedOrder._id,
         items.map((item) => ({
           product: item.product!,
-          productName: item.productName || "",
+          // 👈 মাল্টি-ল্যাঙ্গুয়েজ নাম এবং ইউনিট সঠিকভাবে পাস করা হলো যাতে হারিয়ে না যায়
+          productName: {
+            en: typeof item.productName === "object" ? item.productName?.en || "" : item.productName || "",
+            bn: typeof item.productName === "object" ? item.productName?.bn || "" : "",
+          },
           unit: item.unit || "pcs",
           productImage: item.productImage || "",
           price: Number(item.price || 0),
