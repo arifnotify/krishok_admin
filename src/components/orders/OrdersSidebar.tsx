@@ -1,6 +1,6 @@
 "use client";
 
-import { Order } from "@/src/types/order";
+import { Order, OrderStatus } from "@/src/types/order";
 
 interface Props {
   activeOrders: Order[];
@@ -34,8 +34,8 @@ const getStatusColor = (status: string) => {
   }
 };
 
-// 🔴 CASE INSENSITIVE UI LABEL FORMATTER
-const formatStatusLabel = (status: string) => {
+// 🔴 UI LABEL FORMATTER (TYPO FIXED)
+const formatStatusLabel = (status: OrderStatus | string) => {
   const s = status?.toUpperCase();
   switch (s) {
     case "PENDING":
