@@ -25,7 +25,11 @@ export interface Address {
 // =========================
 export interface OrderItem {
   product?: string;
-  productName: string;
+  productName: {
+    en: string;
+    bn?: string;
+  } | string;
+  unit?: string;
   productImage: string;
   quantity: number;
   price: number;
@@ -45,11 +49,11 @@ export interface Order {
 
   items: OrderItem[];
 
-  // 💰 Price Calculation Fields (NestJS Schema এর সাথে শতভাগ মিল রাখা হয়েছে)
+  // 💰 Price Calculation Fields (NestJS Schema এর সাথে শতভাগ মিল রাখা হয়েছে)
   subTotal: number;          // পণ্যের মোট দাম (price * quantity)
   deliveryCharge: number;     // ডেলিভারি চার্জ
-  rewardUsed?: number;        // ব্যবহৃত রিওয়ার্ড পয়েন্ট
-  discountAmount?: number;    // ডিসকাউন্ট বা রিওয়ার্ড অ্যামাউন্ট
+  rewardUsed?: number;        // ব্যবহৃত রিওয়ার্ড পয়েন্ট
+  discountAmount?: number;    // ডিসকাউন্ট বা রিওয়ার্ড অ্যামাউন্ট
   totalAmount: number;       // (subTotal + deliveryCharge)
   finalAmount: number;       // আসল ক্যাশ পেমেন্ট বা পরিশোধযোগ্য টাকা (totalAmount - rewardUsed)
 
