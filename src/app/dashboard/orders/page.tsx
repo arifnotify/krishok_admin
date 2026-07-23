@@ -35,20 +35,25 @@ import {
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] =
+    useState<Order | null>(null);
 
   const [items, setItems] = useState<OrderItem[]>([]);
   const [riders, setRiders] = useState<any[]>([]);
 
-  const [selectedRider, setSelectedRider] = useState("");
+  const [selectedRider, setSelectedRider] =
+    useState("");
 
   const [search, setSearch] = useState("");
 
-  const [status, setStatus] = useState<OrderStatus | "All">("All");
+  const [status, setStatus] =
+    useState<OrderStatus | "All">("All");
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] =
+    useState(false);
 
   useEffect(() => {
     loadData();
@@ -58,14 +63,19 @@ export default function OrdersPage() {
     try {
       setLoading(true);
 
-      const ordersData = await getOrders();
-      const ridersData = await getRiders();
+      const ordersData =
+        await getOrders();
+
+      const ridersData =
+        await getRiders();
 
       setOrders(ordersData || []);
       setRiders(ridersData || []);
 
       if (ordersData?.length > 0) {
-        await loadSingleOrder(ordersData[0]._id);
+        await loadSingleOrder(
+          ordersData[0]._id
+        );
       }
     } catch (err) {
       console.log(err);
@@ -73,8 +83,9 @@ export default function OrdersPage() {
       setLoading(false);
     }
   };
-
-  const loadSingleOrder = async (id: string) => {
+    const loadSingleOrder = async (
+    id: string
+  ) => {
     try {
       const data = await getOrder(id);
 
@@ -85,11 +96,16 @@ export default function OrdersPage() {
     }
   };
 
-  const handleStatusChange = async (newStatus: OrderStatus) => {
+  const handleStatusChange = async (
+    newStatus: OrderStatus
+  ) => {
     if (!selectedOrder) return;
 
     try {
-      await updateOrderStatus(selectedOrder._id, newStatus);
+      await updateOrderStatus(
+        selectedOrder._id,
+        newStatus
+      );
 
       setSelectedOrder((prev: any) => ({
         ...prev,
@@ -111,94 +127,137 @@ export default function OrdersPage() {
     }
   };
 
-  const handleAssignRider = async () => {
-    if (!selectedOrder || !selectedRider) return;
+  const handleAssignRider =
+    async () => {
+      if (
+        !selectedOrder ||
+        !selectedRider
+      )
+        return;
 
-    try {
-      await assignRider(selectedOrder._id, selectedRider);
+      try {
+        await assignRider(
+          selectedOrder._id,
+          selectedRider
+        );
 
-      loadSingleOrder(selectedOrder._id);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+        loadSingleOrder(
+          selectedOrder._id
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    };
 
-  const handleSaveItems = async () => {
-    if (!selectedOrder) return;
+  const handleSaveItems =
+    async () => {
+      if (!selectedOrder) return;
 
-    setSaving(true);
+      setSaving(true);
 
-    try {
-      await adminEditOrder(
-        selectedOrder._id,
-        items.map((item) => ({
-          product: item.product!,
-          productName: item.productName || "",
-          productImage: item.productImage || "",
-          price: Number(item.price),
-          quantity: Number(item.quantity),
-        }))
+      try {
+await adminEditOrder(
+  selectedOrder._id,
+  items.map((item) => ({
+    product: item.product!,
+    productName: item.productName || "",
+    productImage: item.productImage || "",
+    price: Number(item.price),
+    quantity: Number(item.quantity),
+  }))
+);
+
+        loadSingleOrder(
+          selectedOrder._id
+        );
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setSaving(false);
+      }
+    };
+
+  const searchedOrders =
+    useMemo(() => {
+      return orders.filter(
+        (order) =>
+          order.orderNumber
+            .toLowerCase()
+            .includes(
+              search.toLowerCase()
+            ) ||
+          order.customerPhone.includes(
+            search
+          )
+      );
+    }, [orders, search]);
+
+  const filteredOrders =
+    searchedOrders.filter((order) =>
+      status === "All"
+        ? true
+        : order.orderStatus ===
+          status
+    );
+
+  const activeOrders =
+    filteredOrders.filter(
+      (order) =>
+        order.orderStatus !==
+          "Delivered" &&
+        order.orderStatus !==
+          "Cancelled"
+    );
+
+  const completedOrders =
+    filteredOrders.filter(
+      (order) =>
+        order.orderStatus ===
+          "Delivered" ||
+        order.orderStatus ===
+          "Cancelled"
+    );
+
+  const pendingCount =
+    orders.filter(
+      (order) =>
+        order.orderStatus ===
+        "Pending"
+    ).length;
+
+  const deliveredCount =
+    orders.filter(
+      (order) =>
+        order.orderStatus ===
+        "Delivered"
+    ).length;
+
+  const totalRevenue =
+    orders
+      .filter(
+        (order) =>
+          order.orderStatus ===
+          "Delivered"
+      )
+      .reduce(
+        (sum, order) =>
+          sum + order.totalAmount,
+        0
       );
 
-      loadSingleOrder(selectedOrder._id);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const searchedOrders = useMemo(() => {
-    return orders.filter(
-      (order) =>
-        order.orderNumber
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        order.customerPhone.includes(search)
-    );
-  }, [orders, search]);
-
-  const filteredOrders = searchedOrders.filter((order) =>
-    status === "All" ? true : order.orderStatus === status
-  );
-
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
-  const activeOrders = filteredOrders.filter(
-    (order) =>
-      order.orderStatus !== "DELIVERED" &&
-      order.orderStatus !== "CANCELLED"
-  );
-
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
-  const completedOrders = filteredOrders.filter(
-    (order) =>
-      order.orderStatus === "DELIVERED" ||
-      order.orderStatus === "CANCELLED"
-  );
-
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
-  const pendingCount = orders.filter(
-    (order) => order.orderStatus === "PENDING"
-  ).length;
-
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
-  const deliveredCount = orders.filter(
-    (order) => order.orderStatus === "DELIVERED"
-  ).length;
-
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
-  const totalRevenue = orders
-    .filter((order) => order.orderStatus === "DELIVERED")
-    .reduce((sum, order) => sum + (order.finalAmount ?? order.totalAmount ?? 0), 0);
-
   if (loading) {
-    return <div className="p-10">Loading...</div>;
+    return (
+      <div className="p-10">
+        Loading...
+      </div>
+    );
   }
-
-  return (
+    return (
     <div className="p-5 bg-gray-50 min-h-screen">
+
       {/* STATS */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+
         <OrderStatCard
           title="Total Orders"
           value={orders.length}
@@ -222,35 +281,48 @@ export default function OrdersPage() {
 
         <OrderStatCard
           title="Revenue"
-          value={`৳${totalRevenue.toFixed(2)}`}
+          value={`৳${totalRevenue}`}
           icon={DollarSign}
           gradient="from-blue-500 to-cyan-500"
         />
+
       </div>
 
       {/* SEARCH */}
       <div className="bg-white border rounded-2xl p-5 mb-5">
-        <OrderSearch value={search} onChange={setSearch} />
+
+        <OrderSearch
+          value={search}
+          onChange={setSearch}
+        />
 
         <div className="mt-4">
-          <OrderTabs active={status} onChange={setStatus} />
+          <OrderTabs
+            active={status}
+            onChange={setStatus}
+          />
         </div>
+
       </div>
 
       {/* MAIN */}
       <div className="grid lg:grid-cols-12 gap-5">
+
         {/* SIDEBAR */}
         <div className="lg:col-span-4">
+
           <OrdersSidebar
             activeOrders={activeOrders}
             completedOrders={completedOrders}
             selectedId={selectedOrder?._id}
             onSelect={loadSingleOrder}
           />
+
         </div>
 
         {/* DETAILS */}
         <div className="lg:col-span-8">
+
           <OrderDetailsPanel
             order={selectedOrder}
             items={items}
@@ -263,8 +335,11 @@ export default function OrdersPage() {
             saveItems={handleSaveItems}
             saving={saving}
           />
+
         </div>
+
       </div>
+
     </div>
   );
 }
