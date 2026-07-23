@@ -8,6 +8,7 @@ import OrderTimeline from "./OrderTimeline";
 import EditableOrderItems from "./EditableOrderItems";
 
 import { printReceipt } from "@/src/utils/printReceipt";
+import { InvoiceData } from "@/src/types/invoice";
 
 export default function OrderDetailsPanel({
   order,
@@ -29,22 +30,30 @@ export default function OrderDetailsPanel({
     );
   }
 
-  // 🔴 FIXED: UPPERCASE ENUM VALUES
+  // 🔴 LOCK CHECK FOR DELIVERED AND CANCELLED
   const locked =
     order.orderStatus === "DELIVERED" || order.orderStatus === "CANCELLED";
 
-  const buildInvoice = () => {
+  // 🔴 BUILD INVOICE WITH ORIGINAL AND ACCURATE CALCULATIONS
+  const buildInvoice = (): InvoiceData => {
+    // ১. আইটেমের সাবটোটাল হিসাব (বর্তমান ইউনিট প্রাইজ × কোয়ান্টিটি)
     const subtotal =
-      items?.reduce(
-        (sum: number, item: any) => sum + (item.totalPrice || 0),
-        0
-      ) || 0;
+      items?.reduce((sum: number, item: any) => {
+        const unitPrice = Number(item.price || 0);
+        const qty = Number(item.quantity || 1);
+        return sum + unitPrice * qty;
+      }, 0) || 0;
 
-    const deliveryCharge = order.deliveryCharge || 0;
-    const discount = order.discountAmount ?? order.rewardUsed ?? order.discount ?? 0;
-    
-    // ব্যাকএন্ডের আসল হিসাব করা প্রাইজ
-    const total = order.finalAmount ?? (subtotal + deliveryCharge - discount);
+    const deliveryCharge = Number(order.deliveryCharge || 0);
+
+    // ২. অরিজিনাল ডিসকাউন্ট/রিওয়ার্ড পয়েন্ট ছাড় হিসাব
+    const discount = Number(
+      order.rewardUsed ?? order.discountAmount ?? order.discount ?? 0
+    );
+
+    // ৩. ফাইনাল গ্র্যান্ড টোটাল
+    const total =
+      order.finalAmount ?? (subtotal + deliveryCharge - discount);
 
     return {
       invoiceNumber: order.orderNumber,
@@ -53,32 +62,36 @@ export default function OrderDetailsPanel({
 
       customer: {
         name: order.shippingAddress?.fullName || "Customer",
-        phone: order.customerPhone,
-        address: `${order.shippingAddress?.areaOrVillage || ""} ${order.shippingAddress?.landmark || ""}`.trim(),
+        phone: order.customerPhone || "N/A",
+        address: `${order.shippingAddress?.areaOrVillage || ""} ${order.shippingAddress?.landmark || ""}`.trim() || "N/A",
       },
 
-      items: items.map((item: any) => ({
-        productName:
-          item.product?.title?.en ||
-          item.title?.en ||
-          item.productName ||
-          "",
-        productNameBn:
-          item.product?.title?.bn ||
-          item.title?.bn ||
-          "",
-        quantity: item.quantity,
-        price: item.price,
-        totalPrice: item.totalPrice,
-      })),
+      items: (items || []).map((item: any) => {
+        const unitPrice = Number(item.price || 0);
+        const qty = Number(item.quantity || 1);
+        return {
+          productName:
+            item.product?.title?.en ||
+            item.title?.en ||
+            item.productName ||
+            "Product",
+          productNameBn:
+            item.product?.title?.bn ||
+            item.title?.bn ||
+            "",
+          quantity: qty,
+          price: unitPrice, // অরিজিনাল ইউনিট দাম
+          totalPrice: unitPrice * qty, // রিয়েল-টাইম অরিজিনাল মোট দাম
+        };
+      }),
 
       subtotal,
       deliveryCharge,
       discount,
       total,
 
-      paymentMethod: order.paymentMethod,
-      paymentStatus: order.isPaid,
+      paymentMethod: order.paymentMethod || "CASH ON DELIVERY",
+      paymentStatus: Boolean(order.isPaid),
       orderStatus: order.orderStatus,
     };
   };
@@ -96,7 +109,7 @@ export default function OrderDetailsPanel({
 
         <button
           onClick={() => printReceipt(buildInvoice())}
-          className="border px-5 py-2 rounded-xl text-sm hover:bg-gray-50 flex items-center gap-2"
+          className="border px-5 py-2 rounded-xl text-sm hover:bg-gray-50 flex items-center gap-2 font-medium transition"
         >
           🖨 Print Receipt
         </button>
@@ -125,7 +138,11 @@ export default function OrderDetailsPanel({
 
       {/* ORDER ITEMS */}
       <div>
-        <EditableOrderItems items={items} setItems={setItems} locked={locked} />
+        <EditableOrderItems
+          items={items}
+          setItems={setItems}
+          locked={locked}
+        />
       </div>
 
       {/* SAVE BUTTON */}
