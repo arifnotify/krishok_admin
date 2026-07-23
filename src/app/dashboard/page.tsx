@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import StatsCards from "@/src/components/dashboard/StatsCards";
-import OrdersSidebar from "@/src/components/orders/OrdersSidebar";
-import OrderDetailsPanel from "@/src/components/orders/OrderDetailsPanel";
-import OrderSearch from "@/src/components/orders/OrderSearch";
-import OrderTabs from "@/src/components/orders/OrderTabs";
+import {
+  ShoppingCart,
+  Clock3,
+  CheckCircle,
+  DollarSign,
+} from "lucide-react";
 
 import {
   getOrders,
@@ -17,42 +18,36 @@ import {
 } from "@/src/services/order.service";
 
 import { getRiders } from "@/src/services/rider.service";
-import { getDashboardSummary } from "@/src/services/analytics.service";
 
-import { Order, OrderItem, OrderStatus } from "@/src/types/order";
-import { DashboardSummary } from "@/src/types/dashboard";
+import OrdersSidebar from "@/src/components/orders/OrdersSidebar";
+import OrderDetailsPanel from "@/src/components/orders/OrderDetailsPanel";
 
-export default function DashboardPage() {
-  // =========================
-  // DASHBOARD SUMMARY
-  // =========================
-  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+import OrderSearch from "@/src/components/orders/OrderSearch";
+import OrderTabs from "@/src/components/orders/OrderTabs";
 
-  // =========================
-  // ORDER STATE
-  // =========================
+import OrderStatCard from "@/src/components/dashboard/OrderStatCard";
+
+import {
+  Order,
+  OrderItem,
+  OrderStatus,
+} from "@/src/types/order";
+
+export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [items, setItems] = useState<OrderItem[]>([]);
 
+  const [items, setItems] = useState<OrderItem[]>([]);
   const [riders, setRiders] = useState<any[]>([]);
+
   const [selectedRider, setSelectedRider] = useState("");
 
-  // =========================
-  // SEARCH & FILTER
-  // =========================
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<OrderStatus | "All">("All");
 
-  // =========================
-  // LOADING STATES
-  // =========================
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // =========================
-  // LOAD INITIAL DATA
-  // =========================
   useEffect(() => {
     loadData();
   }, []);
@@ -61,13 +56,11 @@ export default function DashboardPage() {
     try {
       setLoading(true);
 
-      const [summaryData, ordersData, ridersData] = await Promise.all([
-        getDashboardSummary(),
+      const [ordersData, ridersData] = await Promise.all([
         getOrders(),
         getRiders(),
       ]);
 
-      setSummary(summaryData);
       setOrders(ordersData || []);
       setRiders(ridersData || []);
 
@@ -75,15 +68,12 @@ export default function DashboardPage() {
         await loadSingleOrder(ordersData[0]._id);
       }
     } catch (err) {
-      console.error("Failed to load dashboard data:", err);
+      console.error("Failed to load orders data:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // =========================
-  // LOAD SINGLE ORDER
-  // =========================
   const loadSingleOrder = async (id: string) => {
     try {
       const data = await getOrder(id);
@@ -94,9 +84,6 @@ export default function DashboardPage() {
     }
   };
 
-  // =========================
-  // UPDATE ORDER STATUS
-  // =========================
   const handleStatusChange = async (newStatus: OrderStatus) => {
     if (!selectedOrder) return;
 
@@ -119,13 +106,10 @@ export default function DashboardPage() {
         )
       );
     } catch (err) {
-      console.error("Failed to update order status:", err);
+      console.error("Failed to update status:", err);
     }
   };
 
-  // =========================
-  // ASSIGN RIDER
-  // =========================
   const handleAssignRider = async () => {
     if (!selectedOrder || !selectedRider) return;
 
@@ -137,15 +121,12 @@ export default function DashboardPage() {
     }
   };
 
-  // =========================
-  // SAVE ORDER ITEMS
-  // =========================
   const handleSaveItems = async () => {
     if (!selectedOrder) return;
 
-    try {
-      setSaving(true);
+    setSaving(true);
 
+    try {
       await adminEditOrder(
         selectedOrder._id,
         items.map((item) => ({
@@ -159,23 +140,23 @@ export default function DashboardPage() {
 
       await loadSingleOrder(selectedOrder._id);
     } catch (err) {
-      console.error("Failed to save order items:", err);
+      console.error("Failed to save items:", err);
     } finally {
       setSaving(false);
     }
   };
 
-  // =========================
-  // SEARCH & FILTER LOGIC
-  // =========================
+  // ==========================================
+  // SEARCH & FILTER LOGIC (CASE INSENSITIVE)
+  // ==========================================
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      // 1. Search Query Matching
+      // 1. Search Matching
       const matchesSearch =
         order.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
         order.customerPhone?.includes(search);
 
-      // 2. Tab Status Matching (Case Insensitive)
+      // 2. Tab Matching (Case Insensitive)
       const matchesStatus =
         status === "All"
           ? true
@@ -185,9 +166,7 @@ export default function DashboardPage() {
     });
   }, [orders, search, status]);
 
-  // =========================
-  // ACTIVE ORDERS (Not Delivered & Not Cancelled)
-  // =========================
+  // Active Orders (Pending, Processing, Out For Delivery)
   const activeOrders = useMemo(() => {
     return filteredOrders.filter((order) => {
       const st = order.orderStatus?.toUpperCase();
@@ -195,9 +174,7 @@ export default function DashboardPage() {
     });
   }, [filteredOrders]);
 
-  // =========================
-  // COMPLETED ORDERS (Delivered or Cancelled)
-  // =========================
+  // Completed Orders (Delivered, Cancelled)
   const completedOrders = useMemo(() => {
     return filteredOrders.filter((order) => {
       const st = order.orderStatus?.toUpperCase();
@@ -205,32 +182,79 @@ export default function DashboardPage() {
     });
   }, [filteredOrders]);
 
-  // =========================
-  // LOADING STATE UI
-  // =========================
-  if (loading || !summary) {
+  // ==========================================
+  // STATS COUNTS (CASE INSENSITIVE)
+  // ==========================================
+  const pendingCount = useMemo(
+    () =>
+      orders.filter(
+        (order) => order.orderStatus?.toUpperCase() === "PENDING"
+      ).length,
+    [orders]
+  );
+
+  const deliveredCount = useMemo(
+    () =>
+      orders.filter(
+        (order) => order.orderStatus?.toUpperCase() === "DELIVERED"
+      ).length,
+    [orders]
+  );
+
+  const totalRevenue = useMemo(
+    () =>
+      orders
+        .filter((order) => order.orderStatus?.toUpperCase() === "DELIVERED")
+        .reduce(
+          (sum, order) => sum + Number(order.finalAmount ?? order.totalAmount ?? 0),
+          0
+        ),
+    [orders]
+  );
+
+  if (loading) {
     return (
       <div className="flex h-screen items-center justify-center text-gray-500 font-medium">
-        Loading Dashboard...
+        Loading Orders...
       </div>
     );
   }
 
   return (
     <div className="p-5 bg-gray-50 min-h-screen">
-      {/* HEADER */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-1">Overview of your business</p>
+      {/* STATS CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+        <OrderStatCard
+          title="Total Orders"
+          value={orders.length}
+          icon={ShoppingCart}
+          gradient="from-orange-500 to-red-500"
+        />
+
+        <OrderStatCard
+          title="Pending Orders"
+          value={pendingCount}
+          icon={Clock3}
+          gradient="from-yellow-500 to-orange-500"
+        />
+
+        <OrderStatCard
+          title="Delivered Orders"
+          value={deliveredCount}
+          icon={CheckCircle}
+          gradient="from-green-500 to-emerald-500"
+        />
+
+        <OrderStatCard
+          title="Revenue"
+          value={`৳${totalRevenue.toFixed(2)}`}
+          icon={DollarSign}
+          gradient="from-blue-500 to-cyan-500"
+        />
       </div>
 
-      {/* STATS */}
-      <div className="mb-6">
-        <StatsCards summary={summary} />
-      </div>
-
-      {/* SEARCH + TABS */}
-      <div className="bg-white border rounded-2xl p-5 mb-6 shadow-sm">
+      {/* SEARCH AND TABS */}
+      <div className="bg-white border rounded-2xl p-5 mb-5 shadow-sm">
         <OrderSearch value={search} onChange={setSearch} />
 
         <div className="mt-4">
@@ -238,9 +262,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ORDER MANAGEMENT */}
+      {/* MAIN CONTENT AREA */}
       <div className="grid lg:grid-cols-12 gap-5">
-        {/* LEFT ORDER LIST */}
+        {/* SIDEBAR */}
         <div className="lg:col-span-4">
           <OrdersSidebar
             activeOrders={activeOrders}
@@ -250,7 +274,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* RIGHT DETAILS */}
+        {/* DETAILS PANEL */}
         <div className="lg:col-span-8">
           <OrderDetailsPanel
             order={selectedOrder}
