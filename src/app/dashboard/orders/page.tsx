@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   ShoppingCart,
@@ -35,66 +35,102 @@ import {
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] =
+    useState<Order | null>(null);
 
   const [items, setItems] = useState<OrderItem[]>([]);
   const [riders, setRiders] = useState<any[]>([]);
 
-  const [selectedRider, setSelectedRider] = useState("");
+  const [selectedRider, setSelectedRider] =
+    useState("");
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<OrderStatus | "All">("All");
+
+  const [status, setStatus] =
+    useState<OrderStatus | "All">("All");
 
   const [loading, setLoading] = useState(true);
+
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
 
+  // ==========================
+  // LOAD ALL DATA
+  // ==========================
   const loadData = async () => {
     try {
       setLoading(true);
 
-      const [ordersData, ridersData] = await Promise.all([
-        getOrders(),
-        getRiders(),
-      ]);
+      const [ordersData, ridersData] =
+        await Promise.all([
+          getOrders(),
+          getRiders(),
+        ]);
 
       setOrders(ordersData || []);
+
       setRiders(ridersData || []);
 
       if (ordersData?.length > 0) {
-        await loadSingleOrder(ordersData[0]._id);
+        await loadSingleOrder(
+          ordersData[0]._id
+        );
       }
     } catch (err) {
-      console.error("Failed to load orders data:", err);
+      console.error(
+        "Failed to load orders:",
+        err
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const loadSingleOrder = async (id: string) => {
+  // ==========================
+  // LOAD SINGLE ORDER
+  // ==========================
+  const loadSingleOrder = async (
+    id: string
+  ) => {
     try {
       const data = await getOrder(id);
+
       setSelectedOrder(data);
+
       setItems(data?.items || []);
     } catch (err) {
-      console.error("Failed to load order details:", err);
+      console.error(
+        "Failed to load order:",
+        err
+      );
     }
   };
 
-  const handleStatusChange = async (newStatus: OrderStatus) => {
+  // ==========================
+  // UPDATE STATUS
+  // ==========================
+  const handleStatusChange = async (
+    newStatus: OrderStatus
+  ) => {
     if (!selectedOrder) return;
 
     try {
-      // ব্যাকএন্ড যেহেতু স্ট্রিং ও অবজেক্ট দুটোই সাপোর্ট করে, তাই সরাসরি স্ট্রিং পাঠানো হলো
-      await updateOrderStatus(selectedOrder._id, newStatus);
+      await updateOrderStatus(
+        selectedOrder._id,
+        newStatus
+      );
 
-      setSelectedOrder((prev: any) => ({
-        ...prev,
-        orderStatus: newStatus,
-      }));
+      setSelectedOrder((prev) =>
+        prev
+          ? {
+              ...prev,
+              orderStatus: newStatus,
+            }
+          : null
+      );
 
       setOrders((prev) =>
         prev.map((order) =>
@@ -107,116 +143,184 @@ export default function OrdersPage() {
         )
       );
     } catch (err) {
-      console.error("Failed to update status:", err);
-    }
-  };
-
-  const handleAssignRider = async () => {
-    if (!selectedOrder || !selectedRider) return;
-
-    try {
-      await assignRider(selectedOrder._id, selectedRider);
-      await loadSingleOrder(selectedOrder._id);
-    } catch (err) {
-      console.error("Failed to assign rider:", err);
-    }
-  };
-
-  const handleSaveItems = async () => {
-    if (!selectedOrder) return;
-
-    setSaving(true);
-
-    try {
-      await adminEditOrder(
-        selectedOrder._id,
-        items.map((item) => ({
-          product: item.product!,
-          productName: {
-            en: typeof item.productName === "object" ? item.productName?.en || "" : item.productName || "",
-            bn: typeof item.productName === "object" ? item.productName?.bn || "" : "",
-          },
-          unit: item.unit || "pcs",
-          productImage: item.productImage || "",
-          price: Number(item.price || 0),
-          quantity: Number(item.quantity || 1),
-        }))
+      console.error(
+        "Failed to update status:",
+        err
       );
-
-      await loadSingleOrder(selectedOrder._id);
-    } catch (err) {
-      console.error("Failed to save items:", err);
-    } finally {
-      setSaving(false);
     }
   };
 
+  // ==========================
+  // ASSIGN RIDER
+  // ==========================
+  const handleAssignRider =
+    async () => {
+      if (
+        !selectedOrder ||
+        !selectedRider
+      )
+        return;
+
+      try {
+        await assignRider(
+          selectedOrder._id,
+          selectedRider
+        );
+
+        await loadSingleOrder(
+          selectedOrder._id
+        );
+      } catch (err) {
+        console.error(
+          "Failed to assign rider:",
+          err
+        );
+      }
+    };
+
+  // ==========================
+  // SAVE ORDER ITEMS
+  // ==========================
+  const handleSaveItems =
+    async () => {
+      if (!selectedOrder) return;
+
+      setSaving(true);
+
+      try {
+        await adminEditOrder(
+          selectedOrder._id,
+          items.map((item) => ({
+            product: item.product!,
+
+            productName: {
+              en:
+                typeof item.productName ===
+                "object"
+                  ? item.productName.en || ""
+                  : item.productName,
+
+              bn:
+                typeof item.productName ===
+                "object"
+                  ? item.productName.bn ||
+                    ""
+                  : "",
+            },
+
+            unit:
+              item.unit || "pcs",
+
+            productImage:
+              item.productImage || "",
+
+            price: Number(
+              item.price || 0
+            ),
+
+            quantity: Number(
+              item.quantity || 1
+            ),
+          }))
+        );
+
+        await loadSingleOrder(
+          selectedOrder._id
+        );
+      } catch (err) {
+        console.error(
+          "Failed to save items:",
+          err
+        );
+      } finally {
+        setSaving(false);
+      }
+    };
   // ==========================================
-  // SEARCH & FILTER LOGIC (CASE INSENSITIVE)
+  // SEARCH & FILTER
   // ==========================================
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      // 1. Search Matching
       const matchesSearch =
-        order.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
-        order.customerPhone?.includes(search);
+        order.orderNumber
+          ?.toLowerCase()
+          .includes(search.toLowerCase()) ||
+        order.customerPhone
+          ?.toLowerCase()
+          .includes(search.toLowerCase());
 
-      // 2. Tab Matching (Case Insensitive)
       const matchesStatus =
         status === "All"
           ? true
-          : order.orderStatus?.toUpperCase() === status.toUpperCase();
+          : order.orderStatus === status;
 
       return matchesSearch && matchesStatus;
     });
   }, [orders, search, status]);
 
-  // Active Orders (Pending, Processing, Out For Delivery)
+  // ==========================================
+  // ACTIVE ORDERS
+  // ==========================================
   const activeOrders = useMemo(() => {
-    return filteredOrders.filter((order) => {
-      const st = order.orderStatus?.toUpperCase();
-      return st !== "DELIVERED" && st !== "CANCELLED";
-    });
+    return filteredOrders.filter(
+      (order) =>
+        order.orderStatus !== "Delivered" &&
+        order.orderStatus !== "Cancelled"
+    );
   }, [filteredOrders]);
 
-  // Completed Orders (Delivered, Cancelled)
+  // ==========================================
+  // COMPLETED ORDERS
+  // ==========================================
   const completedOrders = useMemo(() => {
-    return filteredOrders.filter((order) => {
-      const st = order.orderStatus?.toUpperCase();
-      return st === "DELIVERED" || st === "CANCELLED";
-    });
+    return filteredOrders.filter(
+      (order) =>
+        order.orderStatus === "Delivered" ||
+        order.orderStatus === "Cancelled"
+    );
   }, [filteredOrders]);
 
   // ==========================================
-  // STATS COUNTS (CASE INSENSITIVE)
+  // PENDING COUNT
   // ==========================================
-  const pendingCount = useMemo(
-    () =>
-      orders.filter(
-        (order) => order.orderStatus?.toUpperCase() === "PENDING"
-      ).length,
-    [orders]
-  );
+  const pendingCount = useMemo(() => {
+    return orders.filter(
+      (order) => order.orderStatus === "Pending"
+    ).length;
+  }, [orders]);
 
-  const deliveredCount = useMemo(
-    () =>
-      orders.filter(
-        (order) => order.orderStatus?.toUpperCase() === "DELIVERED"
-      ).length,
-    [orders]
-  );
+  // ==========================================
+  // DELIVERED COUNT
+  // ==========================================
+  const deliveredCount = useMemo(() => {
+    return orders.filter(
+      (order) => order.orderStatus === "Delivered"
+    ).length;
+  }, [orders]);
 
-  const totalRevenue = useMemo(
-    () =>
-      orders
-        .filter((order) => order.orderStatus?.toUpperCase() === "DELIVERED")
-        .reduce(
-          (sum, order) => sum + Number(order.finalAmount ?? order.totalAmount ?? 0),
-          0
-        ),
-    [orders]
-  );
+  // ==========================================
+  // TOTAL REVENUE
+  // ==========================================
+  const totalRevenue = useMemo(() => {
+    return orders
+      .filter(
+        (order) => order.orderStatus === "Delivered"
+      )
+      .reduce(
+        (sum, order) =>
+          sum +
+          Number(
+            order.finalAmount ??
+              order.totalAmount ??
+              0
+          ),
+        0
+      );
+  }, [orders]);
 
+  // ==========================================
+  // LOADING
+  // ==========================================
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center text-gray-500 font-medium">
@@ -224,10 +328,11 @@ export default function OrdersPage() {
       </div>
     );
   }
-
   return (
     <div className="p-5 bg-gray-50 min-h-screen">
-      {/* STATS CARDS */}
+      {/* =========================
+          STATS
+      ========================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
         <OrderStatCard
           title="Total Orders"
@@ -258,18 +363,28 @@ export default function OrdersPage() {
         />
       </div>
 
-      {/* SEARCH AND TABS */}
+      {/* =========================
+          SEARCH + FILTER
+      ========================= */}
       <div className="bg-white border rounded-2xl p-5 mb-5 shadow-sm">
-        <OrderSearch value={search} onChange={setSearch} />
+        <OrderSearch
+          value={search}
+          onChange={setSearch}
+        />
 
         <div className="mt-4">
-          <OrderTabs active={status} onChange={setStatus} />
+          <OrderTabs
+            active={status}
+            onChange={setStatus}
+          />
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA */}
+      {/* =========================
+          MAIN CONTENT
+      ========================= */}
       <div className="grid lg:grid-cols-12 gap-5">
-        {/* SIDEBAR */}
+        {/* LEFT SIDEBAR */}
         <div className="lg:col-span-4">
           <OrdersSidebar
             activeOrders={activeOrders}
@@ -279,7 +394,7 @@ export default function OrdersPage() {
           />
         </div>
 
-        {/* DETAILS PANEL */}
+        {/* RIGHT PANEL */}
         <div className="lg:col-span-8">
           <OrderDetailsPanel
             order={selectedOrder}
