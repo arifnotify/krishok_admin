@@ -95,13 +95,11 @@ export interface Order {
   // =========================
   // RIDER
   // =========================
-  assignedRider?:
-  | string
-  | {
-      _id: string;
-      name?: string;
-      phone?: string;
-    };
+assignedRider?: {
+  _id: string;
+  name?: string;
+  phone?: string;
+} | null;
 
   trackingEnabled: boolean;
 
