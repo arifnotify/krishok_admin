@@ -88,8 +88,8 @@ export default function OrdersPage() {
     if (!selectedOrder) return;
 
     try {
-      // ব্যাকএন্ডের DTO ফরম্যাট অনুযায়ী অবজেক্ট আকারে পাঠানো হলো
-      await updateOrderStatus(selectedOrder._id, { orderStatus: newStatus });
+      // ব্যাকএন্ড যেহেতু স্ট্রিং ও অবজেক্ট দুটোই সাপোর্ট করে, তাই সরাসরি স্ট্রিং পাঠানো হলো
+      await updateOrderStatus(selectedOrder._id, newStatus);
 
       setSelectedOrder((prev: any) => ({
         ...prev,
