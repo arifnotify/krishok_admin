@@ -33,7 +33,7 @@ import {
   OrderStatus,
 } from "@/src/types/order";
 
-export default function OrdersPage() {
+export default function DashboardPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
