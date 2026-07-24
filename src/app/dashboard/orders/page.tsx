@@ -43,19 +43,27 @@ export default function OrdersPage() {
 
   const [selectedRider, setSelectedRider] =
     useState("");
-  useEffect(() => {
+useEffect(() => {
+
+  if (!selectedOrder?.assignedRider) {
+    setSelectedRider("");
+    return;
+  }
 
   if (
-    selectedOrder?.assignedRider?._id
+    typeof selectedOrder.assignedRider ===
+    "string"
   ) {
 
     setSelectedRider(
-      selectedOrder.assignedRider._id
+      selectedOrder.assignedRider
     );
 
   } else {
 
-    setSelectedRider("");
+    setSelectedRider(
+      selectedOrder.assignedRider._id
+    );
 
   }
 
