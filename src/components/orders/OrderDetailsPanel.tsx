@@ -30,13 +30,12 @@ export default function OrderDetailsPanel({
     );
   }
 
-  // 🔴 LOCK CHECK FOR DELIVERED AND CANCELLED
-  const locked =
-    order.orderStatus === "DELIVERED" || order.orderStatus === "CANCELLED";
+  // 🔴 LOCK CHECK (শুধু ডাটাবেজে অলরেডি Delivered বা Cancelled থাকলে প্যানেল লক হবে)
+  const currentStatus = order?.orderStatus?.toUpperCase() || "";
+  const locked = currentStatus === "DELIVERED" || currentStatus === "CANCELLED";
 
   // 🔴 BUILD INVOICE WITH ORIGINAL AND ACCURATE CALCULATIONS
   const buildInvoice = (): InvoiceData => {
-    // ১. আইটেমের সাবটোটাল হিসাব (বর্তমান ইউনিট প্রাইজ × কোয়ান্টিটি)
     const subtotal =
       items?.reduce((sum: number, item: any) => {
         const unitPrice = Number(item.price || 0);
@@ -46,12 +45,10 @@ export default function OrderDetailsPanel({
 
     const deliveryCharge = Number(order.deliveryCharge || 0);
 
-    // ২. অরিজিনাল ডিসকাウント/রিওয়ার্ড পয়েন্ট ছাড় হিসাব
     const discount = Number(
       order.rewardUsed ?? order.discountAmount ?? order.discount ?? 0
     );
 
-    // ৩. ফাইনাল গ্র্যান্ড টোটাল
     const total =
       order.finalAmount ?? (subtotal + deliveryCharge - discount);
 
