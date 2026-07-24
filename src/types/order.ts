@@ -95,7 +95,13 @@ export interface Order {
   // =========================
   // RIDER
   // =========================
-  assignedRider?: string | null;
+  assignedRider?:
+  | string
+  | {
+      _id: string;
+      name?: string;
+      phone?: string;
+    };
 
   trackingEnabled: boolean;
 
