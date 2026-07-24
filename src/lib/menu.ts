@@ -1,7 +1,7 @@
 import {
   LayoutDashboard,
   ShoppingCart,
- Package,
+  Package,
   Layers,
   Users,
   Image,
@@ -12,7 +12,9 @@ import {
   Wallet,
   History,
   Settings,
+  Bike,
 } from "lucide-react";
+
 
 export const menu = [
   {
@@ -26,6 +28,7 @@ export const menu = [
     ],
   },
 
+
   {
     title: "MANAGEMENT",
     items: [
@@ -34,23 +37,33 @@ export const menu = [
         href: "/dashboard/orders",
         icon: ShoppingCart,
       },
+
       {
         name: "Products",
         href: "/dashboard/products",
         icon: Package,
       },
+
       {
         name: "Categories",
         href: "/dashboard/categories",
         icon: Layers,
       },
+
       {
         name: "Users",
         href: "/dashboard/users",
         icon: Users,
       },
+
+      {
+        name: "Riders",
+        href: "/dashboard/riders",
+        icon: Bike,
+      },
     ],
   },
+
 
   {
     title: "MARKETING",
@@ -60,6 +73,7 @@ export const menu = [
         href: "/dashboard/banners",
         icon: Image,
       },
+
       {
         name: "Flash Sale",
         href: "/dashboard/flash-sale",
@@ -67,6 +81,7 @@ export const menu = [
       },
     ],
   },
+
 
   {
     title: "REWARD",
@@ -76,11 +91,13 @@ export const menu = [
         href: "/dashboard/reward-settings",
         icon: Gift,
       },
+
       {
         name: "Reward Wallet",
         href: "/dashboard/reward-wallets",
         icon: Wallet,
       },
+
       {
         name: "Transactions",
         href: "/dashboard/reward-transactions",
@@ -88,6 +105,7 @@ export const menu = [
       },
     ],
   },
+
 
   {
     title: "SYSTEM",
@@ -97,11 +115,13 @@ export const menu = [
         href: "/dashboard/locations",
         icon: MapPin,
       },
+
       {
         name: "Support",
         href: "/dashboard/support-links",
         icon: Phone,
       },
+
       {
         name: "Settings",
         href: "/dashboard/settings",
