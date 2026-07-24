@@ -20,27 +20,49 @@ export default function RiderCard({
   assign,
   locked,
 }: Props) {
+
+
   const handleAssign = () => {
-    if (locked || !selectedRider) return;
+
+    if (locked || !selectedRider) {
+      return;
+    }
+
 
     const rider = riders.find(
-      (r: any) => r._id === selectedRider
+      (r:any) =>
+        r._id === selectedRider
     );
 
-    const riderName = rider?.name || "Unknown Rider";
 
-    const confirmed = window.confirm(
-      `Selected Rider: ${riderName}
+    const riderName =
+      rider?.name || "Unknown Rider";
 
-Are you sure you want to assign this rider to the order?`
-    );
 
-    if (confirmed) {
+
+    const confirmed =
+      window.confirm(
+`Assign Rider Confirmation
+
+Selected Rider: ${riderName}
+
+Are you sure you want to assign this rider to this order?`
+      );
+
+
+
+    if(confirmed){
+
       assign();
+
     }
+
   };
 
+
+
   return (
+
     <div
       className={`
         bg-white
@@ -51,7 +73,10 @@ Are you sure you want to assign this rider to the order?`
         ${locked ? "opacity-60" : ""}
       `}
     >
+
+
       {/* Header */}
+
       <div
         className="
           flex
@@ -60,10 +85,12 @@ Are you sure you want to assign this rider to the order?`
           mb-5
         "
       >
+
         <Truck
           size={20}
           className="text-blue-600"
         />
+
 
         <h2
           className="
@@ -73,9 +100,16 @@ Are you sure you want to assign this rider to the order?`
         >
           Delivery Rider
         </h2>
+
+
       </div>
 
-      {/* Select Rider */}
+
+
+
+      {/* Rider Select */}
+
+
       <label
         className="
           text-sm
@@ -85,12 +119,21 @@ Are you sure you want to assign this rider to the order?`
         Select Rider
       </label>
 
+
+
       <select
+
         disabled={locked}
+
         value={selectedRider}
-        onChange={(e) =>
-          setSelectedRider(e.target.value)
+
+        onChange={(e)=>
+          setSelectedRider(
+            e.target.value
+          )
         }
+
+
         className="
           w-full
           mt-2
@@ -101,64 +144,144 @@ Are you sure you want to assign this rider to the order?`
           outline-none
           disabled:bg-gray-100
         "
+
       >
+
+
         <option value="">
           Choose Rider
         </option>
 
-        {riders.map((rider: any) => (
-          <option
-            key={rider._id}
-            value={rider._id}
-          >
-            {rider.name}
-          </option>
-        ))}
+
+
+        {
+          riders.map(
+            (rider:any)=>(
+
+              <option
+
+                key={rider._id}
+
+                value={rider._id}
+
+              >
+
+                {rider.name}
+
+              </option>
+
+            )
+          )
+        }
+
+
+
       </select>
 
+
+
+
+
+
       {/* Assign Button */}
+
+
       <button
+
         onClick={handleAssign}
+
+
         disabled={
           locked ||
           !selectedRider
         }
+
+
         className={`
+
           mt-5
           w-full
           py-3
           rounded-lg
           font-semibold
+
           flex
           items-center
           justify-center
+
           gap-2
+
           text-white
+
           transition-colors
+
 
           ${
             locked || !selectedRider
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
+
+            ?
+
+            "bg-gray-300 cursor-not-allowed"
+
+            :
+
+            "bg-blue-600 hover:bg-blue-700"
+
           }
+
         `}
+
+
       >
-        <UserCheck size={17} />
+
+        <UserCheck
+          size={17}
+        />
+
+
         Assign Rider
+
+
       </button>
 
-      {/* Info */}
+
+
+
+
+
+
+      {/* Message */}
+
+
       <p
+
         className="
           text-xs
           text-gray-500
           mt-4
         "
+
       >
-        {locked
-          ? "Order completed. Rider cannot be changed."
-          : "Assign rider before delivery."}
+
+        {
+          locked
+
+          ?
+
+          "Order completed. Rider cannot be changed."
+
+          :
+
+          "Assign rider before delivery."
+        }
+
+
       </p>
+
+
+
     </div>
+
   );
+
 }
