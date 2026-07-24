@@ -44,20 +44,44 @@ export default function OrderDetailsPage() {
     loadRiders();
   }, [id]);
 
-  const loadOrder = async () => {
-    try {
-      setLoading(true);
+ const loadOrder = async () => {
+  try {
+    setLoading(true);
 
-      const data = await getOrder(id);
+    const data = await getOrder(id);
 
-      setOrder(data);
-      setItems(data.items || []);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
+    setOrder(data);
+
+    setItems(data.items || []);
+
+
+    // =========================
+    // LOAD ASSIGNED RIDER
+    // =========================
+
+    if(data.assignedRider?._id){
+
+      setSelectedRider(
+        data.assignedRider._id
+      );
+
     }
-  };
+    else{
+
+      setSelectedRider("");
+
+    }
+
+
+  } catch (err) {
+    console.log(err);
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
 
   const loadRiders = async () => {
     try {
@@ -144,11 +168,26 @@ export default function OrderDetailsPage() {
         return;
       }
 
-      await assignRider(order._id, selectedRider);
+await assignRider(
+  order._id,
+  selectedRider
+);
 
-      alert("Rider Assigned");
 
-      loadOrder();
+setOrder((prev:any)=>({
+  ...prev,
+
+  assignedRider:{
+    _id:selectedRider
+  }
+
+}));
+
+
+alert("Rider Assigned");
+
+
+loadOrder();
     } catch (err) {
       console.log(err);
       alert("Assign Failed");
