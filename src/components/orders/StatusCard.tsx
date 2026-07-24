@@ -1,7 +1,6 @@
 "use client";
 
 import { Order } from "@/src/types/order";
-import { CheckCircle, Lock } from "lucide-react";
 
 interface Props {
   order: Order;
@@ -9,54 +8,18 @@ interface Props {
 }
 
 export default function StatusCard({ order, onChange }: Props) {
-  const currentRawStatus = order?.orderStatus?.toUpperCase() || "";
-
-  // 🔴 NORMALIZING STATUS FOR DROPDOWN VALUE MATCHING
-  const getNormalizedStatus = (status: string) => {
-    if (status === "OUTFORDELIVERY" || status === "OUT_FOR_DELIVERY") {
-      return "OUT_FOR_DELIVERY";
-    }
-    return status;
-  };
-
-  const selectedValue = getNormalizedStatus(currentRawStatus);
-
-  // 🔴 CASE-INSENSITIVE LOCK CHECK
-  const isLocked =
-    currentRawStatus === "DELIVERED" || currentRawStatus === "CANCELLED";
-
-  // 🔴 STATUS STYLES
-  const statusStyle = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-700 border-yellow-200";
-
-      case "PROCESSING":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-
-      case "OUT_FOR_DELIVERY":
-        return "bg-purple-100 text-purple-700 border-purple-200";
-
-      case "DELIVERED":
-        return "bg-green-100 text-green-700 border-green-200";
-
-      case "CANCELLED":
-        return "bg-red-100 text-red-700 border-red-200";
-
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
-    }
-  };
-
-  // 🔴 DISPLAY TEXT FORMATTER
-  const formatStatusText = (status: string) => {
-    switch (status) {
+  // 🔴 BACKEND TO FRONTEND FORMAT MAPPER
+  const formatBackendStatus = (status: string) => {
+    if (!status) return "Pending";
+    const upper = status.toUpperCase();
+    switch (upper) {
       case "PENDING":
         return "Pending";
       case "PROCESSING":
         return "Processing";
       case "OUT_FOR_DELIVERY":
-        return "Out For Delivery";
+      case "OUTFORDELIVERY":
+        return "OutForDelivery";
       case "DELIVERED":
         return "Delivered";
       case "CANCELLED":
@@ -66,76 +29,112 @@ export default function StatusCard({ order, onChange }: Props) {
     }
   };
 
-  const handleStatusChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    if (isLocked) return;
+  const currentStatus = formatBackendStatus(order?.orderStatus);
 
-    const newStatus = e.target.value;
-    if (newStatus === selectedValue) return;
+  const isLocked =
+    currentStatus === "Delivered" || currentStatus === "Cancelled";
 
-    const confirmed = window.confirm(
-      `Are you sure you want to change order status to "${formatStatusText(newStatus)}"?`
-    );
-
-    if (confirmed) {
-      onChange(newStatus);
-    } else {
-      e.target.value = selectedValue;
+  const statusColor = (status: string) => {
+    switch (status) {
+      case "Pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "Processing":
+        return "bg-blue-100 text-blue-700";
+      case "OutForDelivery":
+        return "bg-purple-100 text-purple-700";
+      case "Delivered":
+        return "bg-green-100 text-green-700";
+      case "Cancelled":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-600";
     }
   };
 
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedVal = e.target.value;
+    
+    // ব্যাকএন্ডে পাঠানোর সময় যদি আবার বড় হাতের বা নির্দিষ্ট ফরম্যাট দরকার হয়, 
+    // তবে এখানে ম্যাপিং করে দিতে পারেন। যেমন: "OUT_FOR_DELIVERY" বা হুবহু পাঠাতে পারেন।
+    let backendVal = selectedVal;
+    if (selectedVal === "OutForDelivery") {
+      backendVal = "OUT_FOR_DELIVERY"; 
+    } else {
+      backendVal = selectedVal.toUpperCase();
+    }
+
+    onChange(backendVal);
+  };
+
   return (
-    <div className="bg-white border rounded-xl p-5 h-full flex flex-col">
+    <div className="bg-white border rounded-2xl p-5 shadow-sm">
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
-          <CheckCircle size={20} className="text-blue-600" />
-          <h2 className="font-bold text-gray-800">Order Status</h2>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-gray-800">Order Status</h2>
 
-        {isLocked && (
-          <span className="flex items-center gap-1 text-xs bg-red-100 text-red-600 font-bold px-2.5 py-1 rounded-full border border-red-200">
-            <Lock size={12} /> Locked
-          </span>
-        )}
-      </div>
-
-      {/* CURRENT STATUS BADGE */}
-      <div className="mb-5">
-        <p className="text-xs text-gray-500 mb-2">Current Status</p>
         <span
-          className={`inline-block px-4 py-1.5 rounded-full text-xs font-semibold border ${statusStyle(
-            selectedValue
+          className={`text-xs px-3 py-1 rounded-full font-medium ${statusColor(
+            currentStatus
           )}`}
         >
-          {formatStatusText(selectedValue)}
+          {currentStatus}
         </span>
       </div>
 
-      {/* UPDATE STATUS DROPDOWN */}
-      <div>
-        <label className="text-sm font-medium text-gray-600 block mb-2">
-          Update Status
-        </label>
+      {/* CURRENT STATUS BOX */}
+      <div className="mb-4 p-3 rounded-xl bg-gray-50 border flex justify-between items-center">
+        <span className="text-sm text-gray-600">Current Status</span>
 
-        <select
-          disabled={isLocked}
-          value={selectedValue}
-          onChange={handleStatusChange}
-          className={`w-full border rounded-lg px-3 py-3 outline-none text-sm font-medium transition-all ${
-            isLocked
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
-              : "bg-white text-gray-800 border-gray-300 hover:border-blue-400 focus:border-blue-500 cursor-pointer"
-          }`}
+        <span
+          className={`text-sm font-semibold ${statusColor(
+            currentStatus
+          )}`}
         >
-          <option value="PENDING">Pending</option>
-          <option value="PROCESSING">Processing</option>
-          <option value="OUT_FOR_DELIVERY">Out For Delivery</option>
-          <option value="DELIVERED">Delivered</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
+          {currentStatus}
+        </span>
       </div>
+
+      {/* SELECT */}
+      <label className="text-sm font-medium text-gray-600 mb-2 block">
+        Update Status
+      </label>
+
+      <select
+        disabled={isLocked}
+        value={currentStatus}
+        onChange={handleSelectChange}
+        className={`
+          w-full
+          border
+          rounded-xl
+          p-3
+          outline-none
+          transition
+          ${
+            isLocked
+              ? "bg-gray-100 cursor-not-allowed"
+              : "bg-white hover:border-blue-400"
+          }
+        `}
+      >
+        <option value="Pending">Pending</option>
+        <option value="Processing">Processing</option>
+        <option value="OutForDelivery">Out For Delivery</option>
+        <option value="Delivered">Delivered</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+
+      {/* LOCK NOTICE */}
+      {isLocked && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+          <p className="text-red-600 font-semibold text-sm">
+            🔒 Order Locked
+          </p>
+          <p className="text-red-500 text-xs mt-1">
+            Delivered or Cancelled orders cannot be modified.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
