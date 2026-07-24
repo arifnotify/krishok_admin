@@ -43,6 +43,23 @@ export default function OrdersPage() {
 
   const [selectedRider, setSelectedRider] =
     useState("");
+  useEffect(() => {
+
+  if (
+    selectedOrder?.assignedRider?._id
+  ) {
+
+    setSelectedRider(
+      selectedOrder.assignedRider._id
+    );
+
+  } else {
+
+    setSelectedRider("");
+
+  }
+
+}, [selectedOrder]);
 
   const [search, setSearch] = useState("");
 
@@ -92,22 +109,45 @@ export default function OrdersPage() {
   // ==========================
   // LOAD SINGLE ORDER
   // ==========================
-  const loadSingleOrder = async (
-    id: string
-  ) => {
-    try {
-      const data = await getOrder(id);
+const loadSingleOrder = async (
+  id: string
+) => {
+  try {
 
-      setSelectedOrder(data);
+    const data = await getOrder(id);
 
-      setItems(data?.items || []);
-    } catch (err) {
-      console.error(
-        "Failed to load order:",
-        err
+    setSelectedOrder(data);
+
+    setItems(data?.items || []);
+
+
+    // =========================
+    // LOAD ASSIGNED RIDER
+    // =========================
+
+    if (
+      data?.assignedRider?._id
+    ) {
+
+      setSelectedRider(
+        data.assignedRider._id
       );
+
+    } else {
+
+      setSelectedRider("");
+
     }
-  };
+
+  } catch (err) {
+
+    console.error(
+      "Failed to load order:",
+      err
+    );
+
+  }
+};
 
   // ==========================
   // UPDATE STATUS
