@@ -88,7 +88,8 @@ export default function OrdersPage() {
     if (!selectedOrder) return;
 
     try {
-      await updateOrderStatus(selectedOrder._id, newStatus);
+      // ব্যাকএন্ডের DTO ফরম্যাট অনুযায়ী অবজেক্ট আকারে পাঠানো হলো
+      await updateOrderStatus(selectedOrder._id, { orderStatus: newStatus });
 
       setSelectedOrder((prev: any) => ({
         ...prev,
@@ -131,7 +132,6 @@ export default function OrdersPage() {
         selectedOrder._id,
         items.map((item) => ({
           product: item.product!,
-          // 👈 মাল্টি-ল্যাঙ্গুয়েজ নাম এবং ইউনিট সঠিকভাবে পাস করা হলো যাতে হারিয়ে না যায়
           productName: {
             en: typeof item.productName === "object" ? item.productName?.en || "" : item.productName || "",
             bn: typeof item.productName === "object" ? item.productName?.bn || "" : "",
