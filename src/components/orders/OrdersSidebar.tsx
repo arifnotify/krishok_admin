@@ -9,24 +9,24 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-// 🔴 CASE INSENSITIVE COLOR MATCHING
-const getStatusColor = (status: string) => {
-  const s = status?.toUpperCase();
-  switch (s) {
-    case "PENDING":
+// =========================
+// STATUS COLOR
+// =========================
+const getStatusColor = (status: OrderStatus | string) => {
+  switch (status) {
+    case "Pending":
       return "bg-orange-100 text-orange-700";
 
-    case "PROCESSING":
+    case "Processing":
       return "bg-blue-100 text-blue-700";
 
-    case "OUTFORDELIVERY":
-    case "OUT_FOR_DELIVERY":
+    case "OutForDelivery":
       return "bg-purple-100 text-purple-700";
 
-    case "DELIVERED":
+    case "Delivered":
       return "bg-green-100 text-green-700";
 
-    case "CANCELLED":
+    case "Cancelled":
       return "bg-red-100 text-red-700";
 
     default:
@@ -34,43 +34,63 @@ const getStatusColor = (status: string) => {
   }
 };
 
-// 🔴 UI LABEL FORMATTER (TYPO FIXED)
-const formatStatusLabel = (status: OrderStatus | string) => {
-  const s = status?.toUpperCase();
-  switch (s) {
-    case "PENDING":
+// =========================
+// STATUS LABEL
+// =========================
+const formatStatusLabel = (
+  status: OrderStatus | string
+) => {
+  switch (status) {
+    case "Pending":
       return "Pending";
-    case "PROCESSING":
+
+    case "Processing":
       return "Processing";
-    case "OUTFORDELIVERY":
-    case "OUT_FOR_DELIVERY":
+
+    case "OutForDelivery":
       return "Out For Delivery";
-    case "DELIVERED":
+
+    case "Delivered":
       return "Delivered";
-    case "CANCELLED":
+
+    case "Cancelled":
       return "Cancelled";
+
     default:
       return status;
   }
 };
 
-// 🔴 2 DECIMAL PLACES PRICE FORMATTER
-const formatPrice = (amount: number | string | undefined) => {
-  const num = Number(amount || 0);
-  return Number.isInteger(num) ? num : num.toFixed(2);
+// =========================
+// PRICE FORMAT
+// =========================
+const formatPrice = (
+  amount: number | string | undefined
+) => {
+  const num = Number(amount ?? 0);
+
+  return Number.isInteger(num)
+    ? num.toString()
+    : num.toFixed(2);
 };
 
+// =========================
+// COMPONENT
+// =========================
 export default function OrdersSidebar({
   activeOrders,
   completedOrders,
   selectedId,
   onSelect,
-}: Props) {
-  return (
+}: Props) {  return (
     <div className="h-[calc(100vh-220px)] flex flex-col bg-white rounded-2xl border overflow-hidden">
+
       {/* ================= HEADER ================= */}
       <div className="p-5 border-b bg-white">
-        <h2 className="text-2xl font-bold text-slate-900">Orders</h2>
+        <h2 className="text-2xl font-bold text-slate-900">
+          Orders
+        </h2>
+
         <p className="text-sm text-slate-500 mt-1">
           {activeOrders.length} Active • {completedOrders.length} Completed
         </p>
@@ -78,16 +98,19 @@ export default function OrdersSidebar({
 
       {/* ================= ACTIVE ORDERS ================= */}
       <div className="flex-[6] overflow-y-auto p-4 border-b">
+
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-blue-600 uppercase text-sm tracking-wider">
             Active Orders
           </h3>
+
           <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">
             {activeOrders.length}
           </span>
         </div>
 
         <div className="space-y-4">
+
           {activeOrders.length === 0 && (
             <div className="border rounded-2xl p-6 text-center text-gray-400">
               No Active Orders
@@ -105,10 +128,12 @@ export default function OrdersSidebar({
               }`}
             >
               <div className="flex justify-between items-start">
+
                 <div>
                   <p className="font-bold text-lg text-slate-900">
                     #{order.orderNumber}
                   </p>
+
                   <p className="text-sm text-slate-500 mt-1">
                     {order.customerPhone || "N/A"}
                   </p>
@@ -121,31 +146,50 @@ export default function OrdersSidebar({
                 >
                   {formatStatusLabel(order.orderStatus)}
                 </span>
+
               </div>
 
               <div className="mt-5 flex justify-between items-center">
+
                 <span className="text-green-600 font-bold text-lg">
-                  ৳{formatPrice(order.finalAmount ?? order.totalAmount)}
+                  ৳
+                  {formatPrice(
+                    order.finalAmount ??
+                      order.totalAmount
+                  )}
                 </span>
-                <span className="text-xs text-slate-400">Active</span>
+
+                <span className="text-xs text-slate-400">
+                  Active
+                </span>
+
               </div>
+
             </button>
           ))}
+
         </div>
+
       </div>
 
-      {/* ================= COMPLETED & CANCELLED ORDERS ================= */}
+      {/* ================= COMPLETED ================= */}
+
       <div className="flex-[4] overflow-y-auto p-4 bg-slate-50">
+
         <div className="flex justify-between items-center mb-3">
+
           <h3 className="font-bold text-green-600 uppercase text-sm tracking-wider">
             Completed / History
           </h3>
+
           <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
             {completedOrders.length}
           </span>
+
         </div>
 
         <div className="space-y-2">
+
           {completedOrders.length === 0 && (
             <div className="border rounded-xl p-4 text-center text-gray-400 bg-white">
               No Completed Orders
@@ -153,7 +197,10 @@ export default function OrdersSidebar({
           )}
 
           {completedOrders.map((order) => {
-            const isCancelled = order.orderStatus?.toUpperCase() === "CANCELLED";
+
+            const isCancelled =
+              order.orderStatus === "Cancelled";
+
             return (
               <button
                 key={order._id}
@@ -165,11 +212,15 @@ export default function OrdersSidebar({
                 }`}
               >
                 <div className="flex justify-between items-center">
+
                   <div>
+
                     <div className="flex items-center gap-2">
+
                       <p className="font-semibold text-sm text-slate-900">
                         #{order.orderNumber}
                       </p>
+
                       <span
                         className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                           isCancelled
@@ -177,23 +228,37 @@ export default function OrdersSidebar({
                             : "bg-green-100 text-green-600"
                         }`}
                       >
-                        {formatStatusLabel(order.orderStatus)}
+                        {formatStatusLabel(
+                          order.orderStatus
+                        )}
                       </span>
+
                     </div>
+
                     <p className="text-xs text-slate-500 mt-0.5">
                       {order.customerPhone || "N/A"}
                     </p>
+
                   </div>
 
                   <span className="text-sm font-bold text-green-600">
-                    ৳{formatPrice(order.finalAmount ?? order.totalAmount)}
+                    ৳
+                    {formatPrice(
+                      order.finalAmount ??
+                        order.totalAmount
+                    )}
                   </span>
+
                 </div>
+
               </button>
             );
           })}
+
         </div>
+
       </div>
+
     </div>
   );
 }
