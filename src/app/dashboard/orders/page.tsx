@@ -74,14 +74,14 @@ export default function OrdersPage() {
 
   const [saving, setSaving] = useState(false);
 
-  // Initial Load with full screen loading
+  // Initial page load
   useEffect(() => {
     loadData(true);
   }, []);
 
-  // ==========================================
-  // SOCKET CONNECTION (SILENT UPDATE)
-  // ==========================================
+  // =======================================================
+  // SOCKET SETUP (SILENT UPDATE WITHOUT FULL PAGE LOADING)
+  // =======================================================
   useEffect(() => {
     const socket = io(
       process.env.NEXT_PUBLIC_API_URL!,
@@ -90,19 +90,22 @@ export default function OrdersPage() {
       }
     );
 
+    // NEW ORDER
     socket.on("new_order", async () => {
       console.log("New Order Received");
-      await loadData(false); // Silent update without loading screen
+      await loadData(false); // false means no full-page loading screen
     });
 
+    // ORDER UPDATE
     socket.on("order_updated", async () => {
       console.log("Order Updated Received");
-      await loadData(false); // Silent update without loading screen
+      await loadData(false); // false means no full-page loading screen
     });
 
+    // ORDER DELETE
     socket.on("order_deleted", async () => {
       console.log("Order Deleted Received");
-      await loadData(false); // Silent update without loading screen
+      await loadData(false); // false means no full-page loading screen
     });
 
     return () => {
@@ -111,14 +114,17 @@ export default function OrdersPage() {
       socket.off("order_deleted");
       socket.disconnect();
     };
-  }, [selectedOrder]);
+  }, [selectedOrder]); // selectedOrder ডিপেন্ডেন্সিতে রাখা হলো যাতে বর্তমান সিলেকশন ট্র্যাক করা যায়
 
   // ==========================
   // LOAD ALL DATA
   // ==========================
   const loadData = async (isInitial = false) => {
     try {
-      if (isInitial) setLoading(true);
+      // শুধুমাত্র একদম প্রথম লোডের সময় পুরো পেজে Loading দেখাবে
+      if (isInitial) {
+        setLoading(true);
+      }
 
       const [ordersData, ridersData] =
         await Promise.all([
@@ -129,17 +135,24 @@ export default function OrdersPage() {
       setOrders(ordersData || []);
       setRiders(ridersData || []);
 
-      // If it's initial load and we have orders, select the first one
       if (isInitial && ordersData?.length > 0) {
         await loadSingleOrder(ordersData[0]._id);
-      } 
-      // If it's a socket update and an order is currently selected, refresh its details silently
-      else if (!isInitial && selectedOrder) {
-        const updatedSelected = ordersData?.find(
+      } else if (!isInitial && selectedOrder) {
+        // সকেট ইভেন্ট আসলে যদি কোনো অর্ডার সিলেক্ট করা থাকে, তবে ব্যাকগ্রাউন্ডে তার লেটেস্ট ডাটা রিফ্রেশ করে নেবো
+        const stillExists = ordersData?.find(
           (o: Order) => o._id === selectedOrder._id
         );
-        if (updatedSelected) {
-          await loadSingleOrder(selectedOrder._id);
+        if (stillExists) {
+          // পুরো পেজ লোড না করে শুধু সিলেক্টেড অর্ডার আপডেট হবে
+          const updatedOrderData = await getOrder(selectedOrder._id);
+          setSelectedOrder(updatedOrderData);
+          setItems(updatedOrderData?.items || []);
+        } else if (ordersData?.length > 0) {
+          // যদি সিলেক্টেড অর্ডারটি ডিলিট হয়ে যায়, তবে প্রথম অর্ডারটি সিলেক্ট করে নেবো
+          await loadSingleOrder(ordersData[0]._id);
+        } else {
+          setSelectedOrder(null);
+          setItems([]);
         }
       }
     } catch (err) {
@@ -148,20 +161,28 @@ export default function OrdersPage() {
         err
       );
     } finally {
-      if (isInitial) setLoading(false);
+      if (isInitial) {
+        setLoading(false);
+      }
     }
   };
 
   // ==========================
   // LOAD SINGLE ORDER
   // ==========================
-  const loadSingleOrder = async (id: string) => {
+  const loadSingleOrder = async (
+    id: string
+  ) => {
     try {
       const data = await getOrder(id);
+
       setSelectedOrder(data);
+
       setItems(data?.items || []);
 
-      if (data?.assignedRider?._id) {
+      if (
+        data?.assignedRider?._id
+      ) {
         setSelectedRider(
           data.assignedRider._id
         );
@@ -220,87 +241,89 @@ export default function OrdersPage() {
   // ==========================
   // ASSIGN RIDER
   // ==========================
-  const handleAssignRider = async () => {
-    if (
-      !selectedOrder ||
-      !selectedRider
-    )
-      return;
+  const handleAssignRider =
+    async () => {
+      if (
+        !selectedOrder ||
+        !selectedRider
+      )
+        return;
 
-    try {
-      await assignRider(
-        selectedOrder._id,
-        selectedRider
-      );
+      try {
+        await assignRider(
+          selectedOrder._id,
+          selectedRider
+        );
 
-      await loadSingleOrder(
-        selectedOrder._id
-      );
-    } catch (err) {
-      console.error(
-        "Failed to assign rider:",
-        err
-      );
-    }
-  };
+        await loadSingleOrder(
+          selectedOrder._id
+        );
+      } catch (err) {
+        console.error(
+          "Failed to assign rider:",
+          err
+        );
+      }
+    };
 
   // ==========================
   // SAVE ORDER ITEMS
   // ==========================
-  const handleSaveItems = async () => {
-    if (!selectedOrder) return;
+  const handleSaveItems =
+    async () => {
+      if (!selectedOrder) return;
 
-    setSaving(true);
+      setSaving(true);
 
-    try {
-      await adminEditOrder(
-        selectedOrder._id,
-        items.map((item) => ({
-          product: item.product!,
+      try {
+        await adminEditOrder(
+          selectedOrder._id,
+          items.map((item) => ({
+            product: item.product!,
 
-          productName: {
-            en:
-              typeof item.productName ===
-              "object"
-                ? item.productName.en || ""
-                : item.productName,
+            productName: {
+              en:
+                typeof item.productName ===
+                "object"
+                  ? item.productName.en || ""
+                  : item.productName,
 
-            bn:
-              typeof item.productName ===
-              "object"
-                ? item.productName.bn ||
-                  ""
-                : "",
-          },
+              bn:
+                typeof item.productName ===
+                "object"
+                  ? item.productName.bn ||
+                    ""
+                  : "",
+            },
 
-          unit:
-            item.unit || "pcs",
+            unit:
+              item.unit || "pcs",
 
-          productImage:
-            item.productImage || "",
+            productImage:
+              item.productImage || "",
 
-          price: Number(
-            item.price || 0
-          ),
+            price: Number(
+              item.price || 0
+            ),
 
-          quantity: Number(
-            item.quantity || 1
-          ),
-        }))
-      );
+            quantity: Number(
+              item.quantity || 1
+            ),
+          }))
+        );
 
-      await loadSingleOrder(
-        selectedOrder._id
-      );
-    } catch (err) {
-      console.error(
-        "Failed to save items:",
-        err
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
+        await loadSingleOrder(
+          selectedOrder._id
+        );
+      } catch (err) {
+        console.error(
+          "Failed to save items:",
+          err
+        );
+      } finally {
+        setSaving(false);
+      }
+    };
 
   // ==========================================
   // SEARCH & FILTER
@@ -385,7 +408,7 @@ export default function OrdersPage() {
   }, [orders]);
 
   // ==========================================
-  // LOADING
+  // LOADING (Only for initial load)
   // ==========================================
   if (loading) {
     return (
