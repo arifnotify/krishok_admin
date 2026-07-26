@@ -44,31 +44,26 @@ export default function OrdersPage() {
 
   const [selectedRider, setSelectedRider] =
     useState("");
-useEffect(() => {
 
-  if (!selectedOrder?.assignedRider) {
-    setSelectedRider("");
-    return;
-  }
+  useEffect(() => {
+    if (!selectedOrder?.assignedRider) {
+      setSelectedRider("");
+      return;
+    }
 
-  if (
-    typeof selectedOrder.assignedRider ===
-    "string"
-  ) {
-
-    setSelectedRider(
-      selectedOrder.assignedRider
-    );
-
-  } else {
-
-    setSelectedRider(
-      selectedOrder.assignedRider._id
-    );
-
-  }
-
-}, [selectedOrder]);
+    if (
+      typeof selectedOrder.assignedRider ===
+      "string"
+    ) {
+      setSelectedRider(
+        selectedOrder.assignedRider
+      );
+    } else {
+      setSelectedRider(
+        selectedOrder.assignedRider._id
+      );
+    }
+  }, [selectedOrder]);
 
   const [search, setSearch] = useState("");
 
@@ -79,92 +74,51 @@ useEffect(() => {
 
   const [saving, setSaving] = useState(false);
 
+  // Initial Load with full screen loading
   useEffect(() => {
-    loadData();
+    loadData(true);
   }, []);
-  ///////////////////////////////////////////////////////
+
+  // ==========================================
+  // SOCKET CONNECTION (SILENT UPDATE)
+  // ==========================================
   useEffect(() => {
-
-  const socket = io(
-    process.env.NEXT_PUBLIC_API_URL!,
-    {
-      transports: ["websocket"],
-    }
-  );
-
-  // =====================
-  // NEW ORDER
-  // =====================
-
-  socket.on(
-    "new_order",
-    async () => {
-
-      console.log(
-        "New Order"
-      );
-
-      await loadData();
-
-    }
-  );
-
-  // =====================
-  // ORDER UPDATE
-  // =====================
-
-  socket.on(
-    "order_updated",
-    async () => {
-
-      console.log(
-        "Order Updated"
-      );
-
-      await loadData();
-
-    }
-  );
-
-  // =====================
-  // ORDER DELETE
-  // =====================
-
-  socket.on(
-    "order_deleted",
-    async () => {
-
-      await loadData();
-
-    }
-  );
-
-  return () => {
-
-    socket.off(
-      "new_order"
+    const socket = io(
+      process.env.NEXT_PUBLIC_API_URL!,
+      {
+        transports: ["websocket"],
+      }
     );
 
-    socket.off(
-      "order_updated"
-    );
+    socket.on("new_order", async () => {
+      console.log("New Order Received");
+      await loadData(false); // Silent update without loading screen
+    });
 
-    socket.off(
-      "order_deleted"
-    );
+    socket.on("order_updated", async () => {
+      console.log("Order Updated Received");
+      await loadData(false); // Silent update without loading screen
+    });
 
-    socket.disconnect();
+    socket.on("order_deleted", async () => {
+      console.log("Order Deleted Received");
+      await loadData(false); // Silent update without loading screen
+    });
 
-  };
-
-}, []);
+    return () => {
+      socket.off("new_order");
+      socket.off("order_updated");
+      socket.off("order_deleted");
+      socket.disconnect();
+    };
+  }, [selectedOrder]);
 
   // ==========================
   // LOAD ALL DATA
   // ==========================
-  const loadData = async () => {
+  const loadData = async (isInitial = false) => {
     try {
-      setLoading(true);
+      if (isInitial) setLoading(true);
 
       const [ordersData, ridersData] =
         await Promise.all([
@@ -173,13 +127,20 @@ useEffect(() => {
         ]);
 
       setOrders(ordersData || []);
-
       setRiders(ridersData || []);
 
-      if (ordersData?.length > 0) {
-        await loadSingleOrder(
-          ordersData[0]._id
+      // If it's initial load and we have orders, select the first one
+      if (isInitial && ordersData?.length > 0) {
+        await loadSingleOrder(ordersData[0]._id);
+      } 
+      // If it's a socket update and an order is currently selected, refresh its details silently
+      else if (!isInitial && selectedOrder) {
+        const updatedSelected = ordersData?.find(
+          (o: Order) => o._id === selectedOrder._id
         );
+        if (updatedSelected) {
+          await loadSingleOrder(selectedOrder._id);
+        }
       }
     } catch (err) {
       console.error(
@@ -187,52 +148,33 @@ useEffect(() => {
         err
       );
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
   };
 
   // ==========================
   // LOAD SINGLE ORDER
   // ==========================
-const loadSingleOrder = async (
-  id: string
-) => {
-  try {
+  const loadSingleOrder = async (id: string) => {
+    try {
+      const data = await getOrder(id);
+      setSelectedOrder(data);
+      setItems(data?.items || []);
 
-    const data = await getOrder(id);
-
-    setSelectedOrder(data);
-
-    setItems(data?.items || []);
-
-
-    // =========================
-    // LOAD ASSIGNED RIDER
-    // =========================
-
-    if (
-      data?.assignedRider?._id
-    ) {
-
-      setSelectedRider(
-        data.assignedRider._id
+      if (data?.assignedRider?._id) {
+        setSelectedRider(
+          data.assignedRider._id
+        );
+      } else {
+        setSelectedRider("");
+      }
+    } catch (err) {
+      console.error(
+        "Failed to load order:",
+        err
       );
-
-    } else {
-
-      setSelectedRider("");
-
     }
-
-  } catch (err) {
-
-    console.error(
-      "Failed to load order:",
-      err
-    );
-
-  }
-};
+  };
 
   // ==========================
   // UPDATE STATUS
@@ -278,89 +220,88 @@ const loadSingleOrder = async (
   // ==========================
   // ASSIGN RIDER
   // ==========================
-  const handleAssignRider =
-    async () => {
-      if (
-        !selectedOrder ||
-        !selectedRider
-      )
-        return;
+  const handleAssignRider = async () => {
+    if (
+      !selectedOrder ||
+      !selectedRider
+    )
+      return;
 
-      try {
-        await assignRider(
-          selectedOrder._id,
-          selectedRider
-        );
+    try {
+      await assignRider(
+        selectedOrder._id,
+        selectedRider
+      );
 
-        await loadSingleOrder(
-          selectedOrder._id
-        );
-      } catch (err) {
-        console.error(
-          "Failed to assign rider:",
-          err
-        );
-      }
-    };
+      await loadSingleOrder(
+        selectedOrder._id
+      );
+    } catch (err) {
+      console.error(
+        "Failed to assign rider:",
+        err
+      );
+    }
+  };
 
   // ==========================
   // SAVE ORDER ITEMS
   // ==========================
-  const handleSaveItems =
-    async () => {
-      if (!selectedOrder) return;
+  const handleSaveItems = async () => {
+    if (!selectedOrder) return;
 
-      setSaving(true);
+    setSaving(true);
 
-      try {
-        await adminEditOrder(
-          selectedOrder._id,
-          items.map((item) => ({
-            product: item.product!,
+    try {
+      await adminEditOrder(
+        selectedOrder._id,
+        items.map((item) => ({
+          product: item.product!,
 
-            productName: {
-              en:
-                typeof item.productName ===
-                "object"
-                  ? item.productName.en || ""
-                  : item.productName,
+          productName: {
+            en:
+              typeof item.productName ===
+              "object"
+                ? item.productName.en || ""
+                : item.productName,
 
-              bn:
-                typeof item.productName ===
-                "object"
-                  ? item.productName.bn ||
-                    ""
-                  : "",
-            },
+            bn:
+              typeof item.productName ===
+              "object"
+                ? item.productName.bn ||
+                  ""
+                : "",
+          },
 
-            unit:
-              item.unit || "pcs",
+          unit:
+            item.unit || "pcs",
 
-            productImage:
-              item.productImage || "",
+          productImage:
+            item.productImage || "",
 
-            price: Number(
-              item.price || 0
-            ),
+          price: Number(
+            item.price || 0
+          ),
 
-            quantity: Number(
-              item.quantity || 1
-            ),
-          }))
-        );
+          quantity: Number(
+            item.quantity || 1
+          ),
+        }))
+      );
 
-        await loadSingleOrder(
-          selectedOrder._id
-        );
-      } catch (err) {
-        console.error(
-          "Failed to save items:",
-          err
-        );
-      } finally {
-        setSaving(false);
-      }
-    };
+      await loadSingleOrder(
+        selectedOrder._id
+      );
+    } catch (err) {
+      console.error(
+        "Failed to save items:",
+        err
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ==========================================
   // SEARCH & FILTER
   // ==========================================
@@ -453,6 +394,7 @@ const loadSingleOrder = async (
       </div>
     );
   }
+
   return (
     <div className="p-5 bg-gray-50 min-h-screen">
       {/* =========================
