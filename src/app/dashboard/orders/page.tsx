@@ -26,6 +26,7 @@ import OrderSearch from "@/src/components/orders/OrderSearch";
 import OrderTabs from "@/src/components/orders/OrderTabs";
 
 import OrderStatCard from "@/src/components/dashboard/OrderStatCard";
+import { io } from "socket.io-client";
 
 import {
   Order,
@@ -81,6 +82,82 @@ useEffect(() => {
   useEffect(() => {
     loadData();
   }, []);
+  ///////////////////////////////////////////////////////
+  useEffect(() => {
+
+  const socket = io(
+    process.env.NEXT_PUBLIC_API_URL!,
+    {
+      transports: ["websocket"],
+    }
+  );
+
+  // =====================
+  // NEW ORDER
+  // =====================
+
+  socket.on(
+    "new_order",
+    async () => {
+
+      console.log(
+        "New Order"
+      );
+
+      await loadData();
+
+    }
+  );
+
+  // =====================
+  // ORDER UPDATE
+  // =====================
+
+  socket.on(
+    "order_updated",
+    async () => {
+
+      console.log(
+        "Order Updated"
+      );
+
+      await loadData();
+
+    }
+  );
+
+  // =====================
+  // ORDER DELETE
+  // =====================
+
+  socket.on(
+    "order_deleted",
+    async () => {
+
+      await loadData();
+
+    }
+  );
+
+  return () => {
+
+    socket.off(
+      "new_order"
+    );
+
+    socket.off(
+      "order_updated"
+    );
+
+    socket.off(
+      "order_deleted"
+    );
+
+    socket.disconnect();
+
+  };
+
+}, []);
 
   // ==========================
   // LOAD ALL DATA
