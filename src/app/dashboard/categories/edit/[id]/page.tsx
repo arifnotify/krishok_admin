@@ -5,14 +5,14 @@ import {
   getCategories,
   updateCategory,
 } from "@/src/services/category.service";
-
 import api from "@/src/services/api";
 import { useParams } from "next/navigation";
 
 export default function EditCategoryPage() {
   const { id } = useParams();
 
-  const [name, setName] = useState("");
+  const [nameEn, setNameEn] = useState("");
+  const [nameBn, setNameBn] = useState("");
   const [type, setType] = useState<"main" | "sub">("main");
   const [parentId, setParentId] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
@@ -29,7 +29,8 @@ export default function EditCategoryPage() {
 
     setCategories(cats);
 
-    setName(res.data.name);
+    setNameEn(res.data.name?.en || res.data.name || "");
+    setNameBn(res.data.name?.bn || "");
 
     if (res.data.parentId) {
       setType("sub");
@@ -41,26 +42,33 @@ export default function EditCategoryPage() {
 
   const handleUpdate = async () => {
     await updateCategory(id as string, {
-      name,
+      name: {
+        en: nameEn,
+        bn: nameBn,
+      },
       parentId: type === "main" ? null : parentId,
     });
 
     alert("Updated");
-
     window.location.href = "/dashboard/categories";
   };
 
   return (
     <div className="p-6 max-w-xl">
-
-      <h1 className="text-2xl font-bold mb-4">
-        Edit Category
-      </h1>
+      <h1 className="text-2xl font-bold mb-4">Edit Category</h1>
 
       <input
         className="w-full border p-3 mb-3"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        placeholder="Category Name (English)"
+        value={nameEn}
+        onChange={(e) => setNameEn(e.target.value)}
+      />
+
+      <input
+        className="w-full border p-3 mb-3"
+        placeholder="ক্যাটাগরির নাম (বাংলা)"
+        value={nameBn}
+        onChange={(e) => setNameBn(e.target.value)}
       />
 
       <select
@@ -79,12 +87,11 @@ export default function EditCategoryPage() {
           onChange={(e) => setParentId(e.target.value)}
         >
           <option value="">Select Main</option>
-
           {categories
             .filter((c) => !c.parentId)
             .map((c) => (
               <option key={c._id} value={c._id}>
-                {c.name}
+                {c.name?.en || c.name}
               </option>
             ))}
         </select>
@@ -96,7 +103,6 @@ export default function EditCategoryPage() {
       >
         Update
       </button>
-
     </div>
   );
 }
