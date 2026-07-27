@@ -573,7 +573,7 @@ categories.map((item)=>(
 key={item._id}
 value={item._id}
 >
-{item.name}
+{typeof item.name === "object" ? item.name?.en : item.name}
 </option>
 ))
 }
@@ -608,7 +608,7 @@ subCategories.map((item)=>(
 key={item._id}
 value={item._id}
 >
-{item.name}
+{typeof item.name === "object" ? item.name?.en : item.name}
 </option>
 ))
 }
