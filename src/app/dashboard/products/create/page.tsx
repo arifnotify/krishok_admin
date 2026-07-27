@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 
 import {
@@ -549,7 +550,7 @@ key={item._id}
 value={item._id}
 >
 
-{item.name?.en || item.name}
+{typeof item.name === "object" ? item.name?.en : item.name}
 
 </option>
 ))
@@ -596,7 +597,7 @@ key={item._id}
 value={item._id}
 >
 
-{item.name?.en || item.name}
+{typeof item.name === "object" ? item.name?.en : item.name}
 
 </option>
 ))
