@@ -131,8 +131,8 @@ export default function ProductsPage() {
                 </td>
 
                 <td className="p-4">
-                  {typeof product.category?.name === "object"
-                    ? product.category.name?.en
+                  {typeof product.category?.name === "object" && product.category?.name !== null
+                    ? (product.category.name as { en?: string }).en
                     : product.category?.name}
                 </td>
 
