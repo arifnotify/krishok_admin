@@ -7,7 +7,8 @@ import {
 } from "@/src/services/category.service";
 
 export default function CreateCategoryPage() {
-  const [name, setName] = useState("");
+  const [nameEn, setNameEn] = useState("");
+  const [nameBn, setNameBn] = useState("");
   const [type, setType] = useState<"main" | "sub">("main");
   const [parentId, setParentId] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
@@ -18,29 +19,35 @@ export default function CreateCategoryPage() {
 
   const handleCreate = async () => {
     await createCategory({
-      name,
+      name: {
+        en: nameEn,
+        bn: nameBn,
+      },
       parentId: type === "main" ? null : parentId,
     });
 
     alert("Created Successfully");
-
-    // IMPORTANT: refresh
     window.location.href = "/dashboard/categories";
   };
 
   return (
     <div className="p-6 max-w-xl">
+      <h1 className="text-2xl font-bold mb-4">Create Category</h1>
 
-      <h1 className="text-2xl font-bold mb-4">
-        Create Category
-      </h1>
-
-      {/* NAME */}
+      {/* NAME EN */}
       <input
         className="w-full border p-3 mb-3"
-        placeholder="Category Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        placeholder="Category Name (English)"
+        value={nameEn}
+        onChange={(e) => setNameEn(e.target.value)}
+      />
+
+      {/* NAME BN */}
+      <input
+        className="w-full border p-3 mb-3"
+        placeholder="ক্যাটাগরির নাম (বাংলা)"
+        value={nameBn}
+        onChange={(e) => setNameBn(e.target.value)}
       />
 
       {/* TYPE */}
@@ -53,7 +60,6 @@ export default function CreateCategoryPage() {
         <option value="sub">Sub Category</option>
       </select>
 
-      {/* PARENT ONLY FOR SUB */}
       {type === "sub" && (
         <select
           className="w-full border p-3 mb-3"
@@ -61,12 +67,11 @@ export default function CreateCategoryPage() {
           onChange={(e) => setParentId(e.target.value)}
         >
           <option value="">Select Main Category</option>
-
           {categories
             .filter((c) => !c.parentId)
             .map((c) => (
               <option key={c._id} value={c._id}>
-                {c.name}
+                {c.name?.en || c.name}
               </option>
             ))}
         </select>
@@ -78,7 +83,6 @@ export default function CreateCategoryPage() {
       >
         Create
       </button>
-
     </div>
   );
 }
