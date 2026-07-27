@@ -1,105 +1,69 @@
 "use client";
 
 import { useState } from "react";
-
-import {
-  createCategory,
-} from "@/src/services/category.service";
-
-import {
-  uploadImage,
-} from "@/src/services/upload.service";
+import { createCategory } from "@/src/services/category.service";
+import { uploadImage } from "@/src/services/upload.service";
 
 export default function CreateMainCategoryPage() {
+  const [nameEn, setNameEn] = useState("");
+  const [nameBn, setNameBn] = useState("");
+  const [image, setImage] = useState("");
 
-  const [name, setName] =
-    useState("");
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const res = await uploadImage(file);
+    setImage(res.url);
+  };
 
-  const [image, setImage] =
-    useState("");
+  const handleCreate = async () => {
+    await createCategory({
+      name: {
+        en: nameEn,
+        bn: nameBn,
+      },
+      image,
+      parentCategory: null,
+    });
 
-  const handleUpload =
-    async (
-      e: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-      const file =
-        e.target.files?.[0];
-
-      if (!file) return;
-
-      const res =
-        await uploadImage(
-          file,
-        );
-
-      setImage(
-        res.url,
-      );
-    };
-
-  const handleCreate =
-    async () => {
-      await createCategory({
-        name,
-        image,
-        parentCategory:
-          null,
-      });
-
-      alert(
-        "Created Successfully",
-      );
-
-      window.location.href =
-        "/categories";
-    };
+    alert("Created Successfully");
+    window.location.href = "/dashboard/categories";
+  };
 
   return (
     <div className="p-6">
-
-      <div className="bg-white p-6 rounded-xl shadow">
-
-        <h1 className="text-2xl font-bold mb-6">
-          Create Main Category
-        </h1>
+      <div className="bg-white p-6 rounded-xl shadow max-w-xl">
+        <h1 className="text-2xl font-bold mb-6">Create Main Category</h1>
 
         <input
           type="text"
-          placeholder="Category Name"
+          placeholder="Category Name (English)"
           className="border p-3 rounded w-full mb-4"
-          value={name}
-          onChange={(e) =>
-            setName(
-              e.target.value,
-            )
-          }
+          value={nameEn}
+          onChange={(e) => setNameEn(e.target.value)}
         />
 
         <input
-          type="file"
-          onChange={
-            handleUpload
-          }
+          type="text"
+          placeholder="ক্যাটাগরির নাম (বাংলা)"
+          className="border p-3 rounded w-full mb-4"
+          value={nameBn}
+          onChange={(e) => setNameBn(e.target.value)}
         />
 
+        <input type="file" onChange={handleUpload} className="mb-4" />
+
         {image && (
-          <img
-            src={image}
-            className="w-32 h-32 mt-4 rounded-lg object-cover"
-          />
+          <img src={image} className="w-32 h-32 mt-2 rounded-lg object-cover" />
         )}
 
         <button
-          onClick={
-            handleCreate
-          }
-          className="bg-blue-600 text-white px-5 py-3 rounded-lg mt-5"
+          onClick={handleCreate}
+          className="bg-blue-600 text-white px-5 py-3 rounded-lg mt-5 block"
         >
           Create
         </button>
-
       </div>
-
     </div>
   );
 }
