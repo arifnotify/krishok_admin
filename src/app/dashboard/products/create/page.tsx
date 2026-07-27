@@ -550,7 +550,7 @@ key={item._id}
 value={item._id}
 >
 
-{item.name}
+{item.name?.en || item.name}
 
 </option>
 ))
@@ -597,7 +597,7 @@ key={item._id}
 value={item._id}
 >
 
-{item.name}
+{item.name?.en || item.name}
 
 </option>
 ))
@@ -793,7 +793,7 @@ Fresh Product
 
 
 </select>
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   <div className="grid grid-cols-2 gap-6">
 
   <label className="flex items-center gap-3">
@@ -833,7 +833,7 @@ Fresh Product
 
 </div>
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 
