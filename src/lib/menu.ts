@@ -13,6 +13,7 @@ import {
   History,
   Settings,
   Bike,
+  CreditCard,
 } from "lucide-react";
 
 
@@ -120,6 +121,11 @@ export const menu = [
         name: "Support",
         href: "/dashboard/support-links",
         icon: Phone,
+      },
+      {
+      name: "Payment Settings",
+      href: "/dashboard/payment-settings",
+      icon: CreditCard,
       },
 
       {
