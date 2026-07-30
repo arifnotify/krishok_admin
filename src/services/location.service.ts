@@ -37,3 +37,13 @@ export const deleteLocation = async (
 
   return response.data;
 };
+
+export const getLocationById = async (
+  id: string
+) => {
+  const response = await api.get(
+    `/locations/${id}`
+  );
+
+  return response.data;
+};
