@@ -12,6 +12,7 @@ export default function CreateCategoryPage() {
   const [type, setType] = useState<"main" | "sub">("main");
   const [parentId, setParentId] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
+  const [sortOrder, setSortOrder] = useState(0);
 
   useEffect(() => {
     getCategories().then(setCategories);
@@ -24,6 +25,7 @@ export default function CreateCategoryPage() {
         bn: nameBn,
       },
       parentId: type === "main" ? null : parentId,
+      sortOrder,
     });
 
     alert("Created Successfully");
@@ -49,6 +51,16 @@ export default function CreateCategoryPage() {
         value={nameBn}
         onChange={(e) => setNameBn(e.target.value)}
       />
+    {/* number */}
+      <input
+  type="number"
+  className="w-full border p-3 mb-3"
+  placeholder="Sort Order"
+  value={sortOrder}
+  onChange={(e) =>
+    setSortOrder(Number(e.target.value))
+  }
+/>
 
       {/* TYPE */}
       <select

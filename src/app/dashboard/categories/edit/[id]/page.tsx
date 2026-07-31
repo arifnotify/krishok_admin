@@ -16,6 +16,7 @@ export default function EditCategoryPage() {
   const [type, setType] = useState<"main" | "sub">("main");
   const [parentId, setParentId] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
+  const [sortOrder, setSortOrder] = useState(0);
 
   useEffect(() => {
     load();
@@ -31,6 +32,7 @@ export default function EditCategoryPage() {
 
     setNameEn(res.data.name?.en || res.data.name || "");
     setNameBn(res.data.name?.bn || "");
+    setSortOrder(res.data.sortOrder || 0);
 
     if (res.data.parentId) {
       setType("sub");
@@ -47,6 +49,7 @@ export default function EditCategoryPage() {
         bn: nameBn,
       },
       parentId: type === "main" ? null : parentId,
+      sortOrder,
     });
 
     alert("Updated");
@@ -70,6 +73,15 @@ export default function EditCategoryPage() {
         value={nameBn}
         onChange={(e) => setNameBn(e.target.value)}
       />
+
+      <input
+  type="number"
+  className="w-full border p-3 mb-3"
+  value={sortOrder}
+  onChange={(e) =>
+    setSortOrder(Number(e.target.value))
+  }
+/>
 
       <select
         className="w-full border p-3 mb-3"

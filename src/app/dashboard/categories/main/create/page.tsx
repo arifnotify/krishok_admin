@@ -8,6 +8,7 @@ export default function CreateMainCategoryPage() {
   const [nameEn, setNameEn] = useState("");
   const [nameBn, setNameBn] = useState("");
   const [image, setImage] = useState("");
+  const [sortOrder, setSortOrder] = useState(0);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -24,6 +25,7 @@ export default function CreateMainCategoryPage() {
       },
       image,
       parentCategory: null,
+      sortOrder,
     });
 
     alert("Created Successfully");
@@ -56,6 +58,22 @@ export default function CreateMainCategoryPage() {
         {image && (
           <img src={image} className="w-32 h-32 mt-2 rounded-lg object-cover" />
         )}
+
+        <div className="mb-4">
+        <label className="block font-medium mb-2">
+          Sort Order
+        </label>
+
+        <input
+          type="number"
+          value={sortOrder}
+          onChange={(e) =>
+            setSortOrder(Number(e.target.value))
+          }
+          className="w-full border p-3 rounded-lg"
+          placeholder="1"
+        />
+      </div>
 
         <button
           onClick={handleCreate}

@@ -13,6 +13,7 @@ export default function EditMainCategoryPage() {
   const [nameBn, setNameBn] = useState("");
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sortOrder, setSortOrder] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -26,6 +27,7 @@ export default function EditMainCategoryPage() {
       setNameEn(res.name?.en || res.name || "");
       setNameBn(res.name?.bn || "");
       setImage(res.image || "");
+      setSortOrder(res.sortOrder || 0);
     } catch (error) {
       console.log(error);
     }
@@ -53,6 +55,7 @@ export default function EditMainCategoryPage() {
         },
         image,
         parentCategory: null,
+        sortOrder,
       });
 
       alert("Category Updated Successfully");
@@ -100,6 +103,21 @@ export default function EditMainCategoryPage() {
             </button>
           </div>
         )}
+
+        <div className="mb-4">
+        <label className="block font-medium mb-2">
+          Sort Order
+        </label>
+
+        <input
+          type="number"
+          value={sortOrder}
+          onChange={(e) =>
+            setSortOrder(Number(e.target.value))
+          }
+          className="w-full border p-3 rounded-lg"
+        />
+      </div>
 
         <button
           onClick={handleUpdate}

@@ -10,6 +10,9 @@ export interface Category {
 
   parentCategory?: string | Category | null;
 
+  // NEW
+  sortOrder?: number;
+
   isActive?: boolean;
 
   createdAt?: string;

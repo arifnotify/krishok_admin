@@ -21,6 +21,7 @@ export default function EditSubCategoryPage() {
   const [parentCategory, setParentCategory] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [sortOrder, setSortOrder] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -35,6 +36,7 @@ export default function EditSubCategoryPage() {
       setNameEn(res.name?.en || res.name || "");
       setNameBn(res.name?.bn || "");
       setImage(res.image || "");
+      setSortOrder(res.sortOrder || 0);
       setParentCategory(
         res.parentCategory?._id || res.parentCategory || ""
       );
@@ -78,6 +80,7 @@ export default function EditSubCategoryPage() {
         },
         image,
         parentCategory,
+        sortOrder,
       });
 
       alert("Sub Category Updated");
@@ -131,6 +134,20 @@ export default function EditSubCategoryPage() {
             </option>
           ))}
         </select>
+        <div className="mb-4">
+  <label className="block font-medium mb-2">
+    Sort Order
+  </label>
+
+  <input
+    type="number"
+    value={sortOrder}
+    onChange={(e) =>
+      setSortOrder(Number(e.target.value))
+    }
+    className="w-full border p-3 rounded-lg"
+  />
+</div>
 
         {/* IMAGE UPLOAD */}
         <input
