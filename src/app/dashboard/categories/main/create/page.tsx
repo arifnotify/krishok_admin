@@ -9,6 +9,7 @@ export default function CreateMainCategoryPage() {
   const [nameBn, setNameBn] = useState("");
   const [image, setImage] = useState("");
   const [sortOrder, setSortOrder] = useState(0);
+  const [showOnHome, setShowOnHome] = useState(false);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -26,6 +27,7 @@ export default function CreateMainCategoryPage() {
       image,
       parentCategory: null,
       sortOrder,
+      showOnHome,
     });
 
     alert("Created Successfully");
@@ -74,6 +76,21 @@ export default function CreateMainCategoryPage() {
           placeholder="1"
         />
       </div>
+      <div className="flex items-center gap-3 mb-4">
+
+  <input
+    type="checkbox"
+    checked={showOnHome}
+    onChange={(e)=>
+      setShowOnHome(e.target.checked)
+    }
+  />
+
+  <label>
+    Show on Home Page
+  </label>
+
+</div>
 
         <button
           onClick={handleCreate}

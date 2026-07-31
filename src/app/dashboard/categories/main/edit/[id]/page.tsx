@@ -14,6 +14,7 @@ export default function EditMainCategoryPage() {
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState(0);
+  const [showOnHome,setShowOnHome]=useState(false);
 
   useEffect(() => {
     if (id) {
@@ -28,6 +29,9 @@ export default function EditMainCategoryPage() {
       setNameBn(res.name?.bn || "");
       setImage(res.image || "");
       setSortOrder(res.sortOrder || 0);
+      setShowOnHome(
+ res.showOnHome ?? false
+);
     } catch (error) {
       console.log(error);
     }
@@ -56,6 +60,7 @@ export default function EditMainCategoryPage() {
         image,
         parentCategory: null,
         sortOrder,
+        showOnHome,
       });
 
       alert("Category Updated Successfully");
@@ -118,6 +123,21 @@ export default function EditMainCategoryPage() {
           className="w-full border p-3 rounded-lg"
         />
       </div>
+      <div className="flex items-center gap-3 mb-4">
+
+<input
+ type="checkbox"
+ checked={showOnHome}
+ onChange={(e)=>
+ setShowOnHome(e.target.checked)
+ }
+/>
+
+<label>
+Show on Home Page
+</label>
+
+</div>
 
         <button
           onClick={handleUpdate}
