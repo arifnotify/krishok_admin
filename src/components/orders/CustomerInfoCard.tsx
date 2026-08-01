@@ -66,7 +66,6 @@ export default function CustomerInfoCard({ order }: Props) {
               size={15}
               className="text-gray-400 shrink-0"
             />
-
             {address?.phoneNumber ||
               order?.customerPhone ||
               "N/A"}
@@ -91,39 +90,17 @@ export default function CustomerInfoCard({ order }: Props) {
           </div>
         </div>
 
-        {/* GOOGLE MAP LINK */}
+        {/* CUSTOMER LOCATION LINK */}
         {mapUrl && (
           <div>
             <a
               href={mapUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-blue-600 font-medium hover:underline"
+              className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
             >
-              <MapPin size={15} />
               View Customer Location
             </a>
-          </div>
-        )}
-
-        {/* GPS COORDINATES */}
-        {address?.latitude && address?.longitude && (
-          <div className="text-xs text-gray-500">
-            Lat: {address.latitude} | Lng:{" "}
-            {address.longitude}
-          </div>
-        )}
-
-        {/* MAP PREVIEW */}
-        {address?.latitude && address?.longitude && (
-          <div className="mt-3 rounded-lg overflow-hidden border">
-            <iframe
-              width="100%"
-              height="250"
-              loading="lazy"
-              className="w-full"
-              src={`https://maps.google.com/maps?q=${address.latitude},${address.longitude}&z=15&output=embed`}
-            />
           </div>
         )}
       </div>
