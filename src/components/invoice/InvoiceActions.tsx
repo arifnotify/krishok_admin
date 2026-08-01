@@ -8,9 +8,31 @@ interface Props {
 }
 
 // ===============================
+// FULL ADDRESS FORMATTER
+// ===============================
+const getFullAddress = (address: any) => {
+  if (!address) return "N/A";
+
+  if (typeof address === "string") {
+    return address;
+  }
+
+  return [
+    address.areaOrVillage,
+    address.landmark,
+    address.directionNote,
+    address.label ? `(${address.label})` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+};
+
+// ===============================
 // ORDER → INVOICE MAPPER
 // ===============================
-const buildInvoice = (order: any): InvoiceData => {
+const buildInvoice = (
+  order: any
+): InvoiceData => {
   const subtotal = order.items.reduce(
     (sum: number, item: any) =>
       sum + item.totalPrice,
@@ -21,25 +43,41 @@ const buildInvoice = (order: any): InvoiceData => {
     order.deliveryCharge || 0;
 
   const discount =
-    order.discount || 0;
+    order.discountAmount || 0;
 
   return {
-    invoiceNumber: order.orderNumber,
-    orderNumber: order.orderNumber,
-    invoiceDate: new Date().toISOString(),
+    invoiceNumber:
+      order.orderNumber,
+
+    orderNumber:
+      order.orderNumber,
+
+    invoiceDate:
+      new Date().toISOString(),
 
     customer: {
       name:
-        order.shippingAddress?.fullName ||
+        order.shippingAddress
+          ?.fullName ||
         "Customer",
-      phone: order.customerPhone,
-      address: `${order.shippingAddress?.areaOrVillage || ""} ${order.shippingAddress?.landmark || ""}`,
+
+      phone:
+        order.shippingAddress
+          ?.phoneNumber ||
+        order.customerPhone,
+
+      address:
+        getFullAddress(
+          order.shippingAddress
+        ),
     },
 
     items: order.items,
 
     subtotal,
+
     deliveryCharge,
+
     discount,
 
     total:
@@ -50,9 +88,11 @@ const buildInvoice = (order: any): InvoiceData => {
     paymentMethod:
       order.paymentMethod,
 
-    paymentStatus: order.isPaid,
+    paymentStatus:
+      order.isPaid,
 
-    orderStatus: order.orderStatus,
+    orderStatus:
+      order.orderStatus,
   };
 };
 
@@ -63,16 +103,18 @@ export default function InvoiceActions({
   // DOWNLOAD INVOICE
   // ===============================
   const handleDownload = () => {
-    const invoice = buildInvoice(order);
+    const invoice =
+      buildInvoice(order);
 
     generateInvoice(invoice);
   };
 
   // ===============================
-  // PRINT INVOICE (optional)
+  // PRINT INVOICE
   // ===============================
   const handlePrint = () => {
-    const invoice = buildInvoice(order);
+    const invoice =
+      buildInvoice(order);
 
     generateInvoice(invoice);
 
@@ -83,8 +125,6 @@ export default function InvoiceActions({
 
   return (
     <div className="bg-white border rounded-2xl p-4 flex gap-3">
-
-      {/* DOWNLOAD */}
       <button
         onClick={handleDownload}
         className="
@@ -100,7 +140,6 @@ export default function InvoiceActions({
         📥 Download Invoice
       </button>
 
-      {/* PRINT */}
       <button
         onClick={handlePrint}
         className="
@@ -115,7 +154,6 @@ export default function InvoiceActions({
       >
         🖨 Print
       </button>
-
     </div>
   );
 }
