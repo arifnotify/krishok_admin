@@ -1,15 +1,14 @@
+export interface TranslatedText {
+  en: string;
+  bn: string;
+}
+
 export interface Product {
   _id: string;
 
-  title: {
-    en: string;
-    bn: string;
-  };
+  title: TranslatedText;
 
-  description: {
-    en: string;
-    bn: string;
-  };
+  description: TranslatedText;
 
   youtubeVideoUrl?: string;
 
@@ -34,8 +33,8 @@ export interface Product {
 
   locations: {
     _id: string;
-    division: string;
-    district: string;
+    division: TranslatedText;
+    district: TranslatedText;
   }[];
 
   isFlashSale?: boolean;
