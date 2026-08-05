@@ -74,7 +74,7 @@ export default function LocationsPage() {
               </td>
               <td className="p-3 flex gap-2">
                 <Link
-                  href={`/dashboard/locations/edit/${location._id}`}
+                  href={`/locations/edit/${location._id}`}
                   className="bg-blue-500 text-white px-3 py-1 rounded"
                 >
                   Edit
