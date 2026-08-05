@@ -838,11 +838,11 @@ location._id
 <div>
 
 <p className="font-medium">
-{location.district}
+  {location.district.en} / {location.district.bn}
 </p>
 
 <p className="text-xs text-gray-500">
-{location.division}
+{location.division.en} / {location.division.bn}
 </p>
 
 </div>
