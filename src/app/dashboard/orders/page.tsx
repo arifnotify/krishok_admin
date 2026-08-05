@@ -50,7 +50,6 @@ export default function OrdersPage() {
   // ==========================
   const playNotificationSound = () => {
     try {
-      // আপনি চাইলে যেকোনো অডিও ফাইলের লিংক এখানে দিতে পারেন (যেমন: public ফোল্ডারে রেখে)
       const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
       audio.play().catch((err) => {
         console.log("Audio play blocked by browser policy:", err);
@@ -387,7 +386,7 @@ export default function OrdersPage() {
   const pendingCount = useMemo(() => {
     return orders.filter(
       (order) => order.orderStatus === "Pending"
-    .length;
+    ).length;
   }, [orders]);
 
   // ==========================================
