@@ -45,6 +45,21 @@ export default function OrdersPage() {
   const [selectedRider, setSelectedRider] =
     useState("");
 
+  // ==========================
+  // PLAY NOTIFICATION SOUND
+  // ==========================
+  const playNotificationSound = () => {
+    try {
+      // আপনি চাইলে যেকোনো অডিও ফাইলের লিংক এখানে দিতে পারেন (যেমন: public ফোল্ডারে রেখে)
+      const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+      audio.play().catch((err) => {
+        console.log("Audio play blocked by browser policy:", err);
+      });
+    } catch (error) {
+      console.error("Failed to play sound:", error);
+    }
+  };
+
   useEffect(() => {
     if (!selectedOrder?.assignedRider) {
       setSelectedRider("");
@@ -93,6 +108,7 @@ export default function OrdersPage() {
     // NEW ORDER
     socket.on("new_order", async () => {
       console.log("New Order Received");
+      playNotificationSound(); // নতুন অর্ডার আসলে সাউন্ড বাজবে
       await loadData(false); // false means no full-page loading screen
     });
 
@@ -114,14 +130,13 @@ export default function OrdersPage() {
       socket.off("order_deleted");
       socket.disconnect();
     };
-  }, [selectedOrder]); // selectedOrder ডিপেন্ডেন্সিতে রাখা হলো যাতে বর্তমান সিলেকশন ট্র্যাক করা যায়
+  }, [selectedOrder]);
 
   // ==========================
   // LOAD ALL DATA
   // ==========================
   const loadData = async (isInitial = false) => {
     try {
-      // শুধুমাত্র একদম প্রথম লোডের সময় পুরো পেজে Loading দেখাবে
       if (isInitial) {
         setLoading(true);
       }
@@ -138,17 +153,14 @@ export default function OrdersPage() {
       if (isInitial && ordersData?.length > 0) {
         await loadSingleOrder(ordersData[0]._id);
       } else if (!isInitial && selectedOrder) {
-        // সকেট ইভেন্ট আসলে যদি কোনো অর্ডার সিলেক্ট করা থাকে, তবে ব্যাকগ্রাউন্ডে তার লেটেস্ট ডাটা রিফ্রেশ করে নেবো
         const stillExists = ordersData?.find(
           (o: Order) => o._id === selectedOrder._id
         );
         if (stillExists) {
-          // পুরো পেজ লোড না করে শুধু সিলেক্টেড অর্ডার আপডেট হবে
           const updatedOrderData = await getOrder(selectedOrder._id);
           setSelectedOrder(updatedOrderData);
           setItems(updatedOrderData?.items || []);
         } else if (ordersData?.length > 0) {
-          // যদি সিলেক্টেড অর্ডারটি ডিলিট হয়ে যায়, তবে প্রথম অর্ডারটি সিলেক্ট করে নেবো
           await loadSingleOrder(ordersData[0]._id);
         } else {
           setSelectedOrder(null);
@@ -375,7 +387,7 @@ export default function OrdersPage() {
   const pendingCount = useMemo(() => {
     return orders.filter(
       (order) => order.orderStatus === "Pending"
-    ).length;
+    .length;
   }, [orders]);
 
   // ==========================================
