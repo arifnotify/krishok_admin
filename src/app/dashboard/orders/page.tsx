@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   ShoppingCart,
@@ -46,16 +46,37 @@ export default function OrdersPage() {
     useState("");
 
   // ==========================
-  // PLAY NOTIFICATION SOUND
+  // NOTIFICATION SOUND REF
   // ==========================
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // কম্পোনেন্ট লোড হওয়ার পর অডিও অবজেক্ট তৈরি করে রাখা হলো
+    audioRef.current = new Audio("/notification.mp3");
+    audioRef.current.loop = true; // চাইলে লুপ করতে পারেন যাতে অর্ডার রিসিভ না করা পর্যন্ত বাজতে থাকে
+  }, []);
+
   const playNotificationSound = () => {
     try {
-      const audio = new Audio("/notification.mp3");
-      audio.play().catch((err) => {
-        console.log("Audio play blocked by browser policy:", err);
-      });
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0; // প্রতিবার শুরুতে নিয়ে যাবে
+        audioRef.current.play().catch((err) => {
+          console.log("Audio play blocked by browser policy:", err);
+        });
+      }
     } catch (error) {
       console.error("Failed to play sound:", error);
+    }
+  };
+
+  const stopNotificationSound = () => {
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    } catch (error) {
+      console.error("Failed to stop sound:", error);
     }
   };
 
@@ -108,19 +129,19 @@ export default function OrdersPage() {
     socket.on("new_order", async () => {
       console.log("New Order Received");
       playNotificationSound(); // নতুন অর্ডার আসলে সাউন্ড বাজবে
-      await loadData(false); // false means no full-page loading screen
+      await loadData(false);
     });
 
     // ORDER UPDATE
     socket.on("order_updated", async () => {
       console.log("Order Updated Received");
-      await loadData(false); // false means no full-page loading screen
+      await loadData(false);
     });
 
     // ORDER DELETE
     socket.on("order_deleted", async () => {
       console.log("Order Deleted Received");
-      await loadData(false); // false means no full-page loading screen
+      await loadData(false);
     });
 
     return () => {
@@ -221,6 +242,11 @@ export default function OrdersPage() {
         selectedOrder._id,
         newStatus
       );
+
+      // যদি স্ট্যাটাস "Processing" (বা আপনার সিস্টেম অনুযায়ী যে নাম থাকে) করা হয়, তবে সাউন্ড বন্ধ হয়ে যাবে
+      if (newStatus === "Processing") {
+        stopNotificationSound();
+      }
 
       setSelectedOrder((prev) =>
         prev
