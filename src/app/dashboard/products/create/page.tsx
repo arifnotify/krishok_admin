@@ -764,30 +764,24 @@ className="border rounded-2xl px-5 py-3.5"
     Country
   </label>
 
-  <select
-    value={country}
-    onChange={(e) =>
-      setCountry(e.target.value)
-    }
-    className="w-full border rounded-2xl px-5 py-3.5"
-  >
+<select
+  value={country}
+  onChange={(e) => setCountry(e.target.value)}
+  className="w-full border rounded-2xl px-5 py-3.5"
+>
+  <option value="">
+    Select Country
+  </option>
 
-    <option value="">
-      Select Country
+  {countries.map((item) => (
+    <option
+      key={item._id}
+      value={item._id}
+    >
+      {item.name} ({item.code})
     </option>
-
-    {countries.map((item) => (
-
-      <option
-        key={item._id}
-        value={item._id}
-      >
-        {item.name} ({item.code})
-      </option>
-
-    ))}
-
-  </select>
+  ))}
+</select>
 
 </div>
 
