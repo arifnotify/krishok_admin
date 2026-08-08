@@ -14,6 +14,12 @@ getSubCategories,
 } from "@/src/services/category.service";
 
 import {
+  getCountries,
+} from "@/src/services/country.service";
+
+import { Country } from "@/src/types/country";
+
+import {
 getLocations,
 } from "@/src/services/location.service";
 
@@ -45,6 +51,12 @@ useState("");
 const [stock,setStock]=useState("");
 
 const [brand,setBrand]=useState("");
+  
+const [countries, setCountries] =
+  useState<Country[]>([]);
+
+const [country, setCountry] =
+  useState("");
 
 const [unit,setUnit]=useState("pcs");
 
@@ -101,6 +113,7 @@ const [
 product,
 categoryData,
 locationsData,
+countriesData,
 ]=await Promise.all([
 
 getProductById(id as string),
@@ -108,6 +121,8 @@ getProductById(id as string),
 getMainCategories(),
 
 getLocations(),
+  
+getCountries(),
 
 ]);
 
@@ -121,6 +136,13 @@ locationsData
 :
 locationsData.data || []
 
+);
+
+setCountries(countriesData);
+setCountry(
+  typeof product.country === "string"
+    ? product.country
+    : product.country?._id || ""
 );
 
 setTitleEn(
@@ -404,6 +426,9 @@ undefined,
 stock:Number(stock),
 
 brand,
+country:
+country || undefined,
+
 
 unit,
 
@@ -694,6 +719,44 @@ e=>setBrand(e.target.value)
 }
 className="border rounded-2xl px-5 py-3.5"
 />
+
+</div>
+  <div>
+
+  <label className="block text-sm font-medium mb-2">
+    Country
+  </label>
+
+  <select
+    value={country}
+    onChange={(e) =>
+      setCountry(e.target.value)
+    }
+    className="
+      w-full
+      border
+      rounded-2xl
+      px-5
+      py-3.5
+    "
+  >
+
+    <option value="">
+      Select Country
+    </option>
+
+    {countries.map((item) => (
+
+      <option
+        key={item._id}
+        value={item._id}
+      >
+        {item.flag} {item.name} ({item.code})
+      </option>
+
+    ))}
+
+  </select>
 
 </div>
 
