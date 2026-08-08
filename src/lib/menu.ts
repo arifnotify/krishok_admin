@@ -14,6 +14,7 @@ import {
   Settings,
   Bike,
   CreditCard,
+  Globe,
 } from "lucide-react";
 
 
@@ -43,6 +44,11 @@ export const menu = [
         name: "Products",
         href: "/dashboard/products",
         icon: Package,
+      },
+      {
+        name: "Countries",
+        href: "/dashboard/countries",
+        icon: Globe,
       },
 
       {

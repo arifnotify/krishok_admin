@@ -3,6 +3,13 @@ export interface TranslatedText {
   bn: string;
 }
 
+export interface ProductCountry {
+  _id: string;
+  name: string;
+  code: string;
+  flag: string;
+}
+
 export interface Product {
   _id: string;
 
@@ -44,6 +51,9 @@ export interface Product {
   productType?: string;
 
   expiryDate?: string;
+
+   // ⭐ COUNTRY
+  country?: ProductCountry;
 
   isFeatured?: boolean;
 
