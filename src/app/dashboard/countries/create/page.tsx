@@ -23,19 +23,28 @@ export default function CreateCountryPage() {
   const handleFlagUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = e.target.files?.[0];
+    const files = e.target.files;
 
-    if (!file) return;
-
-    // Only image
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
+    if (!files || files.length === 0) {
       return;
     }
 
-    // Max 5MB
+    const file = files[0];
+
+    // =========================
+    // IMAGE VALIDATION
+    // =========================
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      e.target.value = "";
+      return;
+    }
+
+    // Maximum 5MB
     if (file.size > 5 * 1024 * 1024) {
       alert("Image size must be less than 5MB");
+      e.target.value = "";
       return;
     }
 
@@ -45,28 +54,44 @@ export default function CreateCountryPage() {
       // =========================
       // UPLOAD TO CLOUDINARY
       // =========================
+      //
+      // uploadImages() expects FileList
+      //
 
-      const result = await uploadImages([file]);
+      const result = await uploadImages(files);
 
       console.log(
         "Cloudinary Upload Result:",
         result
       );
 
+      // =========================
+      // CHECK RESPONSE
+      // =========================
+
       if (
         !result ||
         !Array.isArray(result) ||
+        result.length === 0 ||
         !result[0]?.url
       ) {
         throw new Error(
-          "Cloudinary URL not found"
+          "Cloudinary image URL not found"
         );
       }
 
-      // Cloudinary URL
+      // =========================
+      // GET CLOUDINARY URL
+      // =========================
+
       const imageUrl = result[0].url;
 
       setFlag(imageUrl);
+
+      console.log(
+        "Flag Cloudinary URL:",
+        imageUrl
+      );
 
     } catch (error) {
       console.error(
@@ -74,11 +99,17 @@ export default function CreateCountryPage() {
         error
       );
 
+      setFlag("");
+
       alert(
         "Flag image upload failed"
       );
+
     } finally {
       setUploading(false);
+
+      // Reset file input
+      e.target.value = "";
     }
   };
 
@@ -95,6 +126,10 @@ export default function CreateCountryPage() {
   // =========================
 
   const handleCreate = async () => {
+    // =========================
+    // VALIDATION
+    // =========================
+
     if (!name.trim()) {
       alert("Country name is required");
       return;
@@ -113,6 +148,10 @@ export default function CreateCountryPage() {
     try {
       setLoading(true);
 
+      // =========================
+      // CREATE COUNTRY
+      // =========================
+
       await createCountry({
         name: name.trim(),
 
@@ -120,6 +159,7 @@ export default function CreateCountryPage() {
           .trim()
           .toUpperCase(),
 
+        // Cloudinary URL
         flag: flag,
       });
 
@@ -140,6 +180,7 @@ export default function CreateCountryPage() {
       alert(
         "Failed to create country"
       );
+
     } finally {
       setLoading(false);
     }
@@ -244,7 +285,7 @@ export default function CreateCountryPage() {
           </div>
 
           {/* =========================
-              FLAG UPLOAD
+              FLAG IMAGE
           ========================= */}
 
           <div>
@@ -287,26 +328,23 @@ export default function CreateCountryPage() {
                 <input
                   id="flag-upload"
                   type="file"
-                  accept="image/*"
-                  onChange={handleFlagUpload}
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={
+                    handleFlagUpload
+                  }
                   className="hidden"
+                  disabled={uploading}
                 />
 
               </label>
 
             ) : (
 
-              <div
-                className="
-                  border
-                  rounded-2xl
-                  p-5
-                "
-              >
-
-                {/* PREVIEW */}
+              <div className="border rounded-2xl p-5">
 
                 <div className="flex items-center gap-5">
+
+                  {/* FLAG PREVIEW */}
 
                   <img
                     src={flag}
@@ -326,19 +364,23 @@ export default function CreateCountryPage() {
                       Flag uploaded
                     </p>
 
-                    <p className="text-sm text-green-600">
-                      Cloudinary upload successful
+                    <p className="text-sm text-green-600 mt-1">
+                      ✓ Cloudinary upload successful
                     </p>
 
                     <button
                       type="button"
                       onClick={removeFlag}
-                      disabled={uploading}
+                      disabled={
+                        uploading ||
+                        loading
+                      }
                       className="
                         mt-2
                         text-sm
                         text-red-600
                         hover:underline
+                        disabled:opacity-50
                       "
                     >
                       Remove Flag
@@ -352,18 +394,22 @@ export default function CreateCountryPage() {
 
             )}
 
-            {/* UPLOADING */}
+            {/* UPLOADING STATUS */}
 
             {uploading && (
-              <p className="text-sm text-blue-600 mt-3">
-                Uploading flag to Cloudinary...
-              </p>
+              <div className="mt-3">
+
+                <p className="text-sm text-blue-600">
+                  Uploading flag to Cloudinary...
+                </p>
+
+              </div>
             )}
 
           </div>
 
           {/* =========================
-              PREVIEW
+              COUNTRY PREVIEW
           ========================= */}
 
           {flag && (
@@ -387,7 +433,10 @@ export default function CreateCountryPage() {
 
                 <img
                   src={flag}
-                  alt={name || "Country"}
+                  alt={
+                    name ||
+                    "Country"
+                  }
                   className="
                     w-16
                     h-10
@@ -400,11 +449,13 @@ export default function CreateCountryPage() {
                 <div>
 
                   <p className="font-semibold">
-                    {name || "Country Name"}
+                    {name ||
+                      "Country Name"}
                   </p>
 
                   <p className="text-sm text-gray-500">
-                    {code || "CODE"}
+                    {code ||
+                      "CODE"}
                   </p>
 
                 </div>
@@ -420,6 +471,8 @@ export default function CreateCountryPage() {
           ========================= */}
 
           <div className="flex justify-end gap-3 pt-5">
+
+            {/* CANCEL */}
 
             <button
               type="button"
@@ -442,6 +495,8 @@ export default function CreateCountryPage() {
             >
               Cancel
             </button>
+
+            {/* CREATE */}
 
             <button
               type="button"
