@@ -87,3 +87,15 @@ export const getSubCategories =
 
     return res.data;
   };
+
+//active
+// TOGGLE CATEGORY STATUS
+export const toggleCategoryStatus = async (
+  id: string,
+) => {
+  const res = await api.patch(
+    `/categories/${id}/toggle-status`,
+  );
+
+  return res.data;
+};
