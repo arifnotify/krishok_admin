@@ -14,6 +14,7 @@ export default function EditMainCategoryPage() {
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState(0);
+  const [isActive, setIsActive] = useState(true);
   const [showOnHome,setShowOnHome]=useState(false);
 
   useEffect(() => {
@@ -32,6 +33,7 @@ export default function EditMainCategoryPage() {
       setShowOnHome(
  res.showOnHome ?? false
 );
+setIsActive(res.isActive ?? true);
     } catch (error) {
       console.log(error);
     }
@@ -60,6 +62,7 @@ export default function EditMainCategoryPage() {
         image,
         parentCategory: null,
         sortOrder,
+        isActive,
         showOnHome,
       });
 
@@ -132,6 +135,22 @@ export default function EditMainCategoryPage() {
  setShowOnHome(e.target.checked)
  }
 />
+        
+<div className="flex items-center gap-3 mb-4">
+  <input
+    type="checkbox"
+    checked={isActive}
+    onChange={(e) =>
+      setIsActive(e.target.checked)
+    }
+  />
+
+  <label className="font-medium">
+    {isActive
+      ? "Category Active"
+      : "Category Inactive"}
+  </label>
+</div>
 
 <label>
 Show on Home Page
