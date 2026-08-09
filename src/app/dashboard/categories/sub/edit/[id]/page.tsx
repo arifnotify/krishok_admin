@@ -22,6 +22,7 @@ export default function EditSubCategoryPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState(0);
+  const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (id) {
@@ -40,6 +41,8 @@ export default function EditSubCategoryPage() {
       setParentCategory(
         res.parentCategory?._id || res.parentCategory || ""
       );
+     // Category Active / Inactive
+    setIsActive(res.isActive ?? true);
     } catch (error) {
       console.log(error);
     }
@@ -81,6 +84,7 @@ export default function EditSubCategoryPage() {
         image,
         parentCategory,
         sortOrder,
+        isActive,
       });
 
       alert("Sub Category Updated");
@@ -147,6 +151,22 @@ export default function EditSubCategoryPage() {
     }
     className="w-full border p-3 rounded-lg"
   />
+</div>
+////////////////////////////////////////
+  <div className="flex items-center gap-3 mb-4">
+  <input
+    type="checkbox"
+    checked={isActive}
+    onChange={(e) =>
+      setIsActive(e.target.checked)
+    }
+  />
+
+  <label className="font-medium">
+    {isActive
+      ? "Category Active"
+      : "Category Inactive"}
+  </label>
 </div>
 
         {/* IMAGE UPLOAD */}
