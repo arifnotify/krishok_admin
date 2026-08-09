@@ -152,7 +152,6 @@ export default function EditSubCategoryPage() {
     className="w-full border p-3 rounded-lg"
   />
 </div>
-////////////////////////////////////////
   <div className="flex items-center gap-3 mb-4">
   <input
     type="checkbox"
