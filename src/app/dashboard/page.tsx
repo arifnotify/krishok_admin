@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   ShoppingCart,
@@ -26,6 +26,7 @@ import OrderSearch from "@/src/components/orders/OrderSearch";
 import OrderTabs from "@/src/components/orders/OrderTabs";
 
 import OrderStatCard from "@/src/components/dashboard/OrderStatCard";
+import { io } from "socket.io-client";
 
 import {
   Order,
@@ -42,19 +43,107 @@ export default function DashboardPage() {
 
   const [selectedRider, setSelectedRider] = useState("");
 
+  // ==========================
+  // NOTIFICATION SOUND REF
+  // ==========================
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    audioRef.current = new Audio("/notification.mp3");
+    audioRef.current.loop = true;
+  }, []);
+
+  const playNotificationSound = () => {
+    try {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch((err) => {
+          console.log("Audio play blocked by browser policy:", err);
+        });
+      }
+    } catch (error) {
+      console.error("Failed to play sound:", error);
+    }
+  };
+
+  const stopNotificationSound = () => {
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    } catch (error) {
+      console.error("Failed to stop sound:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedOrder?.assignedRider) {
+      setSelectedRider("");
+      return;
+    }
+
+    if (typeof selectedOrder.assignedRider === "string") {
+      setSelectedRider(selectedOrder.assignedRider);
+    } else {
+      setSelectedRider(selectedOrder.assignedRider._id);
+    }
+  }, [selectedOrder]);
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<OrderStatus | "All">("All");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Initial page load
   useEffect(() => {
-    loadData();
+    loadData(true);
   }, []);
 
-  const loadData = async () => {
+  // =======================================================
+  // SOCKET SETUP (SILENT UPDATE WITHOUT FULL PAGE LOADING)
+  // =======================================================
+  useEffect(() => {
+    const socket = io(process.env.NEXT_PUBLIC_API_URL!, {
+      transports: ["websocket"],
+    });
+
+    // NEW ORDER
+    socket.on("new_order", async () => {
+      console.log("New Order Received");
+      playNotificationSound();
+      await loadData(false);
+    });
+
+    // ORDER UPDATE
+    socket.on("order_updated", async () => {
+      console.log("Order Updated Received");
+      await loadData(false);
+    });
+
+    // ORDER DELETE
+    socket.on("order_deleted", async () => {
+      console.log("Order Deleted Received");
+      await loadData(false);
+    });
+
+    return () => {
+      socket.off("new_order");
+      socket.off("order_updated");
+      socket.off("order_deleted");
+      socket.disconnect();
+    };
+  }, [selectedOrder]);
+
+  // ==========================
+  // LOAD ALL DATA
+  // ==========================
+  const loadData = async (isInitial = false) => {
     try {
-      setLoading(true);
+      if (isInitial) {
+        setLoading(true);
+      }
 
       const [ordersData, ridersData] = await Promise.all([
         getOrders(),
@@ -64,36 +153,73 @@ export default function DashboardPage() {
       setOrders(ordersData || []);
       setRiders(ridersData || []);
 
-      if (ordersData?.length > 0) {
+      if (isInitial && ordersData?.length > 0) {
         await loadSingleOrder(ordersData[0]._id);
+      } else if (!isInitial && selectedOrder) {
+        const stillExists = ordersData?.find(
+          (o: Order) => o._id === selectedOrder._id
+        );
+        if (stillExists) {
+          const updatedOrderData = await getOrder(selectedOrder._id);
+          setSelectedOrder(updatedOrderData);
+          setItems(updatedOrderData?.items || []);
+        } else if (ordersData?.length > 0) {
+          await loadSingleOrder(ordersData[0]._id);
+        } else {
+          setSelectedOrder(null);
+          setItems([]);
+        }
       }
     } catch (err) {
-      console.error("Failed to load orders data:", err);
+      console.error("Failed to load orders:", err);
     } finally {
-      setLoading(false);
+      if (isInitial) {
+        setLoading(false);
+      }
     }
   };
 
+  // ==========================
+  // LOAD SINGLE ORDER
+  // ==========================
   const loadSingleOrder = async (id: string) => {
     try {
       const data = await getOrder(id);
+
       setSelectedOrder(data);
       setItems(data?.items || []);
+
+      if (data?.assignedRider?._id) {
+        setSelectedRider(data.assignedRider._id);
+      } else {
+        setSelectedRider("");
+      }
     } catch (err) {
-      console.error("Failed to load order details:", err);
+      console.error("Failed to load order:", err);
     }
   };
 
+  // ==========================
+  // UPDATE STATUS
+  // ==========================
   const handleStatusChange = async (newStatus: OrderStatus) => {
     if (!selectedOrder) return;
 
     try {
       await updateOrderStatus(selectedOrder._id, newStatus);
 
-      setSelectedOrder((prev: any) => ({
-        ...prev,
-        orderStatus: newStatus,
-      }));
+      if (newStatus === "Processing") {
+        stopNotificationSound();
+      }
+
+      setSelectedOrder((prev) =>
+        prev
+          ? {
+              ...prev,
+              orderStatus: newStatus,
+            }
+          : null
+      );
 
       setOrders((prev) =>
         prev.map((order) =>
@@ -110,6 +236,9 @@ export default function DashboardPage() {
     }
   };
 
+  // ==========================
+  // ASSIGN RIDER
+  // ==========================
   const handleAssignRider = async () => {
     if (!selectedOrder || !selectedRider) return;
 
@@ -121,6 +250,9 @@ export default function DashboardPage() {
     }
   };
 
+  // ==========================
+  // SAVE ORDER ITEMS
+  // ==========================
   const handleSaveItems = async () => {
     if (!selectedOrder) return;
 
@@ -131,7 +263,17 @@ export default function DashboardPage() {
         selectedOrder._id,
         items.map((item) => ({
           product: item.product!,
-          productName: item.productName || "",
+          productName: {
+            en:
+              typeof item.productName === "object"
+                ? item.productName.en || ""
+                : item.productName,
+            bn:
+              typeof item.productName === "object"
+                ? item.productName.bn || ""
+                : "",
+          },
+          unit: item.unit || "pcs",
           productImage: item.productImage || "",
           price: Number(item.price || 0),
           quantity: Number(item.quantity || 1),
@@ -147,70 +289,57 @@ export default function DashboardPage() {
   };
 
   // ==========================================
-  // SEARCH & FILTER LOGIC (CASE INSENSITIVE)
+  // SEARCH & FILTER
   // ==========================================
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      // 1. Search Matching
       const matchesSearch =
         order.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
-        order.customerPhone?.includes(search);
+        order.customerPhone?.toLowerCase().includes(search.toLowerCase());
 
-      // 2. Tab Matching (Case Insensitive)
       const matchesStatus =
-        status === "All"
-          ? true
-          : order.orderStatus?.toUpperCase() === status.toUpperCase();
+        status === "All" ? true : order.orderStatus === status;
 
       return matchesSearch && matchesStatus;
     });
   }, [orders, search, status]);
 
-  // Active Orders (Pending, Processing, Out For Delivery)
+  // Active Orders
   const activeOrders = useMemo(() => {
-    return filteredOrders.filter((order) => {
-      const st = order.orderStatus?.toUpperCase();
-      return st !== "DELIVERED" && st !== "CANCELLED";
-    });
+    return filteredOrders.filter(
+      (order) =>
+        order.orderStatus !== "Delivered" && order.orderStatus !== "Cancelled"
+    );
   }, [filteredOrders]);
 
-  // Completed Orders (Delivered, Cancelled)
+  // Completed Orders
   const completedOrders = useMemo(() => {
-    return filteredOrders.filter((order) => {
-      const st = order.orderStatus?.toUpperCase();
-      return st === "DELIVERED" || st === "CANCELLED";
-    });
+    return filteredOrders.filter(
+      (order) =>
+        order.orderStatus === "Delivered" || order.orderStatus === "Cancelled"
+    );
   }, [filteredOrders]);
 
-  // ==========================================
-  // STATS COUNTS (CASE INSENSITIVE)
-  // ==========================================
-  const pendingCount = useMemo(
-    () =>
-      orders.filter(
-        (order) => order.orderStatus?.toUpperCase() === "PENDING"
-      ).length,
-    [orders]
-  );
+  // Pending Count
+  const pendingCount = useMemo(() => {
+    return orders.filter((order) => order.orderStatus === "Pending").length;
+  }, [orders]);
 
-  const deliveredCount = useMemo(
-    () =>
-      orders.filter(
-        (order) => order.orderStatus?.toUpperCase() === "DELIVERED"
-      ).length,
-    [orders]
-  );
+  // Delivered Count
+  const deliveredCount = useMemo(() => {
+    return orders.filter((order) => order.orderStatus === "Delivered").length;
+  }, [orders]);
 
-  const totalRevenue = useMemo(
-    () =>
-      orders
-        .filter((order) => order.orderStatus?.toUpperCase() === "DELIVERED")
-        .reduce(
-          (sum, order) => sum + Number(order.finalAmount ?? order.totalAmount ?? 0),
-          0
-        ),
-    [orders]
-  );
+  // Total Revenue
+  const totalRevenue = useMemo(() => {
+    return orders
+      .filter((order) => order.orderStatus === "Delivered")
+      .reduce(
+        (sum, order) =>
+          sum + Number(order.finalAmount ?? order.totalAmount ?? 0),
+        0
+      );
+  }, [orders]);
 
   if (loading) {
     return (
