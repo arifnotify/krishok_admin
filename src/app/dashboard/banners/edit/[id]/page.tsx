@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+
 import api from "@/src/services/api";
 import { uploadImage } from "@/src/services/upload.service";
 import { updateBanner } from "@/src/services/banner.service";
-
-
 
 export default function EditBannerPage() {
   const { id } = useParams();
@@ -14,38 +13,88 @@ export default function EditBannerPage() {
 
   const [title, setTitle] = useState("");
   const [image, setImage] = useState("");
-  const [link, setLink] = useState("/products");
-  const [isActive, setIsActive] = useState(true);
 
-  const [loading, setLoading] = useState(false);
+  const [linkType, setLinkType] =
+    useState("none");
 
-  // FETCH SINGLE BANNER
+  const [linkId, setLinkId] =
+    useState("");
+
+  const [isActive, setIsActive] =
+    useState(true);
+
+  const [flashSales, setFlashSales] =
+    useState<any[]>([]);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  // =========================
+  // LOAD FLASH SALES
+  // =========================
+  const fetchFlashSales = async () => {
+    try {
+      const res = await api.get(
+        "/flash-sale",
+      );
+
+      setFlashSales(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // =========================
+  // LOAD SINGLE BANNER
+  // =========================
   const fetchBanner = async () => {
     try {
-      const res = await api.get(`/banners/${id}`);
+      const res = await api.get(
+        `/banners/${id}`,
+      );
 
-      console.log("BANNER DATA:", res.data);
+      const banner = res.data;
 
-      setTitle(res.data.title);
-      setImage(res.data.image);
-      setLink(res.data.link || "/products");
-      setIsActive(res.data.isActive);
+      setTitle(banner.title || "");
+      setImage(banner.image || "");
+
+      setLinkType(
+        banner.linkType || "none",
+      );
+
+      setLinkId(
+        banner.linkId || "",
+      );
+
+      setIsActive(
+        banner.isActive ?? true,
+      );
     } catch (err) {
       console.log(err);
     }
   };
 
   useEffect(() => {
-    if (id) fetchBanner();
+    if (id) {
+      fetchBanner();
+      fetchFlashSales();
+    }
   }, [id]);
 
+  // =========================
   // IMAGE UPLOAD
-  const handleUpload = async (e: any) => {
-    const file = e.target.files?.[0];
+  // =========================
+  const handleUpload = async (
+    e: any,
+  ) => {
+    const file =
+      e.target.files?.[0];
+
     if (!file) return;
 
     try {
-      const res = await uploadImage(file);
+      const res =
+        await uploadImage(file);
 
       const imageUrl =
         res.url ||
@@ -56,13 +105,27 @@ export default function EditBannerPage() {
 
       setImage(imageUrl);
     } catch (err) {
-      console.log(err);
+      console.log(
+        "UPLOAD ERROR",
+        err,
+      );
     }
   };
 
+  // =========================
   // UPDATE BANNER
-  const handleUpdate = async (e: any) => {
+  // =========================
+  const handleUpdate = async (
+    e: any,
+  ) => {
     e.preventDefault();
+
+    if (!image) {
+      alert(
+        "Please upload image first",
+      );
+      return;
+    }
 
     try {
       setLoading(true);
@@ -70,20 +133,39 @@ export default function EditBannerPage() {
       const payload = {
         title,
         image,
-        link,
+        linkType,
+        linkId:
+          linkId || null,
         isActive,
       };
 
-      console.log("UPDATE PAYLOAD:", payload);
+      console.log(
+        "UPDATE PAYLOAD",
+        payload,
+      );
 
-      await updateBanner(id as string, payload);
+      await updateBanner(
+        id as string,
+        payload,
+      );
 
-      alert("Banner Updated Successfully");
+      alert(
+        "Banner Updated Successfully",
+      );
 
-      router.push("/banners");
+      router.push(
+        "/dashboard/banners",
+      );
     } catch (err: any) {
-      console.log(err?.response?.data || err);
-      alert("Update Failed");
+      console.log(
+        err?.response?.data || err,
+      );
+
+      alert(
+        err?.response?.data
+          ?.message ||
+          "Update Failed",
+      );
     } finally {
       setLoading(false);
     }
@@ -96,56 +178,125 @@ export default function EditBannerPage() {
         Edit Banner
       </h1>
 
-      <form onSubmit={handleUpdate} className="space-y-4">
+      <form
+        onSubmit={handleUpdate}
+        className="space-y-4"
+      >
 
         {/* TITLE */}
         <input
           type="text"
-          className="border p-3 w-full rounded"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) =>
+            setTitle(
+              e.target.value,
+            )
+          }
+          placeholder="Banner Title"
+          className="border p-3 w-full rounded"
         />
 
-        {/* LINK */}
-        <input
-          type="text"
+        {/* LINK TYPE */}
+        <select
+          value={linkType}
+          onChange={(e) => {
+            setLinkType(
+              e.target.value,
+            );
+
+            setLinkId("");
+          }}
           className="border p-3 w-full rounded"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-        />
+        >
+          <option value="none">
+            No Action
+          </option>
+
+          <option value="flashSale">
+            Flash Sale
+          </option>
+        </select>
+
+        {/* FLASH SALE SELECT */}
+        {linkType ===
+          "flashSale" && (
+          <select
+            value={linkId}
+            onChange={(e) =>
+              setLinkId(
+                e.target.value,
+              )
+            }
+            className="border p-3 w-full rounded"
+          >
+            <option value="">
+              Select Flash Sale
+            </option>
+
+            {flashSales.map(
+              (sale: any) => (
+                <option
+                  key={
+                    sale._id
+                  }
+                  value={
+                    sale._id
+                  }
+                >
+                  {sale.title}
+                </option>
+              ),
+            )}
+          </select>
+        )}
 
         {/* IMAGE */}
         <input
           type="file"
-          onChange={handleUpload}
+          onChange={
+            handleUpload
+          }
         />
 
         {image && (
           <img
             src={image}
-            className="w-full h-[200px] object-cover rounded"
+            alt="Banner"
+            className="w-full h-[220px] object-cover rounded"
           />
         )}
 
-        {/* ACTIVE STATUS */}
+        {/* STATUS */}
         <select
-          value={String(isActive)}
+          value={String(
+            isActive,
+          )}
           onChange={(e) =>
-            setIsActive(e.target.value === "true")
+            setIsActive(
+              e.target.value ===
+                "true",
+            )
           }
           className="border p-3 w-full rounded"
         >
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
+          <option value="true">
+            Active
+          </option>
+
+          <option value="false">
+            Inactive
+          </option>
         </select>
 
-        {/* BUTTON */}
+        {/* UPDATE BUTTON */}
         <button
           type="submit"
           disabled={loading}
           className="bg-blue-600 text-white px-6 py-3 rounded w-full"
         >
-          {loading ? "Updating..." : "Update Banner"}
+          {loading
+            ? "Updating..."
+            : "Update Banner"}
         </button>
 
       </form>
