@@ -1,30 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
+import api from "@/src/services/api";
 import { uploadImage } from "@/src/services/upload.service";
 import { createBanner } from "@/src/services/banner.service";
-
 
 export default function CreateBannerPage() {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [image, setImage] = useState("");
-  const [link, setLink] = useState("/products");
-  const [isActive, setIsActive] = useState(true);
 
-  const [loading, setLoading] = useState(false);
+  const [linkType, setLinkType] =
+    useState("none");
 
+  const [linkId, setLinkId] =
+    useState("");
+
+  const [isActive, setIsActive] =
+    useState(true);
+
+  const [flashSales, setFlashSales] =
+    useState<any[]>([]);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  // =========================
+  // LOAD FLASH SALES
+  // =========================
+  const fetchFlashSales = async () => {
+    try {
+      const res = await api.get(
+        "/flash-sale",
+      );
+
+      setFlashSales(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFlashSales();
+  }, []);
+
+  // =========================
   // IMAGE UPLOAD
-  const handleUpload = async (e: any) => {
-    const file = e.target.files?.[0];
+  // =========================
+  const handleUpload = async (
+    e: any,
+  ) => {
+    const file =
+      e.target.files?.[0];
+
     if (!file) return;
 
     try {
-      const res = await uploadImage(file);
-
-      console.log("UPLOAD RESPONSE:", res);
+      const res =
+        await uploadImage(file);
 
       const imageUrl =
         res.url ||
@@ -35,16 +71,25 @@ export default function CreateBannerPage() {
 
       setImage(imageUrl);
     } catch (err) {
-      console.log("UPLOAD ERROR:", err);
+      console.log(
+        "UPLOAD ERROR",
+        err,
+      );
     }
   };
 
+  // =========================
   // CREATE BANNER
-  const handleSubmit = async (e: any) => {
+  // =========================
+  const handleSubmit = async (
+    e: any,
+  ) => {
     e.preventDefault();
 
     if (!image) {
-      alert("Please upload image first");
+      alert(
+        "Please upload image first",
+      );
       return;
     }
 
@@ -54,22 +99,35 @@ export default function CreateBannerPage() {
       const payload = {
         title,
         image,
-        link,
+        linkType,
+        linkId:
+          linkId || null,
         isActive,
       };
 
-      console.log("FINAL PAYLOAD:", payload);
+      console.log(
+        "BANNER PAYLOAD",
+        payload,
+      );
 
       await createBanner(payload);
 
-      alert("Banner Created Successfully");
-
-      router.push("dashboard/banners");
-    } catch (err: any) {
-      console.log("ERROR:", err?.response?.data || err);
       alert(
-        err?.response?.data?.message ||
-          "Create Failed"
+        "Banner Created Successfully",
+      );
+
+      router.push(
+        "/dashboard/banners",
+      );
+    } catch (err: any) {
+      console.log(
+        err?.response?.data || err,
+      );
+
+      alert(
+        err?.response?.data
+          ?.message ||
+          "Create Failed",
       );
     } finally {
       setLoading(false);
@@ -83,7 +141,10 @@ export default function CreateBannerPage() {
         Create Banner
       </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
 
         {/* TITLE */}
         <input
@@ -91,41 +152,103 @@ export default function CreateBannerPage() {
           placeholder="Banner Title"
           className="border p-3 w-full rounded"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) =>
+            setTitle(
+              e.target.value,
+            )
+          }
         />
 
-        {/* LINK */}
-        <input
-          type="text"
-          placeholder="Link (e.g /products)"
+        {/* LINK TYPE */}
+        <select
+          value={linkType}
+          onChange={(e) => {
+            setLinkType(
+              e.target.value,
+            );
+
+            setLinkId("");
+          }}
           className="border p-3 w-full rounded"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-        />
+        >
+          <option value="none">
+            No Action
+          </option>
+
+          <option value="flashSale">
+            Flash Sale
+          </option>
+        </select>
+
+        {/* FLASH SALE */}
+        {linkType ===
+          "flashSale" && (
+          <select
+            value={linkId}
+            onChange={(e) =>
+              setLinkId(
+                e.target.value,
+              )
+            }
+            className="border p-3 w-full rounded"
+          >
+            <option value="">
+              Select Flash Sale
+            </option>
+
+            {flashSales.map(
+              (sale: any) => (
+                <option
+                  key={
+                    sale._id
+                  }
+                  value={
+                    sale._id
+                  }
+                >
+                  {sale.title}
+                </option>
+              ),
+            )}
+          </select>
+        )}
 
         {/* IMAGE */}
         <input
           type="file"
-          onChange={handleUpload}
+          onChange={
+            handleUpload
+          }
         />
 
         {image && (
           <img
             src={image}
-            className="w-full h-[200px] object-cover rounded"
+            alt="Banner"
+            className="w-full h-[220px] object-cover rounded"
           />
         )}
 
-        {/* ACTIVE STATUS */}
+        {/* STATUS */}
         <select
-          value={String(isActive)}
+          value={String(
+            isActive,
+          )}
           onChange={(e) =>
-            setIsActive(e.target.value === "true")
+            setIsActive(
+              e.target.value ===
+                "true",
+            )
           }
           className="border p-3 w-full rounded"
         >
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
+          <option value="true">
+            Active
+          </option>
+
+          <option value="false">
+            Inactive
+          </option>
         </select>
 
         {/* SUBMIT */}
@@ -134,7 +257,9 @@ export default function CreateBannerPage() {
           disabled={loading}
           className="bg-black text-white px-6 py-3 rounded w-full"
         >
-          {loading ? "Creating..." : "Create Banner"}
+          {loading
+            ? "Creating..."
+            : "Create Banner"}
         </button>
 
       </form>
