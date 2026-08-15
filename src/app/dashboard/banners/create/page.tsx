@@ -33,9 +33,9 @@ export default function CreateBannerPage() {
   // =========================
   const fetchFlashSales = async () => {
     try {
-      const res = await api.get(
-        "/flash-sale",
-      );
+     const res = await api.get(
+  "/flash-sale/admin/all"
+);
 
       setFlashSales(res.data);
     } catch (err) {
