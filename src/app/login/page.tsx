@@ -26,15 +26,19 @@ export default function LoginPage() {
         );
 
       // SAVE TOKEN
-Cookies.set("token", data.access_token, {
-  expires: 7,
-  sameSite: "lax",
-});
+            Cookies.set(
+        "token",
+        data.access_token,
+      );
+//Cookies.set("token", data.access_token, {
+//  expires: 7,
+//  sameSite: "lax",
+//});
 
-localStorage.setItem(
-  "token",
-  data.access_token
-);
+//localStorage.setItem(
+//  "token",
+//  data.access_token
+//);
 
       // redirect
       window.location.href =
