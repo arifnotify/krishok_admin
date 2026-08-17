@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const api = axios.create({
-  baseURL: "https://attinbackend.onrender.com",
+  baseURL: "http://3.111.34.69:5000",
 });
 
 api.interceptors.request.use((config) => {
