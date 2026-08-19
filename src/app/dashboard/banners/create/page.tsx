@@ -12,14 +12,13 @@ export default function CreateBannerPage() {
 
   const [title, setTitle] = useState("");
   const [image, setImage] = useState("");
-
   const [linkType, setLinkType] = useState("none");
   const [linkId, setLinkId] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   const [flashSales, setFlashSales] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false); // ইমেজ আপলোডিং স্টেট
+  const [uploading, setUploading] = useState(false);
 
   // =========================
   // LOAD FLASH SALES
@@ -29,7 +28,7 @@ export default function CreateBannerPage() {
       const res = await api.get("/flash-sale/admin/all");
       setFlashSales(res.data);
     } catch (err) {
-      console.log("Flash Sales Load Error:", err);
+      console.error("Flash sales load error:", err);
     }
   };
 
@@ -38,7 +37,7 @@ export default function CreateBannerPage() {
   }, []);
 
   // =========================
-  // IMAGE UPLOAD (AWS S3 Supported)
+  // IMAGE UPLOAD (AWS S3)
   // =========================
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,10 +47,9 @@ export default function CreateBannerPage() {
       setUploading(true);
       const res = await uploadImage(file);
 
-      // কনসোলে চেক করার জন্য রেসপন্স লগ করা হলো
-      console.log("AWS UPLOAD RESPONSE:", res);
+      console.log("AWS S3 Response:", res);
 
-      // AWS S3 সাধারণত 'Location' প্রপার্টিতে URL পাঠায়
+      // AWS S3 response থেকে URL বের করা
       const imageUrl =
         res?.Location ||
         res?.location ||
@@ -66,11 +64,11 @@ export default function CreateBannerPage() {
       if (imageUrl) {
         setImage(imageUrl);
       } else {
-        alert("Image URL not found in AWS Response! Check console log.");
+        alert("ইমেজ URL পাওয়া যায়নি! Console চেক করুন।");
       }
-    } catch (err) {
-      console.error("UPLOAD ERROR", err);
-      alert("Failed to upload image. Please try again.");
+    } catch (err: any) {
+      console.error("Upload Error:", err?.response?.data || err?.message || err);
+      alert(err?.response?.data?.message || err?.message || "Failed to upload image");
     } finally {
       setUploading(false);
     }
@@ -98,26 +96,21 @@ export default function CreateBannerPage() {
         isActive,
       };
 
-      console.log("BANNER PAYLOAD", payload);
-
       await createBanner(payload);
 
       alert("Banner Created Successfully");
       router.push("/dashboard/banners");
     } catch (err: any) {
-      console.error("CREATE BANNER ERROR:", err?.response?.data || err);
-
-      alert(
-        err?.response?.data?.message || "Failed to create banner"
-      );
+      console.error("Create Banner Error:", err?.response?.data || err);
+      alert(err?.response?.data?.message || "Failed to create banner");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Create Banner</h1>
+    <div className="p-6 max-w-xl mx-auto bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">Create Banner</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* TITLE */}
@@ -125,10 +118,11 @@ export default function CreateBannerPage() {
           <label className="block text-sm font-medium mb-1">Banner Title</label>
           <input
             type="text"
-            placeholder="Banner Title"
+            placeholder="Enter banner title"
             className="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-black"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            required
           />
         </div>
 
@@ -148,16 +142,15 @@ export default function CreateBannerPage() {
           </select>
         </div>
 
-        {/* FLASH SALE */}
+        {/* FLASH SALE SELECT */}
         {linkType === "flashSale" && (
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Select Flash Sale
-            </label>
+            <label className="block text-sm font-medium mb-1">Select Flash Sale</label>
             <select
               value={linkId}
               onChange={(e) => setLinkId(e.target.value)}
               className="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-black"
+              required
             >
               <option value="">Select Flash Sale</option>
               {flashSales.map((sale: any) => (
@@ -171,7 +164,7 @@ export default function CreateBannerPage() {
 
         {/* IMAGE UPLOAD & PREVIEW */}
         <div>
-          <label className="block text-sm font-medium mb-1">Upload Image</label>
+          <label className="block text-sm font-medium mb-1">Upload Banner Image</label>
           <input
             type="file"
             accept="image/*"
@@ -180,9 +173,7 @@ export default function CreateBannerPage() {
           />
 
           {uploading && (
-            <p className="text-sm text-blue-600 mt-2 font-medium">
-              Uploading image to AWS...
-            </p>
+            <p className="text-sm text-blue-600 mt-2 font-medium">Uploading image to S3...</p>
           )}
 
           {image && !uploading && (
@@ -192,11 +183,7 @@ export default function CreateBannerPage() {
                 src={image}
                 alt="Banner Preview"
                 className="w-full h-[220px] object-cover rounded border"
-                onError={() => {
-                  alert(
-                    "Image failed to load. Check AWS S3 Public Access / CORS Policy."
-                  );
-                }}
+                onError={() => alert("Image failed to load. Check AWS S3 permissions / CORS.")}
               />
             </div>
           )}
@@ -219,7 +206,7 @@ export default function CreateBannerPage() {
         <button
           type="submit"
           disabled={loading || uploading}
-          className="bg-black text-white px-6 py-3 rounded w-full font-semibold hover:bg-gray-800 disabled:bg-gray-400"
+          className="bg-black text-white px-6 py-3 rounded w-full font-semibold hover:bg-gray-800 disabled:bg-gray-400 transition"
         >
           {loading ? "Creating..." : "Create Banner"}
         </button>
