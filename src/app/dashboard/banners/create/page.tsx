@@ -13,33 +13,23 @@ export default function CreateBannerPage() {
   const [title, setTitle] = useState("");
   const [image, setImage] = useState("");
 
-  const [linkType, setLinkType] =
-    useState("none");
+  const [linkType, setLinkType] = useState("none");
+  const [linkId, setLinkId] = useState("");
+  const [isActive, setIsActive] = useState(true);
 
-  const [linkId, setLinkId] =
-    useState("");
-
-  const [isActive, setIsActive] =
-    useState(true);
-
-  const [flashSales, setFlashSales] =
-    useState<any[]>([]);
-
-  const [loading, setLoading] =
-    useState(false);
+  const [flashSales, setFlashSales] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false); // ইমেজ আপলোডিং স্টেট
 
   // =========================
   // LOAD FLASH SALES
   // =========================
   const fetchFlashSales = async () => {
     try {
-     const res = await api.get(
-  "/flash-sale/admin/all"
-);
-
+      const res = await api.get("/flash-sale/admin/all");
       setFlashSales(res.data);
     } catch (err) {
-      console.log(err);
+      console.log("Flash Sales Load Error:", err);
     }
   };
 
@@ -48,48 +38,52 @@ export default function CreateBannerPage() {
   }, []);
 
   // =========================
-  // IMAGE UPLOAD
+  // IMAGE UPLOAD (AWS S3 Supported)
   // =========================
-  const handleUpload = async (
-    e: any,
-  ) => {
-    const file =
-      e.target.files?.[0];
-
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     try {
-      const res =
-        await uploadImage(file);
+      setUploading(true);
+      const res = await uploadImage(file);
 
+      // কনসোলে চেক করার জন্য রেসপন্স লগ করা হলো
+      console.log("AWS UPLOAD RESPONSE:", res);
+
+      // AWS S3 সাধারণত 'Location' প্রপার্টিতে URL পাঠায়
       const imageUrl =
-        res.url ||
-        res.imageUrl ||
-        res.secure_url ||
-        res.data?.url ||
-        res.data?.imageUrl;
+        res?.Location ||
+        res?.location ||
+        res?.data?.Location ||
+        res?.data?.location ||
+        res?.url ||
+        res?.imageUrl ||
+        res?.data?.url ||
+        res?.data?.imageUrl ||
+        (typeof res === "string" ? res : "");
 
-      setImage(imageUrl);
+      if (imageUrl) {
+        setImage(imageUrl);
+      } else {
+        alert("Image URL not found in AWS Response! Check console log.");
+      }
     } catch (err) {
-      console.log(
-        "UPLOAD ERROR",
-        err,
-      );
+      console.error("UPLOAD ERROR", err);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setUploading(false);
     }
   };
 
   // =========================
   // CREATE BANNER
   // =========================
-  const handleSubmit = async (
-    e: any,
-  ) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!image) {
-      alert(
-        "Please upload image first",
-      );
+      alert("Please upload an image first");
       return;
     }
 
@@ -100,34 +94,21 @@ export default function CreateBannerPage() {
         title,
         image,
         linkType,
-        linkId:
-          linkId || null,
+        linkId: linkId || null,
         isActive,
       };
 
-      console.log(
-        "BANNER PAYLOAD",
-        payload,
-      );
+      console.log("BANNER PAYLOAD", payload);
 
       await createBanner(payload);
 
-      alert(
-        "Banner Created Successfully",
-      );
-
-      router.push(
-        "/dashboard/banners",
-      );
+      alert("Banner Created Successfully");
+      router.push("/dashboard/banners");
     } catch (err: any) {
-      console.log(
-        err?.response?.data || err,
-      );
+      console.error("CREATE BANNER ERROR:", err?.response?.data || err);
 
       alert(
-        err?.response?.data
-          ?.message ||
-          "Create Failed",
+        err?.response?.data?.message || "Failed to create banner"
       );
     } finally {
       setLoading(false);
@@ -136,134 +117,113 @@ export default function CreateBannerPage() {
 
   return (
     <div className="p-6 max-w-xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Create Banner</h1>
 
-      <h1 className="text-2xl font-bold mb-6">
-        Create Banner
-      </h1>
-
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4"
-      >
-
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* TITLE */}
-        <input
-          type="text"
-          placeholder="Banner Title"
-          className="border p-3 w-full rounded"
-          value={title}
-          onChange={(e) =>
-            setTitle(
-              e.target.value,
-            )
-          }
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Banner Title</label>
+          <input
+            type="text"
+            placeholder="Banner Title"
+            className="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-black"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
 
         {/* LINK TYPE */}
-        <select
-          value={linkType}
-          onChange={(e) => {
-            setLinkType(
-              e.target.value,
-            );
-
-            setLinkId("");
-          }}
-          className="border p-3 w-full rounded"
-        >
-          <option value="none">
-            No Action
-          </option>
-
-          <option value="flashSale">
-            Flash Sale
-          </option>
-        </select>
+        <div>
+          <label className="block text-sm font-medium mb-1">Link Type</label>
+          <select
+            value={linkType}
+            onChange={(e) => {
+              setLinkType(e.target.value);
+              setLinkId("");
+            }}
+            className="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-black"
+          >
+            <option value="none">No Action</option>
+            <option value="flashSale">Flash Sale</option>
+          </select>
+        </div>
 
         {/* FLASH SALE */}
-        {linkType ===
-          "flashSale" && (
-          <select
-            value={linkId}
-            onChange={(e) =>
-              setLinkId(
-                e.target.value,
-              )
-            }
-            className="border p-3 w-full rounded"
-          >
-            <option value="">
+        {linkType === "flashSale" && (
+          <div>
+            <label className="block text-sm font-medium mb-1">
               Select Flash Sale
-            </option>
-
-            {flashSales.map(
-              (sale: any) => (
-                <option
-                  key={
-                    sale._id
-                  }
-                  value={
-                    sale._id
-                  }
-                >
+            </label>
+            <select
+              value={linkId}
+              onChange={(e) => setLinkId(e.target.value)}
+              className="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-black"
+            >
+              <option value="">Select Flash Sale</option>
+              {flashSales.map((sale: any) => (
+                <option key={sale._id} value={sale._id}>
                   {sale.title}
                 </option>
-              ),
-            )}
-          </select>
+              ))}
+            </select>
+          </div>
         )}
 
-        {/* IMAGE */}
-        <input
-          type="file"
-          onChange={
-            handleUpload
-          }
-        />
-
-        {image && (
-          <img
-            src={image}
-            alt="Banner"
-            className="w-full h-[220px] object-cover rounded"
+        {/* IMAGE UPLOAD & PREVIEW */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Upload Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleUpload}
+            className="border p-2 w-full rounded"
           />
-        )}
+
+          {uploading && (
+            <p className="text-sm text-blue-600 mt-2 font-medium">
+              Uploading image to AWS...
+            </p>
+          )}
+
+          {image && !uploading && (
+            <div className="mt-3">
+              <p className="text-xs text-gray-500 mb-1">Preview:</p>
+              <img
+                src={image}
+                alt="Banner Preview"
+                className="w-full h-[220px] object-cover rounded border"
+                onError={() => {
+                  alert(
+                    "Image failed to load. Check AWS S3 Public Access / CORS Policy."
+                  );
+                }}
+              />
+            </div>
+          )}
+        </div>
 
         {/* STATUS */}
-        <select
-          value={String(
-            isActive,
-          )}
-          onChange={(e) =>
-            setIsActive(
-              e.target.value ===
-                "true",
-            )
-          }
-          className="border p-3 w-full rounded"
-        >
-          <option value="true">
-            Active
-          </option>
+        <div>
+          <label className="block text-sm font-medium mb-1">Status</label>
+          <select
+            value={String(isActive)}
+            onChange={(e) => setIsActive(e.target.value === "true")}
+            className="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-black"
+          >
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
 
-          <option value="false">
-            Inactive
-          </option>
-        </select>
-
-        {/* SUBMIT */}
+        {/* SUBMIT BUTTON */}
         <button
           type="submit"
-          disabled={loading}
-          className="bg-black text-white px-6 py-3 rounded w-full"
+          disabled={loading || uploading}
+          className="bg-black text-white px-6 py-3 rounded w-full font-semibold hover:bg-gray-800 disabled:bg-gray-400"
         >
-          {loading
-            ? "Creating..."
-            : "Create Banner"}
+          {loading ? "Creating..." : "Create Banner"}
         </button>
-
       </form>
-
     </div>
   );
 }
