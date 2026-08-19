@@ -12,23 +12,34 @@ export default function CreateBannerPage() {
 
   const [title, setTitle] = useState("");
   const [image, setImage] = useState("");
-  const [linkType, setLinkType] = useState("none");
-  const [linkId, setLinkId] = useState("");
-  const [isActive, setIsActive] = useState(true);
 
-  const [flashSales, setFlashSales] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [linkType, setLinkType] =
+    useState("none");
+
+  const [linkId, setLinkId] =
+    useState("");
+
+  const [isActive, setIsActive] =
+    useState(true);
+
+  const [flashSales, setFlashSales] =
+    useState<any[]>([]);
+
+  const [loading, setLoading] =
+    useState(false);
 
   // =========================
   // LOAD FLASH SALES
   // =========================
   const fetchFlashSales = async () => {
     try {
-      const res = await api.get("/flash-sale/admin/all");
+     const res = await api.get(
+  "/flash-sale/admin/all"
+);
+
       setFlashSales(res.data);
     } catch (err) {
-      console.error("Flash sales load error:", err);
+      console.log(err);
     }
   };
 
@@ -37,51 +48,48 @@ export default function CreateBannerPage() {
   }, []);
 
   // =========================
-  // IMAGE UPLOAD (AWS S3)
+  // IMAGE UPLOAD
   // =========================
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleUpload = async (
+    e: any,
+  ) => {
+    const file =
+      e.target.files?.[0];
+
     if (!file) return;
 
     try {
-      setUploading(true);
-      const res = await uploadImage(file);
+      const res =
+        await uploadImage(file);
 
-      console.log("AWS S3 Response:", res);
-
-      // AWS S3 response থেকে URL বের করা
       const imageUrl =
-        res?.Location ||
-        res?.location ||
-        res?.data?.Location ||
-        res?.data?.location ||
-        res?.url ||
-        res?.imageUrl ||
-        res?.data?.url ||
-        res?.data?.imageUrl ||
-        (typeof res === "string" ? res : "");
+        res.url ||
+        res.imageUrl ||
+        res.secure_url ||
+        res.data?.url ||
+        res.data?.imageUrl;
 
-      if (imageUrl) {
-        setImage(imageUrl);
-      } else {
-        alert("ইমেজ URL পাওয়া যায়নি! Console চেক করুন।");
-      }
-    } catch (err: any) {
-      console.error("Upload Error:", err?.response?.data || err?.message || err);
-      alert(err?.response?.data?.message || err?.message || "Failed to upload image");
-    } finally {
-      setUploading(false);
+      setImage(imageUrl);
+    } catch (err) {
+      console.log(
+        "UPLOAD ERROR",
+        err,
+      );
     }
   };
 
   // =========================
   // CREATE BANNER
   // =========================
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: any,
+  ) => {
     e.preventDefault();
 
     if (!image) {
-      alert("Please upload an image first");
+      alert(
+        "Please upload image first",
+      );
       return;
     }
 
@@ -92,125 +100,170 @@ export default function CreateBannerPage() {
         title,
         image,
         linkType,
-        linkId: linkId || null,
+        linkId:
+          linkId || null,
         isActive,
       };
 
+      console.log(
+        "BANNER PAYLOAD",
+        payload,
+      );
+
       await createBanner(payload);
 
-      alert("Banner Created Successfully");
-      router.push("/dashboard/banners");
+      alert(
+        "Banner Created Successfully",
+      );
+
+      router.push(
+        "/dashboard/banners",
+      );
     } catch (err: any) {
-      console.error("Create Banner Error:", err?.response?.data || err);
-      alert(err?.response?.data?.message || "Failed to create banner");
+      console.log(
+        err?.response?.data || err,
+      );
+
+      alert(
+        err?.response?.data
+          ?.message ||
+          "Create Failed",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Create Banner</h1>
+    <div className="p-6 max-w-xl mx-auto">
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <h1 className="text-2xl font-bold mb-6">
+        Create Banner
+      </h1>
+
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
+
         {/* TITLE */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Banner Title</label>
-          <input
-            type="text"
-            placeholder="Enter banner title"
-            className="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-black"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Banner Title"
+          className="border p-3 w-full rounded"
+          value={title}
+          onChange={(e) =>
+            setTitle(
+              e.target.value,
+            )
+          }
+        />
 
         {/* LINK TYPE */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Link Type</label>
-          <select
-            value={linkType}
-            onChange={(e) => {
-              setLinkType(e.target.value);
-              setLinkId("");
-            }}
-            className="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-black"
-          >
-            <option value="none">No Action</option>
-            <option value="flashSale">Flash Sale</option>
-          </select>
-        </div>
+        <select
+          value={linkType}
+          onChange={(e) => {
+            setLinkType(
+              e.target.value,
+            );
 
-        {/* FLASH SALE SELECT */}
-        {linkType === "flashSale" && (
-          <div>
-            <label className="block text-sm font-medium mb-1">Select Flash Sale</label>
-            <select
-              value={linkId}
-              onChange={(e) => setLinkId(e.target.value)}
-              className="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-black"
-              required
-            >
-              <option value="">Select Flash Sale</option>
-              {flashSales.map((sale: any) => (
-                <option key={sale._id} value={sale._id}>
+            setLinkId("");
+          }}
+          className="border p-3 w-full rounded"
+        >
+          <option value="none">
+            No Action
+          </option>
+
+          <option value="flashSale">
+            Flash Sale
+          </option>
+        </select>
+
+        {/* FLASH SALE */}
+        {linkType ===
+          "flashSale" && (
+          <select
+            value={linkId}
+            onChange={(e) =>
+              setLinkId(
+                e.target.value,
+              )
+            }
+            className="border p-3 w-full rounded"
+          >
+            <option value="">
+              Select Flash Sale
+            </option>
+
+            {flashSales.map(
+              (sale: any) => (
+                <option
+                  key={
+                    sale._id
+                  }
+                  value={
+                    sale._id
+                  }
+                >
                   {sale.title}
                 </option>
-              ))}
-            </select>
-          </div>
+              ),
+            )}
+          </select>
         )}
 
-        {/* IMAGE UPLOAD & PREVIEW */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Upload Banner Image</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleUpload}
-            className="border p-2 w-full rounded"
+        {/* IMAGE */}
+        <input
+          type="file"
+          onChange={
+            handleUpload
+          }
+        />
+
+        {image && (
+          <img
+            src={image}
+            alt="Banner"
+            className="w-full h-[220px] object-cover rounded"
           />
-
-          {uploading && (
-            <p className="text-sm text-blue-600 mt-2 font-medium">Uploading image to S3...</p>
-          )}
-
-          {image && !uploading && (
-            <div className="mt-3">
-              <p className="text-xs text-gray-500 mb-1">Preview:</p>
-              <img
-                src={image}
-                alt="Banner Preview"
-                className="w-full h-[220px] object-cover rounded border"
-                onError={() => alert("Image failed to load. Check AWS S3 permissions / CORS.")}
-              />
-            </div>
-          )}
-        </div>
+        )}
 
         {/* STATUS */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Status</label>
-          <select
-            value={String(isActive)}
-            onChange={(e) => setIsActive(e.target.value === "true")}
-            className="border p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-black"
-          >
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
-        </div>
+        <select
+          value={String(
+            isActive,
+          )}
+          onChange={(e) =>
+            setIsActive(
+              e.target.value ===
+                "true",
+            )
+          }
+          className="border p-3 w-full rounded"
+        >
+          <option value="true">
+            Active
+          </option>
 
-        {/* SUBMIT BUTTON */}
+          <option value="false">
+            Inactive
+          </option>
+        </select>
+
+        {/* SUBMIT */}
         <button
           type="submit"
-          disabled={loading || uploading}
-          className="bg-black text-white px-6 py-3 rounded w-full font-semibold hover:bg-gray-800 disabled:bg-gray-400 transition"
+          disabled={loading}
+          className="bg-black text-white px-6 py-3 rounded w-full"
         >
-          {loading ? "Creating..." : "Create Banner"}
+          {loading
+            ? "Creating..."
+            : "Create Banner"}
         </button>
+
       </form>
+
     </div>
   );
 }
