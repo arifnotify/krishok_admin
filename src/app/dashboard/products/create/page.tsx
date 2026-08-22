@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 
+// getMainCategories এর বদলে সব ক্যাটাগরি একসাথে নিয়ে আসার জন্য getCategories ব্যবহার করতে হবে
 import {
-  getMainCategories,
-  getSubCategories,
+  getCategories,
 } from "@/src/services/category.service";
 
 import {
@@ -75,26 +75,15 @@ const [expiryDate,setExpiryDate]=useState("");
 const [locations,setLocations]=useState<string[]>([]);
 
 
-const [mainCategory,setMainCategory]=useState("");
-
+// আগের mainCategory এবং subCategory আলাদা রাখার ফিল্ডগুলো বাদ দিয়ে সরাসরি একটি 'category' আইডি রাখা হলো
 const [category,setCategory]=useState("");
 
+const [images,setImages]=useState<string[]>([]);
 
-
-const [images,setImages]=useState<string[]>([],
-);
-
-
-
+// সব ক্যাটাগরি একসাথে স্টোর করার জন্য
 const [categories,setCategories]=useState<Category[]>([]);
 
-const [subCategories,setSubCategories]=useState<Category[]>([]);
-
-
-
 const [locationList,setLocationList]=useState<Location[]>([]);
-
-
 
 const [loading,setLoading]=useState(false);
 
@@ -106,13 +95,9 @@ const loadData=async()=>{
 
 try{
 
-
-const categoryData =
-await getMainCategories();
-
-
-setCategories(categoryData);
-
+// ব্যাকএন্ড থেকে সব ক্যাটাগরি একসাথে ফেচ করা (যা ট্রি বা চাইল্ড সহ আসতে পারে)
+const categoryData = await getCategories();
+setCategories(Array.isArray(categoryData) ? categoryData : []);
 
 
 const locationsData =
@@ -147,60 +132,6 @@ loadData();
 
 
 },[]);
-
-
-
-
-const fetchSubCategories=
-async(parentId:string)=>{
-
-try{
-
-const data=
-await getSubCategories(parentId);
-
-setSubCategories(data);
-
-
-}catch(err){
-
-console.log(err);
-
-}
-
-
-};
-
-
-
-
-
-const handleMainCategory=
-async(
-e:React.ChangeEvent<HTMLSelectElement>
-)=>{
-
-
-const value=e.target.value;
-
-
-setMainCategory(value);
-
-setCategory("");
-
-setSubCategories([]);
-
-
-if(value){
-
-await fetchSubCategories(value);
-
-}
-
-
-};
-
-
 
 
 
@@ -314,6 +245,10 @@ images.filter(
 const handleCreate=
 async()=>{
 
+if (!category) {
+  alert("Please select a category");
+  return;
+}
 
 try{
 
@@ -385,7 +320,7 @@ undefined,
 
 
 
-category,
+category, // ইউজার ড্রপডাউন থেকে যে ক্যাটাগরি বা সাব-সাব ক্যাটাগরি সিলেক্ট করবে তার আইডি
 
 country: country || undefined,
 
@@ -540,96 +475,27 @@ className="border rounded-2xl px-5 py-3 h-32"
 
 
 </div>
-{/* CATEGORY */}
 
-<div className="grid grid-cols-2 gap-6">
-
+{/* UNLIMITED CATEGORY TREE SELECTOR */}
 <div>
-
 <label className="block text-sm font-medium mb-2">
-Main Category
+  Select Category (Main / Sub / Sub-Sub)
 </label>
 
-
 <select
-value={mainCategory}
-onChange={handleMainCategory}
-className="w-full border rounded-2xl px-5 py-3.5"
+  value={category}
+  onChange={(e) => setCategory(e.target.value)}
+  className="w-full border rounded-2xl px-5 py-3.5 bg-white"
 >
-
-
-<option value="">
-Select Category
-</option>
-
-
-{
-categories.map((item)=>(
-<option
-key={item._id}
-value={item._id}
->
-
-{typeof item.name === "object" ? item.name?.en : item.name}
-
-</option>
-))
-}
-
-
+  <option value="">Select Category</option>
+  {categories.map((item) => (
+    <option key={item._id} value={item._id}>
+      {/* এখানে ক্যাটাগরির নাম শো করবে, চাইলে লেভেল বা প্যারেন্ট ইনফোও বুঝতে পারবেন */}
+      {typeof item.name === "object" ? item.name?.en : item.name} 
+      {item.parentCategory ? " (Sub/Child Category)" : " (Main Category)"}
+    </option>
+  ))}
 </select>
-
-</div>
-
-
-
-
-<div>
-
-<label className="block text-sm font-medium mb-2">
-Sub Category
-</label>
-
-
-<select
-
-value={category}
-
-onChange={
-e=>setCategory(e.target.value)
-}
-
-className="w-full border rounded-2xl px-5 py-3.5"
-
->
-
-
-<option value="">
-Select SubCategory
-</option>
-
-
-
-{
-subCategories.map((item)=>(
-<option
-key={item._id}
-value={item._id}
->
-
-{typeof item.name === "object" ? item.name?.en : item.name}
-
-</option>
-))
-}
-
-
-</select>
-
-
-</div>
-
-
 </div>
 
 
