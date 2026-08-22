@@ -55,12 +55,13 @@ export default function EditProductPage() {
   const [expiryDate, setExpiryDate] = useState("");
 
   const [locations, setLocations] = useState<string[]>([]);
-  const [mainCategory, setMainCategory] = useState("");
-  const [category, setCategory] = useState("");
+  
+  // মাল্টিপল লেভেল ক্যাটাগরি ম্যানেজমেন্টের জন্য স্টেট
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categoryLists, setCategoryLists] = useState<Category[][]>([]);
 
   const [images, setImages] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subCategories, setSubCategories] = useState<Category[]>([]);
   const [locationList, setLocationList] = useState<Location[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -93,7 +94,6 @@ export default function EditProductPage() {
       );
 
       setCountries(countriesData);
-      
       setCountry(
         typeof product.country === "string"
           ? product.country
@@ -125,29 +125,29 @@ export default function EditProductPage() {
         setExpiryDate(product.expiryDate.split("T")[0]);
       }
 
-      // ক্যাটাগরি এবং সাব-ক্যাটাগরি হ্যান্ডেলিং সঠিকভাবে করা হলো
+      // ক্যাটাগরি চেইন বা হায়ারার্কি রিকভার করা (যদি ব্যাকএন্ডে populate করা থাকে)
       if (product.category) {
-        const prodCat = product.category;
-        
-        // যদি ক্যাটাগরির ভেতর parentCategory অবজেক্ট বা আইডি থাকে (অর্থাৎ এটি সাব-ক্যাটাগরি)
-        if (prodCat.parentCategory) {
-          const parentId = typeof prodCat.parentCategory === "string"
-            ? prodCat.parentCategory
-            : prodCat.parentCategory._id;
+        let currentCat: any = product.category;
+        const chainIds: string[] = [];
+        const listsMap: Category[][] = [];
 
-          setMainCategory(parentId);
-          
-          // সাব-ক্যাটাগরি লিস্ট ফেচ করে স্টেট আপডেট করা
-          const subs = await getSubCategories(parentId);
-          setSubCategories(subs);
+        // যদি ক্যাটাগরিতে পুরো অবজেক্ট আকারে প্যারেন্ট চেইন থাকে
+        while (currentCat) {
+          chainIds.unshift(currentCat._id);
+          currentCat = currentCat.parentCategory;
+        }
 
-          setCategory(prodCat._id || "");
-        } else {
-          // এটি নিজেই মেইন ক্যাটাগরি হলে
-          setMainCategory(prodCat._id || "");
-          setCategory("");
-          const subs = await getSubCategories(prodCat._id);
-          setSubCategories(subs);
+        setSelectedCategories(chainIds);
+
+        // প্রতিটি লেভেলের জন্য সাব-ক্যাটাগরিগুলো ফেচ করে লিস্ট তৈরি করা
+        if (chainIds.length > 0) {
+          const initialLists: Category[][] = [];
+          for (let i = 0; i < chainIds.length - 1; i++) {
+            const parentId = chainIds[i];
+            const subs = await getSubCategories(parentId);
+            initialLists[i + 1] = subs;
+          }
+          setCategoryLists(initialLists);
         }
       }
 
@@ -158,24 +158,25 @@ export default function EditProductPage() {
     }
   };
 
-  const fetchSubCategories = async (parentId: string) => {
-    try {
-      const data = await getSubCategories(parentId);
-      setSubCategories(data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const handleMainCategory = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setMainCategory(value);
-    setCategory("");
-    setSubCategories([]);
+  // মাল্টিপল লেভেলের ক্যাটাগরি পরিবর্তনের হ্যান্ডলার
+  const handleCategoryChange = async (value: string, level: number) => {
+    const updatedSelected = selectedCategories.slice(0, level);
+    const updatedLists = categoryLists.slice(0, level);
 
     if (value) {
-      await fetchSubCategories(value);
+      updatedSelected[level] = value;
+      try {
+        const subData = await getSubCategories(value);
+        if (subData && subData.length > 0) {
+          updatedLists[level + 1] = subData;
+        }
+      } catch (err) {
+        console.log(err);
+      }
     }
+
+    setSelectedCategories(updatedSelected);
+    setCategoryLists(updatedLists);
   };
 
   const handleLocationChange = (id: string) => {
@@ -211,6 +212,18 @@ export default function EditProductPage() {
     try {
       setLoading(true);
 
+      // সর্বশেষ সিলেক্ট করা ক্যাটাগরি আইডিটি বের করা
+      const finalCategory =
+        selectedCategories.length > 0
+          ? selectedCategories[selectedCategories.length - 1]
+          : "";
+
+      if (!finalCategory) {
+        alert("Please select a category");
+        setLoading(false);
+        return;
+      }
+
       await updateProduct(id as string, {
         title: {
           en: titleEn,
@@ -231,8 +244,7 @@ export default function EditProductPage() {
         unit,
         productType,
         expiryDate: productType === "regular" ? expiryDate : undefined,
-        // যদি সাব-ক্যাটাগরি সিলেক্ট করা থাকে সেটি যাবে, না হলে মেইন ক্যাটাগরি যাবে
-        category: category || mainCategory,
+        category: finalCategory,
         locations,
         images,
         isActive: true,
@@ -304,16 +316,18 @@ export default function EditProductPage() {
             />
           </div>
 
-          {/* CATEGORY */}
-          <div className="grid grid-cols-2 gap-6">
+          {/* MULTI-LEVEL CATEGORY */}
+          <div className="space-y-4">
+            <label className="block text-sm font-medium">Categories</label>
+
+            {/* Main Category */}
             <div>
-              <label className="block text-sm font-medium mb-2">Main Category</label>
               <select
-                value={mainCategory}
-                onChange={handleMainCategory}
+                value={selectedCategories[0] || ""}
+                onChange={(e) => handleCategoryChange(e.target.value, 0)}
                 className="w-full border rounded-2xl px-5 py-3.5"
               >
-                <option value="">Select Category</option>
+                <option value="">Select Main Category</option>
                 {categories.map((item) => (
                   <option key={item._id} value={item._id}>
                     {typeof item.name === "object" ? item.name?.en : item.name}
@@ -322,21 +336,28 @@ export default function EditProductPage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Sub Category</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full border rounded-2xl px-5 py-3.5"
-              >
-                <option value="">Select SubCategory</option>
-                {subCategories.map((item) => (
-                  <option key={item._id} value={item._id}>
-                    {typeof item.name === "object" ? item.name?.en : item.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Sub-Category Levels Dynamically Rendered */}
+            {categoryLists.map((subList, index) => {
+              const level = index + 1;
+              if (!subList || subList.length === 0) return null;
+
+              return (
+                <div key={level}>
+                  <select
+                    value={selectedCategories[level] || ""}
+                    onChange={(e) => handleCategoryChange(e.target.value, level)}
+                    className="w-full border rounded-2xl px-5 py-3.5"
+                  >
+                    <option value="">Select Sub Category (Level {level})</option>
+                    {subList.map((item) => (
+                      <option key={item._id} value={item._id}>
+                        {typeof item.name === "object" ? item.name?.en : item.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              );
+            })}
           </div>
 
           {/* YOUTUBE */}
@@ -387,7 +408,6 @@ export default function EditProductPage() {
             />
           </div>
 
-          {/* COUNTRY */}
           <div>
             <label className="block text-sm font-medium mb-2">Country</label>
             <select
@@ -485,7 +505,10 @@ export default function EditProductPage() {
             <div className="flex gap-4 flex-wrap mt-5">
               {images.map((img, index) => (
                 <div key={index} className="relative">
-                  <img src={img} className="w-24 h-24 object-cover rounded-2xl border" />
+                  <img
+                    src={img}
+                    className="w-24 h-24 object-cover rounded-2xl border"
+                  />
                   <button
                     type="button"
                     onClick={() => removeImage(img)}
