@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 import {
-getMainCategories,
-getSubCategories,
+  getMainCategories,
+  getSubCategories,
 } from "@/src/services/category.service";
 
 import {
@@ -14,15 +14,15 @@ import {
 import { Country } from "@/src/types/country";
 
 import {
-getLocations,
+  getLocations,
 } from "@/src/services/location.service";
 
 import {
-uploadImages,
+  uploadImages,
 } from "@/src/services/upload.service";
 
 import {
-createProduct,
+  createProduct,
 } from "@/src/services/product.service";
 
 import { Category } from "@/src/types/category";
@@ -81,7 +81,8 @@ const [category,setCategory]=useState("");
 
 
 
-const [images,setImages]=useState<string[]>([]);
+const [images,setImages]=useState<string[]>([],
+);
 
 
 
