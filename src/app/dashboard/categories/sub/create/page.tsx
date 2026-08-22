@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
-  getMainCategories,
+  getCategories, // সব ক্যাটাগরি ফেচ করার জন্য (যাতে যেকোনো ক্যাটাগরির নিচে সাব-ক্যাটাগরি বানানো যায়)
   createCategory,
 } from "@/src/services/category.service";
 import {
@@ -12,27 +12,27 @@ import {
 export default function CreateSubCategoryPage() {
   const [nameEn, setNameEn] = useState("");
   const [nameBn, setNameBn] = useState("");
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState(""); // সাব-ক্যাটাগরির ছবি
   const [parentCategory, setParentCategory] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState(0);
 
-  // LOAD MAIN CATEGORIES
+  // LOAD ALL CATEGORIES (ট্রি বা লিস্ট আকারে দেখানোর জন্য)
   useEffect(() => {
-    loadMainCategories();
+    loadCategories();
   }, []);
 
-  const loadMainCategories = async () => {
+  const loadCategories = async () => {
     try {
-      const res = await getMainCategories();
-      setCategories(res);
+      const res = await getCategories();
+      setCategories(Array.isArray(res) ? res : []);
     } catch (error) {
       console.log(error);
     }
   };
 
-  // IMAGE UPLOAD
+  // IMAGE UPLOAD (প্রতিটি সাব-ক্যাটাগরির জন্য আলাদা ছবি আপলোড)
   const handleUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -40,15 +40,30 @@ export default function CreateSubCategoryPage() {
     if (!file) return;
 
     try {
+      setLoading(true);
       const res = await uploadImage(file);
-      setImage(res.url);
+      const url = res.url || res.data?.url;
+      setImage(url);
     } catch (error) {
       console.log(error);
+      alert("Image Upload Failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   // CREATE SUB CATEGORY
   const handleCreate = async () => {
+    if (!nameEn || !nameBn) {
+      alert("Please fill in both English and Bangla names.");
+      return;
+    }
+
+    if (!parentCategory) {
+      alert("Please select a Parent Category.");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -57,95 +72,122 @@ export default function CreateSubCategoryPage() {
           en: nameEn,
           bn: nameBn,
         },
-        image,
+        image, // সাব-ক্যাটাগরির ছবি ডেটাবেজে সেভ হবে
         parentCategory,
         sortOrder,
+        showOnHome: false,
+        isActive: true,
       });
 
       alert("Sub Category Created Successfully");
       window.location.href = "/dashboard/categories";
     } catch (error) {
       console.log(error);
+      alert("Creation Failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6">
-      <div className="bg-white p-6 rounded-xl shadow max-w-xl">
+    <div className="p-6 max-w-2xl mx-auto">
+      <div className="bg-white p-8 rounded-3xl shadow">
         <h1 className="text-2xl font-bold mb-6">
           Create Sub Category
         </h1>
 
         {/* NAME EN */}
-        <input
-          type="text"
-          placeholder="Sub Category Name (English)"
-          value={nameEn}
-          onChange={(e) => setNameEn(e.target.value)}
-          className="w-full border p-3 rounded-lg mb-4"
-        />
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">Sub Category Name (English)</label>
+          <input
+            type="text"
+            placeholder="e.g. Fresh Fish"
+            value={nameEn}
+            onChange={(e) => setNameEn(e.target.value)}
+            className="w-full border p-3.5 rounded-2xl"
+          />
+        </div>
 
         {/* NAME BN */}
-        <input
-          type="text"
-          placeholder="সাব-ক্যাটাগরির নাম (বাংলা)"
-          value={nameBn}
-          onChange={(e) => setNameBn(e.target.value)}
-          className="w-full border p-3 rounded-lg mb-4"
-        />
-
-        {/* MAIN CATEGORY SELECT */}
-        <select
-          value={parentCategory}
-          onChange={(e) => setParentCategory(e.target.value)}
-          className="w-full border p-3 rounded-lg mb-4"
-        >
-          <option value="">
-            Select Main Category
-          </option>
-
-          {categories.map((cat) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name?.en || cat.name}
-            </option>
-          ))}
-        </select>
         <div className="mb-4">
-  <label className="block font-medium mb-2">
-    Sort Order
-  </label>
-
-  <input
-    type="number"
-    value={sortOrder}
-    onChange={(e) =>
-      setSortOrder(Number(e.target.value))
-    }
-    className="w-full border p-3 rounded-lg"
-  />
-</div>
-
-        {/* IMAGE */}
-        <input
-          type="file"
-          onChange={handleUpload}
-          className="mb-4"
-        />
-
-        {image && (
-          <img
-            src={image}
-            className="w-32 h-32 object-cover rounded-lg mt-2"
+          <label className="block text-sm font-medium mb-2">সাব-ক্যাটাগরির নাম (বাংলা)</label>
+          <input
+            type="text"
+            placeholder="যেমন: তাজা মাছ"
+            value={nameBn}
+            onChange={(e) => setNameBn(e.target.value)}
+            className="w-full border p-3.5 rounded-2xl"
           />
-        )}
+        </div>
 
-        {/* BUTTON */}
+        {/* PARENT CATEGORY SELECT */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">Parent Category</label>
+          <select
+            value={parentCategory}
+            onChange={(e) => setParentCategory(e.target.value)}
+            className="w-full border p-3.5 rounded-2xl"
+          >
+            <option value="">
+              Select Parent Category
+            </option>
+
+            {categories.map((cat) => (
+              <option key={cat._id} value={cat._id}>
+                {cat.name?.en || cat.name} ({cat.name?.bn})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* SORT ORDER */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">
+            Sort Order
+          </label>
+          <input
+            type="number"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(Number(e.target.value))}
+            className="w-full border p-3.5 rounded-2xl"
+            placeholder="0"
+          />
+        </div>
+
+        {/* IMAGE UPLOAD FOR SUB CATEGORY */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">
+            Sub Category Image
+          </label>
+          <input 
+            type="file" 
+            onChange={handleUpload} 
+            className="w-full border p-3 rounded-2xl file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+          />
+
+          {image && (
+            <div className="mt-4 relative w-32 h-32">
+              <img
+                src={image}
+                alt="Subcategory Preview"
+                className="w-full h-full object-cover rounded-2xl border shadow-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setImage("")}
+                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs shadow"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* SUBMIT BUTTON */}
         <button
           onClick={handleCreate}
           disabled={loading}
-          className="bg-green-600 text-white px-5 py-3 rounded-lg mt-6 block w-full"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-semibold text-lg transition"
         >
           {loading ? "Creating..." : "Create Sub Category"}
         </button>
