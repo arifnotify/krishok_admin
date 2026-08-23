@@ -7,9 +7,7 @@ import {
   updateCategory,
   getMainCategories,
 } from "@/src/services/category.service";
-import {
-  uploadImage,
-} from "@/src/services/upload.service";
+import { uploadImage } from "@/src/services/upload.service";
 
 export default function EditSubCategoryPage() {
   const params = useParams();
@@ -41,8 +39,7 @@ export default function EditSubCategoryPage() {
       setParentCategory(
         res.parentCategory?._id || res.parentCategory || ""
       );
-     // Category Active / Inactive
-    setIsActive(res.isActive ?? true);
+      setIsActive(res.isActive ?? true);
     } catch (error) {
       console.log(error);
     }
@@ -51,15 +48,15 @@ export default function EditSubCategoryPage() {
   const loadMainCategories = async () => {
     try {
       const res = await getMainCategories();
-      setCategories(res);
+      // নিজের আইডি বাদ দেওয়া যেতে পারে যাতে সাব-ক্যাটাগরি নিজের প্যারেন্ট নিজে হতে না পারে
+      const filteredCategories = res.filter((cat: any) => cat._id !== id);
+      setCategories(filteredCategories);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -87,7 +84,7 @@ export default function EditSubCategoryPage() {
         isActive,
       });
 
-      alert("Sub Category Updated");
+      alert("Sub Category Updated Successfully");
       window.location.href = "/dashboard/categories";
     } catch (error) {
       console.log(error);
@@ -100,9 +97,7 @@ export default function EditSubCategoryPage() {
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <div className="bg-white p-6 rounded-xl shadow">
-        <h1 className="text-2xl font-bold mb-6">
-          Edit Sub Category
-        </h1>
+        <h1 className="text-2xl font-bold mb-6">Edit Sub Category</h1>
 
         {/* NAME EN */}
         <input
@@ -128,57 +123,49 @@ export default function EditSubCategoryPage() {
           onChange={(e) => setParentCategory(e.target.value)}
           className="w-full border p-3 rounded-lg mb-4"
         >
-          <option value="">
-            Select Main Category
-          </option>
-
+          <option value="">Select Main Category</option>
           {categories.map((cat) => (
             <option key={cat._id} value={cat._id}>
               {cat.name?.en || cat.name}
             </option>
           ))}
         </select>
+
+        {/* SORT ORDER */}
         <div className="mb-4">
-  <label className="block font-medium mb-2">
-    Sort Order
-  </label>
+          <label className="block font-medium mb-2">Sort Order</label>
+          <input
+            type="number"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(Number(e.target.value))}
+            className="w-full border p-3 rounded-lg"
+          />
+        </div>
 
-  <input
-    type="number"
-    value={sortOrder}
-    onChange={(e) =>
-      setSortOrder(Number(e.target.value))
-    }
-    className="w-full border p-3 rounded-lg"
-  />
-</div>
-  <div className="flex items-center gap-3 mb-4">
-  <input
-    type="checkbox"
-    checked={isActive}
-    onChange={(e) =>
-      setIsActive(e.target.checked)
-    }
-  />
-
-  <label className="font-medium">
-    {isActive
-      ? "Category Active"
-      : "Category Inactive"}
-  </label>
-</div>
+        {/* ACTIVE / INACTIVE */}
+        <div className="flex items-center gap-3 mb-4">
+          <input
+            type="checkbox"
+            checked={isActive}
+            onChange={(e) => setIsActive(e.target.checked)}
+            className="w-5 h-5"
+          />
+          <label className="font-medium">
+            {isActive ? "Category Active" : "Category Inactive"}
+          </label>
+        </div>
 
         {/* IMAGE UPLOAD */}
-        <input
-          type="file"
-          onChange={handleUpload}
-          className="mb-4"
-        />
+        <div className="mb-4">
+          <label className="block font-medium mb-2">Category Image</label>
+          <input type="file" onChange={handleUpload} />
+        </div>
 
         {image && (
-          <div className="mt-4">
+          <div className="mt-4 mb-4">
             <img
               src={image}
+              alt="Category"
               className="w-32 h-32 object-cover rounded-lg border"
             />
             <button
@@ -195,7 +182,7 @@ export default function EditSubCategoryPage() {
         <button
           onClick={handleUpdate}
           disabled={loading}
-          className="bg-green-600 text-white px-5 py-3 rounded-lg mt-6 w-full"
+          className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-lg mt-6 w-full font-medium"
         >
           {loading ? "Updating..." : "Update Sub Category"}
         </button>
