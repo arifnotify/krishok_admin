@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const api = axios.create({
-  baseURL: "https://api.sooqxy.com",
+  baseURL: "https://api.matigr.com",
 });
 
 api.interceptors.request.use((config) => {
